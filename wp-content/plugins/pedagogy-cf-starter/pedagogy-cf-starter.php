@@ -26,12 +26,16 @@ class Pedagogy_CF_Starter {
 
     /* Admin: menu and page */
     public function admin_menu() {
-        add_menu_page( 'Pedagogy Fields', 'Pedagogy Fields', 'manage_options', 'pedagogy-cf', array( $this, 'render_admin_page' ), 'dashicons-list-view', 60 );
+        add_menu_page( 'OER Metadata', 'OER Metadata', 'manage_options', 'pedagogy-cf', array( $this, 'render_admin_page' ), 'dashicons-list-view', 60 );
     }
 
     public function render_admin_page() {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
+        }
+        if ( isset( $_GET['error'] ) && 'source_in_use' === $_GET['error'] && isset( $_GET['fields'] ) ) {
+            $fields = explode( ',', sanitize_text_field( wp_unslash( $_GET['fields'] ) ) );
+            echo '<div class="notice notice-error"><p>' . esc_html__( 'Cannot delete a source field while it is used by linked fields:', 'pedagogy' ) . ' ' . esc_html( implode( ', ', $fields ) ) . '</p></div>';
         }
         $defs = $this->get_definitions();
         $editing = false;
@@ -46,7 +50,7 @@ class Pedagogy_CF_Starter {
         }
         ?>
         <div class="wrap">
-            <h1>Pedagogy Custom Fields</h1>
+            <h1>OER Metadata Fields</h1>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <?php wp_nonce_field( 'pedagogy_cf_add' ); ?>
                 <input type="hidden" name="action" value="pedagogy_cf_add" />
@@ -100,6 +104,10 @@ class Pedagogy_CF_Starter {
                             <p class="description">Choose another field that provides options for this linked field.</p>
                         </td>
                     </tr>
+                    <tr id="linked_multiple_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'linked' ) ? 'table-row' : 'none'; ?>;">
+                        <th>Allow multiple selection</th>
+                        <td><label><input type="checkbox" name="pcf_linked_multiple" value="1" <?php checked( $editing && ! empty( $edit_def['multiple'] ) ); ?>> Allow multiple values</label></td>
+                    </tr>
                 </table>
                 <?php submit_button( $editing ? 'Update Field' : 'Add Field' ); ?>
             </form>
@@ -118,7 +126,7 @@ class Pedagogy_CF_Starter {
                                 <td><?php echo esc_html( $d['type'] ); ?></td>
                                 <td><?php
                                     if ( isset( $d['type'] ) && $d['type'] === 'linked' ) {
-                                        echo isset( $d['source_field'] ) ? esc_html( 'linked to ' . $d['source_field'] ) : esc_html( 'no source set' );
+                                        echo isset( $d['source_field'] ) ? esc_html( 'linked to ' . $d['source_field'] . ( ! empty( $d['multiple'] ) ? ' (multiple)' : '' ) ) : esc_html( 'no source set' );
                                     } else {
                                         echo isset( $d['options'] ) ? esc_html( implode( ', ', $d['options'] ) ) : '';
                                     }
@@ -139,9 +147,11 @@ class Pedagogy_CF_Starter {
             var type = document.getElementById('pcf_type');
             var optionsRow = document.getElementById('options_row');
             var linkedSourceRow = document.getElementById('linked_source_row');
+            var linkedMultipleRow = document.getElementById('linked_multiple_row');
             function update(){
                 optionsRow.style.display = type.value === 'select' ? '' : 'none';
                 linkedSourceRow.style.display = type.value === 'linked' ? '' : 'none';
+                linkedMultipleRow.style.display = type.value === 'linked' ? '' : 'none';
             }
             type.addEventListener('change', update);
             update();
@@ -180,6 +190,7 @@ class Pedagogy_CF_Starter {
             } else {
                 $entry['source_field'] = '';
             }
+            $entry['multiple'] = isset( $_POST['pcf_linked_multiple'] ) ? true : false;
         }
 
         if ( $original ) {
@@ -208,6 +219,21 @@ class Pedagogy_CF_Starter {
         check_admin_referer( 'pedagogy_cf_delete' );
         $name = sanitize_text_field( wp_unslash( $_GET['name'] ?? '' ) );
         $defs = $this->get_definitions();
+        $linked_using = array();
+        foreach ( $defs as $field_name => $field_def ) {
+            if ( isset( $field_def['type'] ) && $field_def['type'] === 'linked' && isset( $field_def['source_field'] ) && $field_def['source_field'] === $name ) {
+                $linked_using[] = $field_name;
+            }
+        }
+        if ( ! empty( $linked_using ) ) {
+            $redirect = add_query_arg( array(
+                'page' => 'pedagogy-cf',
+                'error' => 'source_in_use',
+                'fields' => implode( ',', $linked_using ),
+            ), admin_url( 'admin.php' ) );
+            wp_redirect( $redirect );
+            exit;
+        }
         if ( isset( $defs[ $name ] ) ) {
             unset( $defs[ $name ] );
             update_option( self::OPTION_KEY, $defs );
@@ -222,6 +248,32 @@ class Pedagogy_CF_Starter {
             $defs = array();
         }
         return $defs;
+    }
+
+    private function get_acf_field_names() {
+        if ( ! function_exists( 'acf_get_field_groups' ) ) {
+            return array();
+        }
+
+        $names = array();
+        $groups = acf_get_field_groups();
+        if ( empty( $groups ) ) {
+            return $names;
+        }
+
+        foreach ( $groups as $group ) {
+            $fields = acf_get_fields( $group );
+            if ( empty( $fields ) ) {
+                continue;
+            }
+            foreach ( $fields as $field ) {
+                if ( isset( $field['name'] ) ) {
+                    $names[] = $field['name'];
+                }
+            }
+        }
+
+        return array_unique( $names );
     }
 
     /* Add meta boxes per definition */
@@ -266,15 +318,30 @@ class Pedagogy_CF_Starter {
                 $source = isset( $def['source_field'] ) ? $def['source_field'] : '';
                 $opts = array();
                 if ( $source ) {
-                    $source_def = isset( $this->get_definitions()[ $source ] ) ? $this->get_definitions()[ $source ] : null;
+                    $source_defs = $this->get_definitions();
+                    $source_def = isset( $source_defs[ $source ] ) ? $source_defs[ $source ] : null;
                     if ( $source_def && isset( $source_def['options'] ) ) {
                         $opts = $source_def['options'];
                     }
                 }
-                echo '<select name="' . esc_attr( $meta_key ) . '" class="widefat">';
-                echo '<option value="">' . esc_html__( '-- Select option --', 'pedagogy' ) . '</option>';
+                if ( empty( $opts ) ) {
+                    echo '<p>' . esc_html__( 'No source options found. Please select a valid source field or edit the source field options.', 'pedagogy' ) . '</p>';
+                    break;
+                }
+                $is_multiple = ! empty( $def['multiple'] );
+                $select_name = esc_attr( $meta_key . ( $is_multiple ? '[]' : '' ) );
+                echo '<select name="' . $select_name . '" class="widefat"' . ( $is_multiple ? ' multiple size="5"' : '' ) . '>';
+                if ( ! $is_multiple ) {
+                    echo '<option value="">' . esc_html__( '-- Select option --', 'pedagogy' ) . '</option>';
+                }
                 foreach ( $opts as $o ) {
-                    $sel = selected( $value, $o, false );
+                    $selected = false;
+                    if ( $is_multiple ) {
+                        $selected = is_array( $value ) && in_array( $o, $value, true );
+                    } else {
+                        $selected = $value === $o;
+                    }
+                    $sel = selected( $selected, true, false );
                     echo '<option value="' . esc_attr( $o ) . '" ' . $sel . '>' . esc_html( $o ) . '</option>';
                 }
                 echo '</select>';
@@ -316,7 +383,11 @@ class Pedagogy_CF_Starter {
                     $val = sanitize_textarea_field( $raw );
                     break;
                 case 'linked':
-                    $val = sanitize_text_field( $raw );
+                    if ( is_array( $raw ) ) {
+                        $val = array_map( 'sanitize_text_field', $raw );
+                    } else {
+                        $val = sanitize_text_field( $raw );
+                    }
                     break;
                 case 'select':
                 case 'text':
@@ -352,11 +423,15 @@ public static function get_definition( $name ) {
         }
         $def = self::get_definition( $name );
         if ( isset( $def['type'] ) && $def['type'] === 'linked' ) {
-            $linked = get_post( $val );
-            if ( $linked ) {
-                echo '<div class="pcf-' . esc_attr( $name ) . '"><a href="' . esc_url( get_permalink( $linked ) ) . '">' . esc_html( get_the_title( $linked ) ) . '</a></div>';
-                return;
+            $is_multiple = ! empty( $def['multiple'] );
+            if ( $is_multiple ) {
+                $values = (array) $val;
+                $label = implode( ', ', array_map( 'esc_html', $values ) );
+            } else {
+                $label = esc_html( $val );
             }
+            echo '<div class="pcf-' . esc_attr( $name ) . '">' . wp_kses_post( wpautop( $label ) ) . '</div>';
+            return;
         }
         echo '<div class="pcf-' . esc_attr( $name ) . '">' . wp_kses_post( wpautop( $val ) ) . '</div>';
     }
@@ -380,7 +455,28 @@ public static function get_definition( $name ) {
         }
 
         $out = '';
+        $skip_fields = array();
+        foreach ( $defs as $def_name => $def ) {
+            if ( isset( $def['type'] ) && $def['type'] === 'linked' && ! empty( $def['source_field'] ) ) {
+                $skip_fields[] = $def['source_field'];
+            }
+        }
+
+        $skip_fields = array_unique( $skip_fields );
+        $acf_fields = $this->get_acf_field_names();
+        if ( ! empty( $acf_fields ) ) {
+            $skip_fields = array_unique( array_merge( $skip_fields, $acf_fields ) );
+        }
+
+        // Do not auto-inject the `people` custom field into the content.
+        $skip_fields[] = 'people';
+        $skip_fields = array_unique( $skip_fields );
+
         foreach ( $defs as $name => $d ) {
+            // Skip any definition that is either a linked source, matches an ACF field name, or is excluded explicitly.
+            if ( in_array( $name, $skip_fields, true ) ) {
+                continue;
+            }
             $meta_key = 'pcf_' . $name;
             $val = get_post_meta( $post_id, $meta_key, true );
             if ( $val === '' || $val === null ) {
@@ -394,6 +490,13 @@ public static function get_definition( $name ) {
             switch ( $d['type'] ) {
                 case 'textarea':
                     $field_html .= '<div class="pcf-value">' . wp_kses_post( wpautop( $val ) ) . '</div>';
+                    break;
+                case 'linked':
+                    if ( is_array( $val ) ) {
+                        $field_html .= '<div class="pcf-value">' . esc_html( implode( ', ', $val ) ) . '</div>';
+                    } else {
+                        $field_html .= '<div class="pcf-value">' . esc_html( $val ) . '</div>';
+                    }
                     break;
                 case 'number':
                 case 'date':

@@ -22,6 +22,15 @@ class Pedagogy_CF_Starter {
         add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
         add_action( 'save_post', array( $this, 'save_post_fields' ) );
         add_filter( 'the_content', array( $this, 'inject_fields_into_content' ), 5 );
+        add_action( 'admin_head', array( $this, 'admin_inline_css' ) );
+    }
+
+    public function admin_inline_css() {
+        echo "<style>\n";
+        echo "/* Hide meta box move controls and panel toggle for pedagogy pcf_ meta boxes */\n";
+        echo "div[id^=\"pcf_\"] .handle-actions, div[id^=\"pcf_\"] .handlediv { display: none !important; }\n";
+        echo "div[id^=\"pcf_\"] .hndle { cursor: default; }\n";
+        echo "</style>\n";
     }
 
     /* Admin: menu and page */
@@ -46,6 +55,13 @@ class Pedagogy_CF_Starter {
             if ( isset( $defs[ $edit_name ] ) ) {
                 $editing = true;
                 $edit_def = $defs[ $edit_name ];
+            }
+        }
+
+        $new_order = 1;
+        foreach ( $defs as $def ) {
+            if ( isset( $def['order'] ) ) {
+                $new_order = max( $new_order, intval( $def['order'] ) + 1 );
             }
         }
         ?>
@@ -82,13 +98,31 @@ class Pedagogy_CF_Starter {
                                 <option value="number" <?php selected( $editing && $edit_def['type'] === 'number' ); ?>>Number</option>
                                 <option value="date" <?php selected( $editing && $edit_def['type'] === 'date' ); ?>>Date</option>
                                 <option value="select" <?php selected( $editing && $edit_def['type'] === 'select' ); ?>>Select (comma-separated options)</option>
+                                <option value="url" <?php selected( $editing && $edit_def['type'] === 'url' ); ?>>URL (link + label)</option>
                                 <option value="linked" <?php selected( $editing && $edit_def['type'] === 'linked' ); ?>>Linked Field Options</option>
                             </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="pcf_order">Display Order</label></th>
+                        <td>
+                            <input id="pcf_order" name="pcf_order" type="number" min="0" value="<?php echo esc_attr( $editing ? ( isset( $edit_def['order'] ) ? $edit_def['order'] : $new_order ) : $new_order ); ?>">
+                            <p class="description">Lower values appear earlier in the field output order.</p>
                         </td>
                     </tr>
                     <tr id="options_row" style="display:<?php echo ( $editing && isset( $edit_def['options'] ) ) ? 'table-row' : 'none'; ?>;">
                         <th><label for="pcf_options">Options</label></th>
                         <td><input id="pcf_options" name="pcf_options" type="text" value="<?php echo $editing && isset( $edit_def['options'] ) ? esc_attr( implode( ', ', $edit_def['options'] ) ) : ''; ?>"><p class="description">Comma-separated values for select.</p></td>
+                    </tr>
+                    <tr id="url_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'url' ) ? 'table-row' : 'none'; ?>;">
+                        <th>URL Fields</th>
+                        <td>
+                            <p class="description">Provide a link and an optional display name in the post editor meta box.</p>
+                        </td>
+                    </tr>
+                    <tr id="select_multiple_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'select' ) ? 'table-row' : 'none'; ?>;">
+                        <th>Allow multiple selection (select)</th>
+                        <td><label><input type="checkbox" name="pcf_select_multiple" value="1" <?php echo $editing && ! empty( $edit_def['multiple'] ) ? 'checked' : ''; ?>> Allow multiple values</label></td>
                     </tr>
                     <tr id="linked_source_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'linked' ) ? 'table-row' : 'none'; ?>;">
                         <th><label for="pcf_linked_source">Linked Source Field</label></th>
@@ -117,10 +151,11 @@ class Pedagogy_CF_Starter {
                 <p>No fields defined yet.</p>
             <?php else: ?>
                 <table class="widefat">
-                    <thead><tr><th>Title</th><th>Name</th><th>Type</th><th>Options</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Order</th><th>Title</th><th>Name</th><th>Type</th><th>Options</th><th>Actions</th></tr></thead>
                     <tbody>
                         <?php foreach ( $defs as $name => $d ) : ?>
                             <tr>
+                                <td><?php echo esc_html( isset( $d['order'] ) ? intval( $d['order'] ) : '' ); ?></td>
                                 <td><?php echo esc_html( $d['title'] ); ?></td>
                                 <td><?php echo esc_html( $name ); ?></td>
                                 <td><?php echo esc_html( $d['type'] ); ?></td>
@@ -148,10 +183,18 @@ class Pedagogy_CF_Starter {
             var optionsRow = document.getElementById('options_row');
             var linkedSourceRow = document.getElementById('linked_source_row');
             var linkedMultipleRow = document.getElementById('linked_multiple_row');
+            var selectMultipleRow = document.getElementById('select_multiple_row');
+            var urlRow = document.getElementById('url_row');
             function update(){
                 optionsRow.style.display = type.value === 'select' ? '' : 'none';
                 linkedSourceRow.style.display = type.value === 'linked' ? '' : 'none';
                 linkedMultipleRow.style.display = type.value === 'linked' ? '' : 'none';
+                if ( selectMultipleRow ) {
+                    selectMultipleRow.style.display = type.value === 'select' ? '' : 'none';
+                }
+                if ( urlRow ) {
+                    urlRow.style.display = type.value === 'url' ? '' : 'none';
+                }
             }
             type.addEventListener('change', update);
             update();
@@ -171,6 +214,8 @@ class Pedagogy_CF_Starter {
         $name  = sanitize_text_field( wp_unslash( $_POST['pcf_name'] ?? '' ) );
         $type  = sanitize_text_field( wp_unslash( $_POST['pcf_type'] ?? 'text' ) );
         $opts  = sanitize_text_field( wp_unslash( $_POST['pcf_options'] ?? '' ) );
+        $order = isset( $_POST['pcf_order'] ) ? intval( wp_unslash( $_POST['pcf_order'] ) ) : 0;
+        $select_multiple = isset( $_POST['pcf_select_multiple'] ) ? true : false;
         $original = isset( $_POST['original_name'] ) ? sanitize_text_field( wp_unslash( $_POST['original_name'] ) ) : '';
 
         if ( ! preg_match( '/^[a-z0-9_]+$/', $name ) ) {
@@ -183,6 +228,9 @@ class Pedagogy_CF_Starter {
         $entry = array( 'title' => $title, 'type' => $type );
         if ( 'select' === $type ) {
             $entry['options'] = array_map( 'trim', explode( ',', $opts ) );
+            $entry['multiple'] = $select_multiple;
+        } elseif ( 'url' === $type ) {
+            // no definition-level extras required for URL fields; per-post values are stored separately
         } elseif ( 'linked' === $type ) {
             $source = sanitize_text_field( wp_unslash( $_POST['pcf_linked_source'] ?? '' ) );
             if ( $source && isset( $defs[ $source ] ) && isset( $defs[ $source ]['type'] ) && $defs[ $source ]['type'] === 'select' ) {
@@ -192,6 +240,15 @@ class Pedagogy_CF_Starter {
             }
             $entry['multiple'] = isset( $_POST['pcf_linked_multiple'] ) ? true : false;
         }
+
+        if ( $order <= 0 ) {
+            if ( $original && isset( $defs[ $original ]['order'] ) ) {
+                $order = intval( $defs[ $original ]['order'] );
+            } else {
+                $order = $this->get_default_order( $defs );
+            }
+        }
+        $entry['order'] = $order;
 
         if ( $original ) {
             // Update existing definition but do not allow changing the slug/name.
@@ -247,7 +304,27 @@ class Pedagogy_CF_Starter {
         if ( ! is_array( $defs ) ) {
             $defs = array();
         }
+
+        uasort( $defs, function( $a, $b ) {
+            $a_order = isset( $a['order'] ) ? intval( $a['order'] ) : PHP_INT_MAX;
+            $b_order = isset( $b['order'] ) ? intval( $b['order'] ) : PHP_INT_MAX;
+            if ( $a_order === $b_order ) {
+                return 0;
+            }
+            return $a_order < $b_order ? -1 : 1;
+        } );
+
         return $defs;
+    }
+
+    private function get_default_order( $defs ) {
+        $order = 1;
+        foreach ( $defs as $def ) {
+            if ( isset( $def['order'] ) ) {
+                $order = max( $order, intval( $def['order'] ) + 1 );
+            }
+        }
+        return $order;
     }
 
     private function get_acf_field_names() {
@@ -297,7 +374,27 @@ class Pedagogy_CF_Starter {
         $value = get_post_meta( $post->ID, $meta_key, true );
         switch ( $def['type'] ) {
             case 'textarea':
-                echo '<textarea style="width:100%;" name="' . esc_attr( $meta_key ) . '">' . esc_textarea( $value ) . '</textarea>';
+                if ( function_exists( 'wp_editor' ) ) {
+                    // Use an anonymized editor ID so the custom field name isn't exposed in the DOM or UI.
+                    $editor_id = 'pcf_editor_' . substr( md5( $meta_key . microtime() ), 0, 8 );
+                    $editor_settings = array(
+                        'textarea_name' => $meta_key, // keeps saving bound to the correct meta key
+                        'textarea_rows' => 6,
+                        'media_buttons' => false,
+                        'teeny' => false,
+                        'tinymce' => array(
+                            'menubar' => false,
+                            'toolbar1' => 'bold,italic,bullist,numlist,link,unlink,blockquote',
+                            'toolbar2' => '',
+                        ),
+                        'quicktags' => false,
+                    );
+                    // Remove any previously injected content in the editor value that might include names
+                    $initial_value = is_string( $value ) ? $value : '';
+                    wp_editor( wp_kses_post( $initial_value ), $editor_id, $editor_settings );
+                } else {
+                    echo '<textarea style="width:100%;" name="' . esc_attr( $meta_key ) . '">' . esc_textarea( $value ) . '</textarea>';
+                }
                 break;
             case 'number':
                 echo '<input type="number" name="' . esc_attr( $meta_key ) . '" value="' . esc_attr( $value ) . '" class="widefat">';
@@ -306,13 +403,39 @@ class Pedagogy_CF_Starter {
                 echo '<input type="date" name="' . esc_attr( $meta_key ) . '" value="' . esc_attr( $value ) . '" class="widefat">';
                 break;
             case 'select':
-                echo '<select name="' . esc_attr( $meta_key ) . '" class="widefat">';
+                $is_multiple = ! empty( $def['multiple'] );
+                $select_name = esc_attr( $meta_key . ( $is_multiple ? '[]' : '' ) );
+                echo '<select name="' . $select_name . '" class="widefat"' . ( $is_multiple ? ' multiple size="5"' : '' ) . '>';
                 $opts = $def['options'] ?? array();
+                if ( ! empty( $opts ) && is_array( $opts ) ) {
+                    usort( $opts, 'strcasecmp' );
+                }
+                if ( ! $is_multiple ) {
+                    echo '<option value="">' . esc_html__( '-- Select option --', 'pedagogy' ) . '</option>';
+                }
                 foreach ( $opts as $o ) {
-                    $sel = selected( $value, $o, false );
+                    $selected = false;
+                    if ( $is_multiple ) {
+                        $selected = is_array( $value ) && in_array( $o, $value, true );
+                    } else {
+                        $selected = $value === $o;
+                    }
+                    $sel = selected( $selected, true, false );
                     echo '<option value="' . esc_attr( $o ) . '" ' . $sel . '>' . esc_html( $o ) . '</option>';
                 }
                 echo '</select>';
+                break;
+            case 'url':
+                $href_key = esc_attr( $meta_key . '_href' );
+                $label_key = esc_attr( $meta_key . '_label' );
+                $href_val = '';
+                $label_val = '';
+                if ( is_array( $value ) ) {
+                    $href_val = isset( $value['href'] ) ? $value['href'] : '';
+                    $label_val = isset( $value['label'] ) ? $value['label'] : '';
+                }
+                echo '<p><label>' . esc_html__( 'Link URL', 'pedagogy' ) . ': <input type="url" name="' . $href_key . '" value="' . esc_attr( $href_val ) . '" class="widefat"></label></p>';
+                echo '<p><label>' . esc_html__( 'Display name', 'pedagogy' ) . ': <input type="text" name="' . $label_key . '" value="' . esc_attr( $label_val ) . '" class="widefat"></label></p>';
                 break;
             case 'linked':
                 $source = isset( $def['source_field'] ) ? $def['source_field'] : '';
@@ -323,6 +446,9 @@ class Pedagogy_CF_Starter {
                     if ( $source_def && isset( $source_def['options'] ) ) {
                         $opts = $source_def['options'];
                     }
+                }
+                if ( ! empty( $opts ) && is_array( $opts ) ) {
+                    usort( $opts, 'strcasecmp' );
                 }
                 if ( empty( $opts ) ) {
                     echo '<p>' . esc_html__( 'No source options found. Please select a valid source field or edit the source field options.', 'pedagogy' ) . '</p>';
@@ -368,6 +494,24 @@ class Pedagogy_CF_Starter {
 
         foreach ( $defs as $name => $d ) {
             $meta_key = 'pcf_' . $name;
+
+            // Special handling for URL fields (separate href + label inputs)
+            if ( isset( $d['type'] ) && $d['type'] === 'url' ) {
+                $href_key = $meta_key . '_href';
+                $label_key = $meta_key . '_label';
+                if ( ! isset( $_POST[ $href_key ] ) && ! isset( $_POST[ $label_key ] ) ) {
+                    continue;
+                }
+                $raw_href = wp_unslash( $_POST[ $href_key ] ?? '' );
+                $raw_label = wp_unslash( $_POST[ $label_key ] ?? '' );
+                $val = array(
+                    'href' => esc_url_raw( $raw_href ),
+                    'label' => sanitize_text_field( $raw_label ),
+                );
+                update_post_meta( $post_id, $meta_key, $val );
+                continue;
+            }
+
             if ( ! isset( $_POST[ $meta_key ] ) ) {
                 continue;
             }
@@ -380,7 +524,7 @@ class Pedagogy_CF_Starter {
                     $val = sanitize_text_field( $raw );
                     break;
                 case 'textarea':
-                    $val = sanitize_textarea_field( $raw );
+                    $val = wp_kses_post( $raw );
                     break;
                 case 'linked':
                     if ( is_array( $raw ) ) {
@@ -390,6 +534,12 @@ class Pedagogy_CF_Starter {
                     }
                     break;
                 case 'select':
+                    if ( is_array( $raw ) ) {
+                        $val = array_map( 'sanitize_text_field', $raw );
+                    } else {
+                        $val = sanitize_text_field( $raw );
+                    }
+                    break;
                 case 'text':
                 default:
                     $val = sanitize_text_field( $raw );
@@ -422,7 +572,21 @@ public static function get_definition( $name ) {
             return;
         }
         $def = self::get_definition( $name );
-        if ( isset( $def['type'] ) && $def['type'] === 'linked' ) {
+        if ( isset( $def['type'] ) && $def['type'] === 'url' ) {
+            if ( is_array( $val ) ) {
+                $href = isset( $val['href'] ) ? esc_url( $val['href'] ) : '';
+                $label = isset( $val['label'] ) && $val['label'] !== '' ? esc_html( $val['label'] ) : esc_html( $href );
+            } else {
+                $href = esc_url( $val );
+                $label = esc_html( $val );
+            }
+            if ( $href !== '' ) {
+                echo '<div class="pcf-' . esc_attr( $name ) . '"><a href="' . esc_url( $href ) . '" target="_blank" rel="noopener noreferrer">' . wp_kses_post( $label ) . '</a></div>';
+            }
+            return;
+        }
+
+        if ( isset( $def['type'] ) && ( $def['type'] === 'linked' || $def['type'] === 'select' ) ) {
             $is_multiple = ! empty( $def['multiple'] );
             if ( $is_multiple ) {
                 $values = (array) $val;
@@ -486,7 +650,7 @@ public static function get_definition( $name ) {
             $field_html = '';
             $label = isset( $d['title'] ) ? esc_html( $d['title'] ) : esc_html( $name );
             $field_html .= '<div class="pcf-field pcf-' . esc_attr( $name ) . '">';
-            $field_html .= '<div class="pcf-label">' . $label . '</div>';
+            $field_html .= '<h3 class="pcf-label">' . $label . '</h3>';
             switch ( $d['type'] ) {
                 case 'textarea':
                     $field_html .= '<div class="pcf-value">' . wp_kses_post( wpautop( $val ) ) . '</div>';
@@ -498,6 +662,25 @@ public static function get_definition( $name ) {
                         $field_html .= '<div class="pcf-value">' . esc_html( $val ) . '</div>';
                     }
                     break;
+                case 'url':
+                    if ( is_array( $val ) ) {
+                        $href = isset( $val['href'] ) ? esc_url( $val['href'] ) : '';
+                        $label_text = isset( $val['label'] ) && $val['label'] !== '' ? esc_html( $val['label'] ) : esc_html( $href );
+                    } else {
+                        $href = esc_url( $val );
+                        $label_text = esc_html( $val );
+                    }
+                    if ( $href !== '' ) {
+                        $field_html .= '<div class="pcf-value"><a href="' . esc_url( $href ) . '" target="_blank" rel="noopener noreferrer">' . $label_text . '</a></div>';
+                    }
+                    break;
+                    case 'select':
+                        if ( is_array( $val ) ) {
+                            $field_html .= '<div class="pcf-value">' . esc_html( implode( ', ', $val ) ) . '</div>';
+                        } else {
+                            $field_html .= '<div class="pcf-value">' . esc_html( $val ) . '</div>';
+                        }
+                        break;
                 case 'number':
                 case 'date':
                 case 'select':

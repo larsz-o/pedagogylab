@@ -748,12 +748,17 @@ template {
 .post-card-formats {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .post-card-format {
   display: inline-flex;
   padding: 0.45rem 0.85rem;
+@media (max-width: 760px) {
+  .post-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
   border-radius: 999px;
   background: rgba(17, 23, 39, 0.08);
   color: #111;

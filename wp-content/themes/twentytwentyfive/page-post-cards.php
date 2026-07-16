@@ -81,33 +81,69 @@ if ( is_array( $search_ids ) ) {
 
 $post_query = new WP_Query( $query_args );
 
-function pedagogy_post_formats( $post_id, $defs ) {
-    $format_names = array( 'file_format', 'file_formats', 'format', 'formats' );
-    $formats = array();
+function pedagogy_post_material_types( $post_id, $defs ) {
+    $material_names = array(
+        'material_type',
+        'material_types',
+        'material type',
+        'material types',
+        'resource_type',
+        'resource_types',
+        'resource type',
+        'resource types',
+        'content_type',
+        'content_types',
+        'content type',
+        'content types',
+    );
+    $materials = array();
 
-    foreach ( $format_names as $field_name ) {
+    foreach ( $defs as $name => $def ) {
+        $key   = strtolower( $name );
+        $title = strtolower( isset( $def['title'] ) ? $def['title'] : '' );
+        $key_normalized   = str_replace( array( '-', ' ' ), '_', $key );
+        $title_normalized = str_replace( array( '-', ' ' ), '_', $title );
+        $matches_exact = in_array( $key, $material_names, true )
+            || in_array( $title, $material_names, true )
+            || in_array( $key_normalized, $material_names, true )
+            || in_array( $title_normalized, $material_names, true );
+        $matches_phrase = ( false !== stripos( $key, 'material' ) && false !== stripos( $key, 'type' ) )
+            || ( false !== stripos( $title, 'material' ) && false !== stripos( $title, 'type' ) )
+            || ( false !== stripos( $key, 'resource' ) && false !== stripos( $key, 'type' ) )
+            || ( false !== stripos( $title, 'resource' ) && false !== stripos( $title, 'type' ) );
+
+        if ( ! $matches_exact && ! $matches_phrase ) {
+            continue;
+        }
+
         if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-            $value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
+            $value = Pedagogy_CF_Starter::get_value( $post_id, $name );
             if ( $value ) {
                 if ( is_array( $value ) ) {
-                    $formats = array_merge( $formats, $value );
+                    $materials = array_merge( $materials, $value );
                 } else {
-                    $formats[] = $value;
+                    $materials[] = $value;
                 }
             }
         }
     }
 
-    if ( empty( $formats ) ) {
+    if ( empty( $materials ) ) {
         foreach ( $defs as $name => $def ) {
-            if ( false !== stripos( $name, 'format' ) ) {
+            $title = isset( $def['title'] ) ? $def['title'] : '';
+            if (
+                false !== stripos( $name, 'material' )
+                || false !== stripos( $title, 'material' )
+                || false !== stripos( $name, 'resource type' )
+                || false !== stripos( $title, 'resource type' )
+            ) {
                 if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                     $value = Pedagogy_CF_Starter::get_value( $post_id, $name );
                     if ( $value ) {
                         if ( is_array( $value ) ) {
-                            $formats = array_merge( $formats, $value );
+                            $materials = array_merge( $materials, $value );
                         } else {
-                            $formats[] = $value;
+                            $materials[] = $value;
                         }
                     }
                 }
@@ -115,8 +151,8 @@ function pedagogy_post_formats( $post_id, $defs ) {
         }
     }
 
-    $formats = array_filter( array_map( 'trim', $formats ) );
-    return array_unique( $formats );
+    $materials = array_filter( array_map( 'trim', $materials ) );
+    return array_unique( $materials );
 }
 
 function pedagogy_post_cover_image_url( $post_id ) {
@@ -215,7 +251,7 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
             <?php while ( $post_query->have_posts() ) : $post_query->the_post(); ?>
                 <?php
                 $cover_url = pedagogy_post_cover_image_url( get_the_ID() );
-                $formats = pedagogy_post_formats( get_the_ID(), $defs );
+                $material_types = pedagogy_post_material_types( get_the_ID(), $defs );
                 $creator_meta = pedagogy_post_creator( get_the_ID(), $defs );
                 $date_meta = pedagogy_post_date_meta( get_the_ID(), $defs );
                 $embed_html = pedagogy_post_embed_html( get_the_ID(), $defs );
@@ -240,14 +276,14 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
-                            <?php if ( ! empty( $formats ) ) : ?>
+                            <?php if ( ! empty( $material_types ) ) : ?>
                                 <div class="post-card-formats">
-                                    <?php foreach ( $formats as $format ) : ?>
-                                        <span class="post-card-format"><?php echo esc_html( $format ); ?></span>
+                                    <?php foreach ( $material_types as $material_type ) : ?>
+                                        <span class="post-card-format"><?php echo esc_html( $material_type ); ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             <?php else : ?>
-                                <div class="post-card-formats post-card-formats-empty"><?php esc_html_e( 'No format metadata available', 'twentytwentyfive' ); ?></div>
+                                <div class="post-card-formats post-card-formats-empty"><?php esc_html_e( 'No material type metadata available', 'twentytwentyfive' ); ?></div>
                             <?php endif; ?>
                         </div>
                     </a>

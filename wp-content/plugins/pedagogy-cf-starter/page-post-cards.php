@@ -144,42 +144,22 @@ if ( $has_filters ) {
 
 $post_query = new WP_Query( $query_args );
 
-function pedagogy_post_formats( $post_id, $defs ) {
-    $format_names = array( 'file_format', 'file_formats', 'format', 'formats' );
-    $formats = array();
+function pedagogy_post_material_types( $post_id, $defs ) {
+    $materials = array();
 
-    foreach ( $format_names as $field_name ) {
-        if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-            $value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
-            if ( $value ) {
-                if ( is_array( $value ) ) {
-                    $formats = array_merge( $formats, $value );
-                } else {
-                    $formats[] = $value;
-                }
+    if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
+        $value = Pedagogy_CF_Starter::get_value( $post_id, 'material_type' );
+        if ( $value ) {
+            if ( is_array( $value ) ) {
+                $materials = array_merge( $materials, $value );
+            } else {
+                $materials[] = $value;
             }
         }
     }
 
-    if ( empty( $formats ) ) {
-        foreach ( $defs as $name => $def ) {
-            if ( false !== stripos( $name, 'format' ) ) {
-                if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-                    $value = Pedagogy_CF_Starter::get_value( $post_id, $name );
-                    if ( $value ) {
-                        if ( is_array( $value ) ) {
-                            $formats = array_merge( $formats, $value );
-                        } else {
-                            $formats[] = $value;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    $formats = array_filter( array_map( 'trim', $formats ) );
-    return array_unique( $formats );
+    $materials = array_filter( array_map( 'trim', $materials ) );
+    return array_unique( $materials );
 }
 
 function pedagogy_post_cover_image_url( $post_id ) {
@@ -247,21 +227,21 @@ function pedagogy_post_cover_image_url( $post_id ) {
             <?php while ( $post_query->have_posts() ) : $post_query->the_post(); ?>
                 <?php
                 $cover_url = pedagogy_post_cover_image_url( get_the_ID() );
-                $formats = pedagogy_post_formats( get_the_ID(), $defs );
+                $material_types = pedagogy_post_material_types( get_the_ID(), $defs );
                 ?>
                 <article class="post-card">
                     <a class="post-card-link" href="<?php the_permalink(); ?>">
                         <div class="post-card-image" style="background-image: url('<?php echo esc_url( $cover_url ? $cover_url : get_template_directory_uri() . '/assets/default-card.png' ); ?>');"></div>
                         <div class="post-card-body">
                             <h2 class="post-card-title"><?php the_title(); ?></h2>
-                            <?php if ( ! empty( $formats ) ) : ?>
+                            <?php if ( ! empty( $material_types ) ) : ?>
                                 <div class="post-card-formats">
-                                    <?php foreach ( $formats as $format ) : ?>
-                                        <span class="post-card-format"><?php echo esc_html( $format ); ?></span>
+                                    <?php foreach ( $material_types as $material_type ) : ?>
+                                        <span class="post-card-format"><?php echo esc_html( $material_type ); ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             <?php else : ?>
-                                <div class="post-card-formats post-card-formats-empty"><?php esc_html_e( 'No format metadata available', 'twentytwentyfive' ); ?></div>
+                                <div class="post-card-formats post-card-formats-empty"><?php esc_html_e( 'No material type metadata available', 'twentytwentyfive' ); ?></div>
                             <?php endif; ?>
                         </div>
                     </a>

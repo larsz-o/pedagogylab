@@ -206,6 +206,11 @@ get_header();
                     echo '<iframe src="' . esc_url( $safe ) . '" frameborder="0" allowfullscreen sandbox="allow-same-origin allow-scripts" class="pcf-embed-iframe"></iframe>';
                 }
                 echo '</div></div>';
+            } elseif ( has_post_thumbnail( $post_id ) ) {
+                echo '<div class="pcf-embed-wrap">';
+                echo '<div class="pcf-embed-inner">';
+                echo get_the_post_thumbnail( $post_id, 'large', array( 'class' => 'pcf-cover-image' ) );
+                echo '</div></div>';
             }
 
             ?>
@@ -230,26 +235,9 @@ get_header();
                     $description_html = wp_kses_post( wpautop( $description_fallback ) );
                 }
             }
-            ?>
 
-            <div class="pcf-description-wrap<?php echo $description_html ? '' : ' is-empty'; ?>">
-                <?php if ( $description_html ) : ?>
-                    <div class="pcf-description-inner">
-                        <?php echo $description_html; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="entry-content">
-                <?php add_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
-                <?php the_content(); ?>
-                <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
-            </div>
-
-            <?php
-            // Restore metadata output beneath the main content.
+            $post_meta_items = array();
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-                $post_meta_items = array();
                 $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
                 $skip = array( 'media_embed', 'embed', 'media', 'people', 'creators', 'date_created', 'description' );
                 if ( is_array( $defs ) && ! empty( $defs ) ) {
@@ -276,21 +264,40 @@ get_header();
                         }
                     }
                 }
-
-                if ( ! empty( $post_meta_items ) ) {
-                    echo '<aside class="pcf-metadata-card">';
-                    echo '<div class="pcf-meta-list">';
-                    foreach ( $post_meta_items as $label => $val ) {
-                        echo '<div class="pcf-meta-item">';
-                        echo '<div class="pcf-meta-label">' . esc_html( $label ) . '</div>';
-                        echo '<div class="pcf-meta-value">' . $val . '</div>';
-                        echo '</div>';
-                    }
-                    echo '</div>';
-                    echo '</aside>';
-                }
             }
+
+            if ( $description_html || ! empty( $post_meta_items ) ) :
             ?>
+                <div class="pcf-description-metadata-grid">
+                    <?php if ( ! empty( $post_meta_items ) ) : ?>
+                        <aside class="pcf-metadata-card">
+                            <div class="pcf-meta-list">
+                                <?php foreach ( $post_meta_items as $label => $val ) : ?>
+                                    <div class="pcf-meta-item">
+                                        <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
+                                        <div class="pcf-meta-value"><?php echo $val; ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </aside>
+                    <?php endif; ?>
+
+                    <?php if ( $description_html ) : ?>
+                        <div class="pcf-description-wrap">
+                            <div class="pcf-description-label">Description</div>
+                            <div class="pcf-description-inner">
+                                <?php echo $description_html; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="entry-content">
+                <?php add_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
+                <?php the_content(); ?>
+                <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
+            </div>
 
             </div>
 

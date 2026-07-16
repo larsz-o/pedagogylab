@@ -131,10 +131,30 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   margin: 0 auto;
 }
 
+.pcf-cover-image {
+  display: block;
+  width: 100%;
+  max-height: 80vh;
+  height: auto;
+  object-fit: contain;
+}
+
 .pcf-description-wrap {
   margin: 1.5rem auto 0;
   width: min(100%, 72ch);
   text-align: left;
+  padding: 0.35rem;
+
+}
+
+.pcf-description-label {
+  margin: 0 0 0.65rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #543fbf;
 }
 
 .pcf-description-inner {
@@ -147,6 +167,29 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 
 .pcf-description-inner p:last-child {
   margin-bottom: 0;
+}
+
+.pcf-description-metadata-grid {
+  margin: 1.5rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2.5rem;
+  row-gap: 1.5rem;
+  align-items: start;
+}
+
+.pcf-description-metadata-grid .pcf-description-wrap,
+.pcf-description-metadata-grid .pcf-metadata-card {
+  width: 100%;
+  margin: 0;
+}
+
+.pcf-description-metadata-grid .pcf-description-wrap {
+  max-width: none;
+}
+
+.pcf-description-metadata-grid .pcf-description-inner {
+  height: 100%;
 }
 
 body .wp-site-blocks {
@@ -211,6 +254,10 @@ hr {
 }
 
 @media (max-width: 760px) {
+  .pcf-description-metadata-grid {
+    grid-template-columns: 1fr;
+  }
+
   .pcf-metadata-card {
     max-width: 100%;
   }
@@ -996,4 +1043,46 @@ template {
 
 .post-cards-filter-item select {
   padding: 0.7rem 0.85rem;
+}
+
+/* Modern button styles */
+.wp-element-button,
+.wp-block-button__link,
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+  appearance: none;
+  border: 1px solid #d7d3d0;
+  background-color: #ffffff;
+  color: #111111;
+  border-radius: 999px;
+  padding: 0.72rem 1.1rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.wp-element-button:hover,
+.wp-block-button__link:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover {
+  background-color: #F7F5F4;
+  border-color: #c9c4c1;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.12);
+  transform: translateY(-1px);
+}
+
+.wp-element-button:focus-visible,
+.wp-block-button__link:focus-visible,
+button:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="button"]:focus-visible,
+input[type="reset"]:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
 }

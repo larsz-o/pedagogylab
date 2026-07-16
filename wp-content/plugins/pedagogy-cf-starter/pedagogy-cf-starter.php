@@ -61,6 +61,17 @@ class Pedagogy_CF_Starter {
         echo "/* Hide meta box move controls and panel toggle for pedagogy pcf_ meta boxes */\n";
         echo "div[id^=\"pcf_\"] .handle-actions, div[id^=\"pcf_\"] .handlediv { display: none !important; }\n";
         echo "div[id^=\"pcf_\"] .hndle { cursor: default; }\n";
+        echo ".pcf-defined-fields-table{border-collapse:separate;border-spacing:0;}\n";
+        echo ".pcf-defined-fields-table thead th{border-bottom:2px solid #cbd5e1;background:#f8fafc;}\n";
+        echo ".pcf-defined-fields-table tbody td{border-bottom:1px solid #dbe4ee;padding-top:14px;padding-bottom:14px;vertical-align:middle;}\n";
+        echo ".pcf-defined-fields-table tbody tr:last-child td{border-bottom:none;}\n";
+        echo ".pcf-defined-fields-table tbody tr:nth-child(even) td{background:#fcfdff;}\n";
+        echo ".pcf-action-buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}\n";
+        echo ".pcf-action-button{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;text-decoration:none;font-weight:600;line-height:1;}\n";
+        echo ".pcf-action-button .dashicons{font-size:16px;width:16px;height:16px;}\n";
+        echo ".pcf-action-button-edit{background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;}\n";
+        echo ".pcf-action-button-delete{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;}\n";
+        echo ".pcf-action-button:hover{filter:brightness(.98);}\n";
         echo "</style>\n";
     }
 
@@ -73,6 +84,9 @@ class Pedagogy_CF_Starter {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
+        // Fix any duplicate order values left from earlier saves.
+        $this->normalize_orders();
+
         if ( isset( $_GET['error'] ) && 'source_in_use' === $_GET['error'] && isset( $_GET['fields'] ) ) {
             $fields = explode( ',', sanitize_text_field( wp_unslash( $_GET['fields'] ) ) );
             echo '<div class="notice notice-error"><p>' . esc_html__( 'Cannot delete a source field while it is used by linked fields:', 'pedagogy' ) . ' ' . esc_html( implode( ', ', $fields ) ) . '</p></div>';
@@ -142,8 +156,16 @@ class Pedagogy_CF_Starter {
                         </td>
                     </tr>
                     <tr id="options_row" style="display:<?php echo ( $editing && isset( $edit_def['options'] ) ) ? 'table-row' : 'none'; ?>;">
-                        <th><label for="pcf_options">Options</label></th>
-                        <td><input id="pcf_options" name="pcf_options" type="text" value="<?php echo $editing && isset( $edit_def['options'] ) ? esc_attr( implode( ', ', $edit_def['options'] ) ) : ''; ?>"><p class="description">Comma-separated values for select.</p></td>
+                        <th><label>Options</label></th>
+                        <td>
+                            <input type="hidden" id="pcf_options" name="pcf_options" value="<?php echo $editing && isset( $edit_def['options'] ) ? esc_attr( implode( ', ', $edit_def['options'] ) ) : ''; ?>">
+                            <div id="pcf_chips_container" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:32px;"></div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input id="pcf_option_input" type="text" placeholder="Add option and press Enter or Add" style="width:260px;">
+                                <button type="button" id="pcf_add_option_btn" class="button">Add</button>
+                            </div>
+                            <p class="description">Type an option and press Enter or click Add. Options are alphabetized automatically. Click &times; to remove.</p>
+                        </td>
                     </tr>
                     <tr id="url_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'url' ) ? 'table-row' : 'none'; ?>;">
                         <th>URL Fields</th>
@@ -181,7 +203,7 @@ class Pedagogy_CF_Starter {
             <?php if ( empty( $defs ) ) : ?>
                 <p>No fields defined yet.</p>
             <?php else: ?>
-                <table class="widefat">
+                <table class="widefat pcf-defined-fields-table">
                     <thead><tr><th>Order</th><th>Title</th><th>Name</th><th>Type</th><th>Options</th><th>Actions</th></tr></thead>
                     <tbody>
                         <?php foreach ( $defs as $name => $d ) : ?>
@@ -194,12 +216,24 @@ class Pedagogy_CF_Starter {
                                     if ( isset( $d['type'] ) && $d['type'] === 'linked' ) {
                                         echo isset( $d['source_field'] ) ? esc_html( 'linked to ' . $d['source_field'] . ( ! empty( $d['multiple'] ) ? ' (multiple)' : '' ) ) : esc_html( 'no source set' );
                                     } else {
-                                        echo isset( $d['options'] ) ? esc_html( implode( ', ', $d['options'] ) ) : '';
+                                        if ( isset( $d['options'] ) ) {
+                                            $display_opts = $d['options'];
+                                            natcasesort( $display_opts );
+                                            echo esc_html( implode( ', ', $display_opts ) );
+                                        }
                                     }
                                 ?></td>
                                 <td>
-                                            <a class="button" href="<?php echo esc_url( add_query_arg( array( 'page' => 'pedagogy-cf', 'edit' => $name ), admin_url( 'admin.php' ) ) ); ?>">Edit</a>
-                                            <a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pedagogy_cf_delete&name=' . $name ), 'pedagogy_cf_delete' ) ); ?>">Delete</a>
+                                    <div class="pcf-action-buttons">
+                                        <a class="pcf-action-button pcf-action-button-edit" href="<?php echo esc_url( add_query_arg( array( 'page' => 'pedagogy-cf', 'edit' => $name ), admin_url( 'admin.php' ) ) ); ?>">
+                                            <span class="dashicons dashicons-edit" aria-hidden="true"></span>
+                                            <span><?php esc_html_e( 'Edit', 'pedagogy-cf-starter' ); ?></span>
+                                        </a>
+                                        <a class="pcf-action-button pcf-action-button-delete" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pedagogy_cf_delete&name=' . $name ), 'pedagogy_cf_delete' ) ); ?>">
+                                            <span class="dashicons dashicons-trash" aria-hidden="true"></span>
+                                            <span><?php esc_html_e( 'Delete', 'pedagogy-cf-starter' ); ?></span>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -208,6 +242,32 @@ class Pedagogy_CF_Starter {
             <?php endif; ?>
         </div>
 
+        <style>
+        .pcf-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #2563EB;
+            color: #fff;
+            border-radius: 999px;
+            padding: 4px 12px 4px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .pcf-chip-remove {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1;
+            padding: 0;
+            margin-left: 2px;
+            opacity: 0.8;
+        }
+        .pcf-chip-remove:hover { opacity: 1; }
+        </style>
         <script>
         (function(){
             var type = document.getElementById('pcf_type');
@@ -216,6 +276,63 @@ class Pedagogy_CF_Starter {
             var linkedMultipleRow = document.getElementById('linked_multiple_row');
             var selectMultipleRow = document.getElementById('select_multiple_row');
             var urlRow = document.getElementById('url_row');
+            var hidden = document.getElementById('pcf_options');
+            var container = document.getElementById('pcf_chips_container');
+            var optInput = document.getElementById('pcf_option_input');
+            var addBtn = document.getElementById('pcf_add_option_btn');
+
+            function getOptions() {
+                var val = hidden.value.trim();
+                if (!val) return [];
+                return val.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+            }
+
+            function setOptions(arr) {
+                arr.sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
+                hidden.value = arr.join(', ');
+                renderChips(arr);
+            }
+
+            function renderChips(arr) {
+                container.innerHTML = '';
+                arr.forEach(function(opt) {
+                    var chip = document.createElement('span');
+                    chip.className = 'pcf-chip';
+                    chip.textContent = opt;
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'pcf-chip-remove';
+                    btn.innerHTML = '&times;';
+                    btn.setAttribute('aria-label', 'Remove ' + opt);
+                    btn.addEventListener('click', function(){
+                        var opts = getOptions().filter(function(o){ return o !== opt; });
+                        setOptions(opts);
+                    });
+                    chip.appendChild(btn);
+                    container.appendChild(chip);
+                });
+            }
+
+            function addOption() {
+                var val = optInput.value.trim();
+                if (!val) return;
+                var opts = getOptions();
+                if (opts.indexOf(val) === -1) {
+                    opts.push(val);
+                    setOptions(opts);
+                }
+                optInput.value = '';
+                optInput.focus();
+            }
+
+            addBtn.addEventListener('click', addOption);
+            optInput.addEventListener('keydown', function(e){
+                if (e.key === 'Enter') { e.preventDefault(); addOption(); }
+            });
+
+            // Initialize chips from existing hidden value
+            setOptions(getOptions());
+
             function update(){
                 optionsRow.style.display = type.value === 'select' ? '' : 'none';
                 linkedSourceRow.style.display = type.value === 'linked' ? '' : 'none';
@@ -258,7 +375,9 @@ class Pedagogy_CF_Starter {
 
         $entry = array( 'title' => $title, 'type' => $type );
         if ( 'select' === $type ) {
-            $entry['options'] = array_map( 'trim', explode( ',', $opts ) );
+            $options = array_filter( array_map( 'trim', explode( ',', $opts ) ) );
+            natcasesort( $options );
+            $entry['options'] = array_values( $options );
             $entry['multiple'] = $select_multiple;
         } elseif ( 'url' === $type ) {
             // no definition-level extras required for URL fields; per-post values are stored separately
@@ -280,6 +399,25 @@ class Pedagogy_CF_Starter {
             }
         }
         $entry['order'] = $order;
+
+        // Resolve order collisions: if another field already occupies this order,
+        // shift all fields at >= $order (excluding the one being edited) up by 1.
+        $collision = false;
+        foreach ( $defs as $check_name => $check_def ) {
+            if ( $check_name === $original ) { continue; }
+            if ( isset( $check_def['order'] ) && intval( $check_def['order'] ) === $order ) {
+                $collision = true;
+                break;
+            }
+        }
+        if ( $collision ) {
+            foreach ( $defs as $shift_name => $shift_def ) {
+                if ( $shift_name === $original ) { continue; }
+                if ( isset( $shift_def['order'] ) && intval( $shift_def['order'] ) >= $order ) {
+                    $defs[ $shift_name ]['order'] = intval( $shift_def['order'] ) + 1;
+                }
+            }
+        }
 
         if ( $original ) {
             // Update existing definition but do not allow changing the slug/name.
@@ -356,6 +494,42 @@ class Pedagogy_CF_Starter {
             }
         }
         return $order;
+    }
+
+    /**
+     * Repair any duplicate order values in the stored definitions.
+     * Sorts all fields by their current order value, then reassigns
+     * sequential integers (1, 2, 3…) so no two fields share an order.
+     */
+    public function normalize_orders() {
+        $defs = $this->get_definitions();
+        if ( empty( $defs ) ) { return; }
+
+        $indexed   = array();
+        $unordered = array();
+        foreach ( $defs as $name => $def ) {
+            if ( isset( $def['order'] ) ) {
+                $indexed[ $name ] = intval( $def['order'] );
+            } else {
+                $unordered[] = $name;
+            }
+        }
+        asort( $indexed );
+
+        // Only touch the DB if duplicates actually exist.
+        $values = array_values( $indexed );
+        if ( count( $values ) === count( array_unique( $values ) ) && empty( $unordered ) ) {
+            return;
+        }
+
+        $counter = 1;
+        foreach ( $indexed as $name => $old_order ) {
+            $defs[ $name ]['order'] = $counter++;
+        }
+        foreach ( $unordered as $name ) {
+            $defs[ $name ]['order'] = $counter++;
+        }
+        update_option( self::OPTION_KEY, $defs );
     }
 
     private function get_acf_field_names() {

@@ -11,6 +11,28 @@ get_header();
 <main id="site-content" role="main" class="wrapper">
 
     <?php
+    $pcf_back_link = home_url( '/' );
+    $pcf_cards_page = get_posts(
+        array(
+            'post_type'      => 'page',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'meta_key'       => '_wp_page_template',
+            'meta_value'     => 'page-post-cards.php',
+            'fields'         => 'ids',
+        )
+    );
+
+    if ( ! empty( $pcf_cards_page ) ) {
+        $pcf_back_link = get_permalink( $pcf_cards_page[0] );
+    }
+    ?>
+
+    <div class="pcf-back-link-wrap">
+        <a class="pcf-back-link" href="<?php echo esc_url( $pcf_back_link ); ?>">&larr; Back to OER Library</a>
+    </div>
+
+    <?php
     while ( have_posts() ) :
         the_post();
     ?>

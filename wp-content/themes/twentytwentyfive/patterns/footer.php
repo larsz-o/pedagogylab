@@ -50,7 +50,11 @@
 		<!-- /wp:spacer -->
 
 		<!-- wp:group {"align":"full","style":{"spacing":{"blockGap":"var:preset|spacing|20"}},"layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between"}} -->
-	
+		<div class="wp-block-group alignfull">
+			<!-- wp:social-links {"iconColor":"contrast","iconColorValue":"#111111","openInNewTab":true,"size":"has-normal-icon-size","className":"is-style-logos-only","layout":{"type":"flex","justifyContent":"right"}} -->
+			<div class="wp-block-social-links has-normal-icon-size has-icon-color is-style-logos-only"><!-- wp:social-link {"url":"https://www.instagram.com/thepedagogylab/","service":"instagram","label":"Instagram"} /--></div>
+			<!-- /wp:social-links -->
+		</div>
 		<!-- /wp:group -->
 	</div>
 	<!-- /wp:group -->

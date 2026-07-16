@@ -102,6 +102,24 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 	margin: 0 auto;
 }
 
+.pcf-back-link-wrap {
+  margin: 0 0 1rem;
+}
+
+.pcf-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #2563EB;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pcf-back-link:hover {
+  text-decoration: underline;
+}
+
 .entry-title-meta {
   text-align: center;
   margin-top: 0.35rem;

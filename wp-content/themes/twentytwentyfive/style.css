@@ -68,7 +68,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   word-break: break-word;
 }
 .pcf-meta-value a {
-  color: #6f4ef1;
+  color: #2563EB;
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -96,6 +96,10 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   display: block;
   content: "";
   margin-bottom: 0.25rem;
+}
+.entry-content {
+	padding: 2rem;
+	margin: 0 auto;
 }
 
 .entry-title-meta {
@@ -224,9 +228,8 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
 
 a {
 	text-decoration: none;
-	color: black;
+	color: #2563EB;
 	font-weight: bold;
-
 }
 hr {
 	display: none
@@ -801,26 +804,30 @@ template {
   display: grid;
   gap: 1rem;
   margin-top: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .post-cards-filter-item {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .post-cards-filter-item label {
-  font-size: 0.95rem;
-  color: #5b5b5b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2563EB;
 }
 
 .post-cards-filter-item select {
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.1rem;
   border-radius: 0.75rem;
-  border: 1px solid #d2d2d2;
+  border: 1.5px solid #93c5fd;
   background: #fff;
-  color: #111;
+  color: #1e3a5f;
+  accent-color: #2563EB;
 }
 
 .post-cards-summary {
@@ -860,26 +867,30 @@ template {
   display: grid;
   gap: 1rem;
   margin-top: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .post-cards-filter-item {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .post-cards-filter-item label {
-  font-size: 0.95rem;
-  color: #5b5b5b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2563EB;
 }
 
 .post-cards-filter-item select {
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.1rem;
   border-radius: 0.75rem;
-  border: 1px solid #d2d2d2;
+  border: 1.5px solid #93c5fd;
   background: #fff;
-  color: #111;
+  color: #1e3a5f;
+  accent-color: #2563EB;
 }
 
 .post-cards-summary {
@@ -936,26 +947,36 @@ template {
 }
 .post-cards-filters {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-top: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 .post-cards-filter-item {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 .post-cards-filter-item label {
-  font-size: 0.9rem;
-  color: #5b5b5b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2563EB;
 }
 .post-cards-filter-item select {
   width: 100%;
-  padding: 0.7rem 0.9rem;
+  padding: 0.85rem 1.1rem;
   border-radius: 0.75rem;
-  border: 1px solid #d2d2d2;
+  border: 1.5px solid #93c5fd;
   background: #fff;
-  color: #111;
+  color: #1e3a5f;
   font-size: 0.95rem;
+  accent-color: #2563EB;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.post-cards-filter-item select:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
 }
 .post-cards-summary {
   margin-bottom: 1rem;
@@ -1029,20 +1050,28 @@ template {
 
 .post-cards-filter-item {
   background: #fff;
-  border: 1px solid #e6e6e6;
+  border: 1.5px solid #93c5fd;
   border-radius: 0.85rem;
-  padding: 0.75rem;
+  padding: 0.9rem 1rem;
 }
 
 .post-cards-filter-item label {
-  font-size: 0.82rem;
-  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.45rem;
   display: block;
-  color: #4c4c4c;
+  color: #2563EB;
 }
 
 .post-cards-filter-item select {
-  padding: 0.7rem 0.85rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #93c5fd;
+  background: #fff;
+  color: #1e3a5f;
+  border-radius: 0.6rem;
+  accent-color: #2563EB;
 }
 
 /* Modern button styles */

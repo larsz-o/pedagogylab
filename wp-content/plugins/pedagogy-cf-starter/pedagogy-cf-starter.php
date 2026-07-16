@@ -23,6 +23,37 @@ class Pedagogy_CF_Starter {
         add_action( 'save_post', array( $this, 'save_post_fields' ) );
         add_filter( 'the_content', array( $this, 'inject_fields_into_content' ), 5 );
         add_action( 'admin_head', array( $this, 'admin_inline_css' ) );
+        add_filter( 'theme_templates', array( $this, 'register_page_template' ), 10, 4 );
+        add_filter( 'theme_page_templates', array( $this, 'register_page_template' ), 10, 4 );
+        add_filter( 'template_include', array( $this, 'load_page_template' ) );
+    }
+
+    public function register_page_template( $templates, $theme, $post, $post_type ) {
+        if ( 'page' !== $post_type ) {
+            return $templates;
+        }
+
+        $templates['page-post-cards.php'] = __( 'Post Cards Search', 'pedagogy-cf-starter' );
+        $templates['page-post-cards'] = __( 'Post Cards Search', 'pedagogy-cf-starter' );
+        return $templates;
+    }
+
+    public function load_page_template( $template ) {
+        if ( ! is_page() ) {
+            return $template;
+        }
+
+        $post_template = get_page_template_slug( get_queried_object_id() );
+        if ( ! in_array( $post_template, array( 'page-post-cards.php', 'page-post-cards' ), true ) ) {
+            return $template;
+        }
+
+        $plugin_template = plugin_dir_path( __FILE__ ) . 'page-post-cards.php';
+        if ( file_exists( $plugin_template ) ) {
+            return $plugin_template;
+        }
+
+        return $template;
     }
 
     public function admin_inline_css() {

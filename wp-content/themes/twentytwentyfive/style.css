@@ -62,6 +62,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   min-width: 0;
   color: #3c3b57;
   font-size: 0.95rem;
+  font-weight: 400;
   line-height: 1.4;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -146,6 +147,54 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 
 .pcf-description-inner p:last-child {
   margin-bottom: 0;
+}
+
+/* Site header and footer styles */
+.wp-block-group.has-accent-3-background-color {
+  background-color: #503AA8 !important;
+}
+
+.wp-block-group.has-accent-3-background-color a {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.wp-block-group.has-accent-3-background-color a:hover {
+  text-decoration: underline;
+}
+
+.wp-block-group.has-contrast-background-color {
+  background-color: #111111 !important;
+}
+
+.wp-block-group.has-contrast-background-color a {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.wp-block-group.has-contrast-background-color a:hover {
+  text-decoration: underline;
+}
+
+/* Site title styling in header and footer */
+.wp-block-site-title {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.wp-block-site-title a {
+  text-decoration: none;
+}
+
+/* Navigation styling */
+.wp-block-navigation a {
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+}
+
+.wp-block-navigation a:hover {
+  text-decoration: underline;
+  opacity: 0.9;
 }
 
 @media (max-width: 760px) {

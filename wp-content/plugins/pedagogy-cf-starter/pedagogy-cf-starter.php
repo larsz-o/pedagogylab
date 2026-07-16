@@ -606,7 +606,16 @@ public static function get_definition( $name ) {
         if ( isset( $def['type'] ) && $def['type'] === 'url' ) {
             if ( is_array( $val ) ) {
                 $href = isset( $val['href'] ) ? esc_url( $val['href'] ) : '';
-                $label = isset( $val['label'] ) && $val['label'] !== '' ? esc_html( $val['label'] ) : esc_html( $href );
+                $label = '';
+                if ( isset( $val['label'] ) && $val['label'] !== '' ) {
+                    $label = esc_html( $val['label'] );
+                } elseif ( isset( $val['title'] ) && $val['title'] !== '' ) {
+                    $label = esc_html( $val['title'] );
+                } elseif ( isset( $val['text'] ) && $val['text'] !== '' ) {
+                    $label = esc_html( $val['text'] );
+                } else {
+                    $label = esc_html( $href );
+                }
             } else {
                 $href = esc_url( $val );
                 $label = esc_html( $val );
@@ -628,6 +637,10 @@ public static function get_definition( $name ) {
             echo '<div class="pcf-' . esc_attr( $name ) . '">' . wp_kses_post( wpautop( $label ) ) . '</div>';
             return;
         }
+        if ( isset( $def['type'] ) && $def['type'] === 'textarea' ) {
+            echo '<div class="pcf-' . esc_attr( $name ) . '">' . wp_kses_post( $val ) . '</div>';
+            return;
+        }
         echo '<div class="pcf-' . esc_attr( $name ) . '">' . wp_kses_post( wpautop( $val ) ) . '</div>';
     }
 
@@ -635,6 +648,10 @@ public static function get_definition( $name ) {
      * Auto-inject defined fields into post/page content if values exist.
      */
     public function inject_fields_into_content( $content ) {
+        if ( apply_filters( 'pedagogy_cf_disable_content_injection', false ) ) {
+            return $content;
+        }
+
         if ( is_admin() || ! is_singular( array( 'post', 'page' ) ) || ! in_the_loop() ) {
             return $content;
         }
@@ -684,7 +701,7 @@ public static function get_definition( $name ) {
             $field_html .= '<h3 class="pcf-label">' . $label . '</h3>';
             switch ( $d['type'] ) {
                 case 'textarea':
-                    $field_html .= '<div class="pcf-value">' . wp_kses_post( wpautop( $val ) ) . '</div>';
+                    $field_html .= '<div class="pcf-value">' . wp_kses_post( $val ) . '</div>';
                     break;
                 case 'linked':
                     if ( is_array( $val ) ) {
@@ -696,7 +713,15 @@ public static function get_definition( $name ) {
                 case 'url':
                     if ( is_array( $val ) ) {
                         $href = isset( $val['href'] ) ? esc_url( $val['href'] ) : '';
-                        $label_text = isset( $val['label'] ) && $val['label'] !== '' ? esc_html( $val['label'] ) : esc_html( $href );
+                        if ( isset( $val['label'] ) && $val['label'] !== '' ) {
+                            $label_text = esc_html( $val['label'] );
+                        } elseif ( isset( $val['title'] ) && $val['title'] !== '' ) {
+                            $label_text = esc_html( $val['title'] );
+                        } elseif ( isset( $val['text'] ) && $val['text'] !== '' ) {
+                            $label_text = esc_html( $val['text'] );
+                        } else {
+                            $label_text = esc_html( $href );
+                        }
                     } else {
                         $href = esc_url( $val );
                         $label_text = esc_html( $val );

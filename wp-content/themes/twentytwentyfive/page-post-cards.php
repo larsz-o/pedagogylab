@@ -133,6 +133,68 @@ function pedagogy_post_cover_image_url( $post_id ) {
 
     return '';   
 }
+
+function pedagogy_get_custom_field_value( $post_id, $defs, $candidates ) {
+    if ( ! class_exists( 'Pedagogy_CF_Starter' ) || empty( $defs ) ) {
+        return '';
+    }
+
+    $candidates = array_map( 'strtolower', $candidates );
+    foreach ( $defs as $name => $def ) {
+        $key = strtolower( $name );
+        $title = strtolower( isset( $def['title'] ) ? $def['title'] : '' );
+        if ( in_array( $key, $candidates, true ) || in_array( $title, $candidates, true ) ) {
+            $value = Pedagogy_CF_Starter::get_value( $post_id, $name );
+            if ( '' === $value || null === $value ) {
+                continue;
+            }
+            return Pedagogy_CF_Starter::normalize_display_value( $value );
+        }
+    }
+    return '';
+}
+
+function pedagogy_post_creator( $post_id, $defs ) {
+    return pedagogy_get_custom_field_value( $post_id, $defs, array( 'creator', 'creators', 'author', 'authors' ) );
+}
+
+function pedagogy_post_date_meta( $post_id, $defs ) {
+    $value = pedagogy_get_custom_field_value( $post_id, $defs, array( 'date', 'publication date', 'published date' ) );
+    if ( $value ) {
+        return $value;
+    }
+    return get_the_date( '', $post_id );
+}
+
+function pedagogy_post_embed_html( $post_id, $defs ) {
+    if ( ! class_exists( 'Pedagogy_CF_Starter' ) || empty( $defs ) ) {
+        return '';
+    }
+
+    foreach ( $defs as $name => $def ) {
+        if ( isset( $def['type'] ) && 'embed' === $def['type'] ) {
+            $value = Pedagogy_CF_Starter::get_value( $post_id, $name );
+            if ( is_array( $value ) ) {
+                $value = reset( $value );
+            }
+            if ( ! is_string( $value ) || '' === trim( $value ) ) {
+                continue;
+            }
+            $value = trim( $value );
+            $embed_html = wp_oembed_get( $value );
+            if ( ! $embed_html ) {
+                $safe_url = esc_url( $value );
+                if ( $safe_url ) {
+                    $embed_html = '<iframe src="' . $safe_url . '" width="100%" height="260" frameborder="0" allowfullscreen sandbox="allow-same-origin allow-scripts"></iframe>';
+                }
+            }
+            if ( $embed_html ) {
+                return '<div class="post-card-embed">' . $embed_html . '</div>';
+            }
+        }
+    }
+    return '';
+}
 ?>
 
 <div class="post-cards-page">
@@ -154,12 +216,30 @@ function pedagogy_post_cover_image_url( $post_id ) {
                 <?php
                 $cover_url = pedagogy_post_cover_image_url( get_the_ID() );
                 $formats = pedagogy_post_formats( get_the_ID(), $defs );
+                $creator_meta = pedagogy_post_creator( get_the_ID(), $defs );
+                $date_meta = pedagogy_post_date_meta( get_the_ID(), $defs );
+                $embed_html = pedagogy_post_embed_html( get_the_ID(), $defs );
                 ?>
                 <article class="post-card">
+                    <?php if ( $embed_html ) : ?>
+                        <?php echo $embed_html; ?>
+                    <?php endif; ?>
                     <a class="post-card-link" href="<?php the_permalink(); ?>">
-                        <div class="post-card-image" style="background-image: url('<?php echo esc_url( $cover_url ? $cover_url : get_template_directory_uri() . '/assets/default-card.png' ); ?>');"></div>
+                        <?php if ( ! $embed_html ) : ?>
+                            <div class="post-card-image" style="background-image: url('<?php echo esc_url( $cover_url ? $cover_url : get_template_directory_uri() . '/assets/default-card.png' ); ?>');"></div>
+                        <?php endif; ?>
                         <div class="post-card-body">
                             <h2 class="post-card-title"><?php the_title(); ?></h2>
+                            <?php if ( $creator_meta || $date_meta ) : ?>
+                                <div class="post-card-meta-row">
+                                    <?php if ( $creator_meta ) : ?>
+                                        <span class="post-card-meta-creator"><?php echo esc_html( $creator_meta ); ?></span>
+                                    <?php endif; ?>
+                                    <?php if ( $date_meta ) : ?>
+                                        <span class="post-card-meta-date"><?php echo esc_html( $date_meta ); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
                             <?php if ( ! empty( $formats ) ) : ?>
                                 <div class="post-card-formats">
                                     <?php foreach ( $formats as $format ) : ?>

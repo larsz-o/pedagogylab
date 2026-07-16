@@ -4,6 +4,159 @@ Theme URI: https://wordpress.org/themes/twentytwentyfive/
 Author: the WordPress team
 Author URI: https://wordpress.org
 Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offers flexible design options, supported by a variety of patterns for different page types, such as services and landing pages, making it ideal for building personal blogs, professional portfolios, online magazines, or business websites. Its templates cater to various blog styles, from text-focused to image-heavy layouts. Additionally, it supports international typography and diverse color palettes, ensuring accessibility and customization for users worldwide.
+
+/* Pedagogy metadata card styles */
+.pcf-post-shell {
+  display: block;
+}
+.pcf-post-main {
+  min-width: 0;
+}
+.pcf-post-layout {
+  display: block;
+  min-width: 0;
+}
+.pcf-metadata-card {
+  margin: 1.5rem 0 0;
+  position: static;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  background: linear-gradient(180deg, #fff, #fbf7ff);
+  border: 1px solid rgba(94, 63, 219, 0.12);
+  border-radius: 1rem;
+  padding: 0.9rem;
+  max-width: none;
+  box-shadow: 0 8px 20px rgba(74, 55, 160, 0.04);
+}
+.pcf-metadata-title {
+  margin: 0 0 0.6rem 0;
+  font-size: 0.95rem;
+  color: #543fbf;
+  letter-spacing: 0.03em;
+}
+.pcf-meta-list {
+  display: grid;
+  gap: 0.5rem;
+}
+.pcf-meta-item {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 38%) minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: start;
+  padding: 0.6rem 0.65rem;
+  background: rgba(255,255,255,0.98);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(94, 63, 219, 0.06);
+}
+.pcf-meta-label {
+  min-width: 0;
+  font-weight: 800;
+  color: #2a234a;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+}
+.pcf-meta-value {
+  min-width: 0;
+  color: #3c3b57;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.pcf-meta-value a {
+  color: #6f4ef1;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.pcf-meta-value a:hover { text-decoration: underline; }
+
+.pcf-post-sidebar {
+  z-index: 2;
+}
+
+.pcf-post-sidebar .pcf-meta-value p,
+.pcf-post-sidebar .pcf-meta-value ul,
+.pcf-post-sidebar .pcf-meta-value ol {
+  margin: 0;
+}
+
+.pcf-post-sidebar .pcf-meta-value > :first-child {
+  margin-top: 0;
+}
+
+.pcf-post-sidebar .pcf-meta-value > :last-child {
+  margin-bottom: 0;
+}
+
+.pcf-post-sidebar .pcf-meta-value br {
+  display: block;
+  content: "";
+  margin-bottom: 0.25rem;
+}
+
+.entry-title-meta {
+  text-align: center;
+  margin-top: 0.35rem;
+}
+.entry-date-created, .entry-creators{
+	  font-size: 0.9rem;
+
+  font-family:'Courier New', Courier, monospace
+}
+.entry-title-meta .entry-creators,
+.entry-title-meta .entry-date-created {
+  display: inline-block;
+  margin: 0 0.35rem;
+}
+
+.pcf-embed-wrap {
+  margin: 1.5rem auto 0;
+  display: flex;
+  justify-content: center;
+}
+
+.pcf-embed-inner {
+  width: min(100%, 920px);
+}
+
+.pcf-embed-inner iframe,
+.pcf-embed-inner .wp-block-embed__wrapper,
+.pcf-embed-inner > * {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pcf-description-wrap {
+  margin: 1.5rem auto 0;
+  width: min(100%, 72ch);
+  text-align: left;
+}
+
+.pcf-description-inner {
+	padding: 0.75rem 1rem;
+}
+
+.pcf-description-inner p:first-child {
+  margin-top: 0;
+}
+
+.pcf-description-inner p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 760px) {
+  .pcf-metadata-card {
+    max-width: 100%;
+  }
+
+  .pcf-embed-inner {
+    width: 100%;
+  }
+}
 Requires at least: 6.7
 Tested up to: 7.0
 Requires PHP: 7.2
@@ -405,6 +558,8 @@ template {
  */
 :where(pre) {
 	overflow-x: auto;
+}.entry-title{
+	text-align: center
 }
    .wrapper {
     max-width: 80rem;

@@ -149,31 +149,44 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   margin-bottom: 0;
 }
 
-/* Site header and footer styles */
-.wp-block-group.has-accent-3-background-color {
-  background-color: #503AA8 !important;
+body .wp-site-blocks {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0 !important;
 }
 
-.wp-block-group.has-accent-3-background-color a {
-  color: #FFFFFF;
-  text-decoration: none;
+body .wp-site-blocks > .wp-block-template-part:last-child {
+  margin-top: auto;
+  margin-bottom: 0 !important;
 }
 
-.wp-block-group.has-accent-3-background-color a:hover {
-  text-decoration: underline;
+#header {
+  background-color: #F7F5F4;
+  padding: 2rem 1.5rem;
+  color: #111111;
 }
 
-.wp-block-group.has-contrast-background-color {
-  background-color: #111111 !important;
+#footer {
+  background-color: #F7F5F4;
+  padding: 0.75rem 1rem;
+  color: #111111;
+  margin-bottom: 0;
 }
 
-.wp-block-group.has-contrast-background-color a {
-  color: #FFFFFF;
-  text-decoration: none;
+#header a,
+#footer a {
+  color: #111111;
 }
 
-.wp-block-group.has-contrast-background-color a:hover {
-  text-decoration: underline;
+a {
+	text-decoration: none;
+	color: black;
+	font-weight: bold;
+
+}
+hr {
+	display: none
 }
 
 /* Site title styling in header and footer */

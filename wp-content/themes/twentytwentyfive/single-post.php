@@ -132,45 +132,8 @@ get_header();
                     }
                 }
 
-                // Collect creators and date_created (display beneath title)
                 $post_id = get_the_ID();
-                $creators = '';
-                $date_created = '';
-                if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-                    $creators = Pedagogy_CF_Starter::get_value( $post_id, 'creators' );
-                    $date_created = Pedagogy_CF_Starter::get_value( $post_id, 'date_created' );
-                }
-                if ( empty( $creators ) ) {
-                    $creators = get_post_meta( $post_id, 'pcf_creators', true );
-                    if ( empty( $creators ) ) {
-                        $creators = get_post_meta( $post_id, 'creators', true );
-                    }
-                }
-                if ( empty( $date_created ) ) {
-                    $date_created = get_post_meta( $post_id, 'pcf_date_created', true );
-                    if ( empty( $date_created ) ) {
-                        $date_created = get_post_meta( $post_id, 'date_created', true );
-                    }
-                }
-                if ( is_array( $creators ) ) {
-                    $creators = implode( ', ', array_map( 'strval', $creators ) );
-                }
-                $creators = trim( (string) $creators );
-                if ( $date_created ) {
-                    $date_display = date_i18n( get_option( 'date_format' ), strtotime( $date_created ) );
-                } else {
-                    $date_display = get_the_date();
-                }
-                if ( $creators || $date_display ) : ?>
-                    <div class="entry-title-meta">
-                        <?php if ( $creators ) : ?>
-                            <span class="entry-creators">Created by: <?php echo esc_html( $creators ); ?></span>
-                        <?php endif; ?>
-                        <?php if ( $date_display ) : ?>
-                            <span class="entry-date-created">& published on <?php echo esc_html( $date_display ); ?></span>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
+                ?>
             </header>
 
             <?php
@@ -217,22 +180,23 @@ get_header();
                 }
             }
 
+            $media_html = '';
             if ( $embed_url ) {
                 $safe = esc_url_raw( $embed_url );
                 $oembed_html = wp_oembed_get( $safe );
-                echo '<div class="pcf-embed-wrap">';
-                echo '<div class="pcf-embed-inner">';
+                $media_html .= '<div class="pcf-embed-wrap">';
+                $media_html .= '<div class="pcf-embed-inner">';
                 if ( $oembed_html ) {
-                    echo $oembed_html;
+                    $media_html .= $oembed_html;
                 } else {
-                    echo '<iframe src="' . esc_url( $safe ) . '" frameborder="0" allowfullscreen sandbox="allow-same-origin allow-scripts" class="pcf-embed-iframe"></iframe>';
+                    $media_html .= '<iframe src="' . esc_url( $safe ) . '" frameborder="0" allowfullscreen sandbox="allow-same-origin allow-scripts" class="pcf-embed-iframe"></iframe>';
                 }
-                echo '</div></div>';
+                $media_html .= '</div></div>';
             } elseif ( has_post_thumbnail( $post_id ) ) {
-                echo '<div class="pcf-embed-wrap">';
-                echo '<div class="pcf-embed-inner">';
-                echo get_the_post_thumbnail( $post_id, 'large', array( 'class' => 'pcf-cover-image' ) );
-                echo '</div></div>';
+                $media_html .= '<div class="pcf-embed-wrap">';
+                $media_html .= '<div class="pcf-embed-inner">';
+                $media_html .= get_the_post_thumbnail( $post_id, 'large', array( 'class' => 'pcf-cover-image' ) );
+                $media_html .= '</div></div>';
             }
 
             ?>
@@ -288,31 +252,39 @@ get_header();
                 }
             }
 
-            if ( $description_html || ! empty( $post_meta_items ) ) :
+            if ( $media_html || $description_html || ! empty( $post_meta_items ) ) :
             ?>
-                <div class="pcf-description-metadata-grid">
-                    <?php if ( ! empty( $post_meta_items ) ) : ?>
-                        <aside class="pcf-metadata-card">
-                            <div class="pcf-meta-list">
-                                <?php foreach ( $post_meta_items as $label => $val ) : ?>
-                                    <div class="pcf-meta-item">
-                                        <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
-                                        <div class="pcf-meta-value"><?php echo $val; ?></div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </aside>
-                    <?php endif; ?>
+                <section class="pcf-single-content-grid">
+                    <div class="pcf-single-column pcf-single-column-meta">
+                        <?php if ( ! empty( $post_meta_items ) ) : ?>
+                            <aside class="pcf-metadata-card">
+                                <div class="pcf-meta-list">
+                                    <?php foreach ( $post_meta_items as $label => $val ) : ?>
+                                        <div class="pcf-meta-item">
+                                            <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
+                                            <div class="pcf-meta-value"><?php echo $val; ?></div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </aside>
+                        <?php endif; ?>
+                    </div>
 
-                    <?php if ( $description_html ) : ?>
-                        <div class="pcf-description-wrap">
-                            <div class="pcf-description-label">Description</div>
-                            <div class="pcf-description-inner">
-                                <?php echo $description_html; ?>
+                    <div class="pcf-single-column pcf-single-column-media">
+                        <?php echo $media_html; ?>
+                    </div>
+
+                    <div class="pcf-single-column pcf-single-column-description">
+                        <?php if ( $description_html ) : ?>
+                            <div class="pcf-description-wrap">
+                                <div class="pcf-description-label">Description</div>
+                                <div class="pcf-description-inner">
+                                    <?php echo $description_html; ?>
+                                </div>
                             </div>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                        <?php endif; ?>
+                    </div>
+                </section>
             <?php endif; ?>
 
             <div class="entry-content">

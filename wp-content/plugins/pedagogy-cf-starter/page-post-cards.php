@@ -186,6 +186,54 @@ if ( $has_filters ) {
 $post_query = new WP_Query( $query_args );
 $results_anchor = 'post-cards-results';
 
+$active_filter_chips = array();
+$clear_filters_url = '';
+
+if ( $has_filters ) {
+    foreach ( $filter_definitions as $name => $filter ) {
+        $selected_values = array_filter( (array) ( $filter_values[ $name ] ?? array() ), 'strlen' );
+
+        foreach ( $selected_values as $selected_value ) {
+            $remove_args = array();
+
+            if ( '' !== $search_term ) {
+                $remove_args['pcf_search'] = $search_term;
+            }
+
+            foreach ( $filter_definitions as $inner_name => $inner_filter ) {
+                $inner_values = array_filter( (array) ( $filter_values[ $inner_name ] ?? array() ), 'strlen' );
+
+                if ( $inner_name === $name ) {
+                    $inner_values = array_values(
+                        array_filter(
+                            $inner_values,
+                            static function ( $value ) use ( $selected_value ) {
+                                return $value !== $selected_value;
+                            }
+                        )
+                    );
+                }
+
+                if ( ! empty( $inner_values ) ) {
+                    $remove_args[ 'pcf_filter_' . $inner_name ] = $inner_values;
+                }
+            }
+
+            $active_filter_chips[] = array(
+                'label' => sprintf( '%s: %s', $filter['title'], $selected_value ),
+                'url'   => add_query_arg( $remove_args, get_permalink() ) . '#' . $results_anchor,
+            );
+        }
+    }
+
+    $clear_filters_args = array();
+    if ( '' !== $search_term ) {
+        $clear_filters_args['pcf_search'] = $search_term;
+    }
+
+    $clear_filters_url = add_query_arg( $clear_filters_args, get_permalink() ) . '#' . $results_anchor;
+}
+
 function pedagogy_post_material_types( $post_id, $defs ) {
     $materials = array();
 
@@ -299,6 +347,24 @@ function pedagogy_post_cover_image_url( $post_id ) {
    
     <div class="post-cards-content">
     <div id="<?php echo esc_attr( $results_anchor ); ?>">
+    <?php if ( ! empty( $active_filter_chips ) ) : ?>
+        <div class="post-cards-active-filters" aria-label="<?php esc_attr_e( 'Active filters', 'twentytwentyfive' ); ?>">
+            <?php foreach ( $active_filter_chips as $chip ) : ?>
+                <a class="post-cards-filter-chip" href="<?php echo esc_url( $chip['url'] ); ?>">
+                    <span class="post-cards-filter-chip-label"><?php echo esc_html( $chip['label'] ); ?></span>
+                    <span class="post-cards-filter-chip-remove" aria-hidden="true">&times;</span>
+                    <span class="screen-reader-text"><?php esc_html_e( 'Remove filter', 'twentytwentyfive' ); ?></span>
+                </a>
+            <?php endforeach; ?>
+
+            <?php if ( $clear_filters_url ) : ?>
+                <a class="post-cards-filter-chip post-cards-filter-chip-clear" href="<?php echo esc_url( $clear_filters_url ); ?>">
+                    <?php esc_html_e( 'Clear all filters', 'twentytwentyfive' ); ?>
+                </a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
     <?php if ( $search_term !== '' || $has_filters ) : ?>
         <div class="post-cards-summary">
             <p><?php echo sprintf( esc_html__( 'Showing %s results for selected search and filters.', 'twentytwentyfive' ), intval( $post_query->found_posts ) ); ?></p>

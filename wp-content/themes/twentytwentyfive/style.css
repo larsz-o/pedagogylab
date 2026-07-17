@@ -9,6 +9,56 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 .pcf-post-shell {
   display: block;
 }
+
+.post-cards-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.post-cards-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #d6d0cb;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #280c22;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.06);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.post-cards-filter-chip:hover,
+.post-cards-filter-chip:focus-visible {
+  background: #f7f5f4;
+  border-color: #b8aea8;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.1);
+  transform: translateY(-1px);
+}
+
+.post-cards-filter-chip-remove {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.post-cards-filter-chip-clear {
+  background: #280c22;
+  border-color: #280c22;
+  color: #ffffff;
+}
+
+.post-cards-filter-chip-clear:hover,
+.post-cards-filter-chip-clear:focus-visible {
+  background: #402539;
+  border-color: #402539;
+  color: #ffffff;
+}
 .pcf-post-main {
   min-width: 0;
 }
@@ -100,6 +150,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 .entry-content {
 	padding: 2rem;
 	margin: 0 auto;
+  background-color: white;
 }
 
 .pcf-back-link-wrap {
@@ -166,7 +217,6 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   width: min(100%, 72ch);
   text-align: left;
   padding: 0.35rem;
-
 }
 
 .pcf-description-label {
@@ -190,27 +240,69 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   margin-bottom: 0;
 }
 
-.pcf-description-metadata-grid {
-  margin: 1.5rem 0 0;
+.pcf-single-content-grid {
+  margin: 1.75rem 0 0;
+  padding-bottom: 2.5rem;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 2.5rem;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  column-gap: 2.25rem;
   row-gap: 1.5rem;
   align-items: start;
 }
 
-.pcf-description-metadata-grid .pcf-description-wrap,
-.pcf-description-metadata-grid .pcf-metadata-card {
+.pcf-single-column {
+  min-width: 0;
+}
+
+.entry-header {
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.pcf-single-column-meta .pcf-metadata-card {
+  margin-top: 0;
+  background: #fff;
+  border: 1px solid rgba(94, 63, 219, 0.12);
+  box-shadow: none;
+}
+
+.pcf-single-column-media .pcf-embed-wrap {
+  margin-top: 0;
+}
+
+.pcf-single-column-media .pcf-embed-inner {
   width: 100%;
-  margin: 0;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid rgba(94, 63, 219, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(74, 55, 160, 0.04);
+  overflow: hidden;
 }
 
-.pcf-description-metadata-grid .pcf-description-wrap {
+.pcf-single-column-media .pcf-embed-inner iframe,
+.pcf-single-column-media .pcf-embed-inner .wp-block-embed__wrapper,
+.pcf-single-column-media .pcf-embed-inner > *,
+.pcf-single-column-media .pcf-cover-image {
+  border-radius: 0.75rem;
+}
+
+.pcf-single-column-description .pcf-description-wrap {
+  width: 100%;
   max-width: none;
+  margin-top: 0;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid rgba(94, 63, 219, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(74, 55, 160, 0.04);
 }
 
-.pcf-description-metadata-grid .pcf-description-inner {
-  height: 100%;
+.pcf-single-column-description .pcf-description-inner {
+  padding: 0.85rem 0.95rem;
+  background: rgba(255,255,255,0.98);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(94, 63, 219, 0.06);
 }
 
 body .wp-site-blocks {
@@ -273,6 +365,11 @@ hr {
 }
 
 @media (max-width: 760px) {
+  .pcf-single-content-grid {
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+  }
+
   .pcf-description-metadata-grid {
     grid-template-columns: 1fr;
   }
@@ -1088,8 +1185,6 @@ template {
 }
 
 .post-cards-filter-drawer-body {
-  overflow: hidden;
-  max-height: 1000px;
   opacity: 1;
   transform: translateY(0);
   transition: max-height 180ms ease, opacity 180ms ease, transform 180ms ease;

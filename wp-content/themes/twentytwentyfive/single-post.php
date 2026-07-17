@@ -29,7 +29,7 @@ get_header();
     ?>
 
     <div class="pcf-back-link-wrap">
-        <a class="pcf-back-link" href="<?php echo esc_url( $pcf_back_link ); ?>">&larr; Back to OER Library</a>
+        <a class="pcf-back-link" href="/oer-library/">&larr; Back to Open Educational Resources Library</a>
     </div>
 
     <?php

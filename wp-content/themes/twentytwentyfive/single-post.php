@@ -227,7 +227,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             $post_meta_items = array();
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
-                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creators', 'date_created', 'description' );
+                $skip = array( 'media_embed', 'embed', 'media', 'people', 'date_created', 'description' );
                 if ( is_array( $defs ) && ! empty( $defs ) ) {
                     foreach ( $defs as $name => $def ) {
                         if ( in_array( $name, $skip, true ) ) {
@@ -239,7 +239,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                         }
                         $label = isset( $def['title'] ) ? $def['title'] : ucwords( str_replace( array( '_', '-' ), ' ', $name ) );
                         $label_key = strtolower( trim( $label ) );
-                        if ( in_array( $label_key, array( 'media embed', 'people', 'creators', 'date created', 'description' ), true ) ) {
+                        if ( in_array( $label_key, array( 'media embed', 'people', 'description','date created', ), true ) ) {
                             continue;
                         }
                         $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );
@@ -257,7 +257,10 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             if ( $media_html || $description_html || ! empty( $post_meta_items ) ) :
             ?>
                 <section class="pcf-single-content-grid">
-                    <div class="pcf-single-column pcf-single-column-meta">
+                    <div class="pcf-single-column pcf-single-column-main flex-row">
+                        <div class="pcf-single-column pcf-single-column-media flex-item">
+                            <?php echo $media_html; ?>
+                                  <div class="pcf-single-column pcf-single-column-meta">
                         <?php if ( ! empty( $post_meta_items ) ) : ?>
                             <aside class="pcf-metadata-card">
                                 <div class="pcf-meta-list">
@@ -271,13 +274,9 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                             </aside>
                         <?php endif; ?>
                     </div>
-
-                    <div class="pcf-single-column pcf-single-column-main">
-                        <div class="pcf-single-column pcf-single-column-media">
-                            <?php echo $media_html; ?>
                         </div>
 
-                        <div class="pcf-single-column pcf-single-column-description">
+                        <div class="pcf-single-column pcf-single-column-description flex-item ">
                             <?php if ( $description_html ) : ?>
                                 <div class="pcf-description-wrap">
                                     <div class="pcf-description-label">Description</div>
@@ -286,9 +285,11 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                     </div>
                                 </div>
                             <?php endif; ?>
+                       
                         </div>
                     </div>
                 </section>
+                 
             <?php endif; ?>
 
             <div class="entry-content">

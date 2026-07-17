@@ -6,6 +6,10 @@
  */
 
 get_header();
+
+if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
+    twentytwentyfive_render_inline_header();
+}
 ?>
 
 <main id="site-content" role="main" class="wrapper">
@@ -28,9 +32,7 @@ get_header();
     }
     ?>
 
-    <div class="pcf-back-link-wrap">
-        <a class="pcf-back-link" href="/oer-library/">&larr; Back to Open Educational Resources Library</a>
-    </div>
+  
 
     <?php
     while ( have_posts() ) :
@@ -270,19 +272,21 @@ get_header();
                         <?php endif; ?>
                     </div>
 
-                    <div class="pcf-single-column pcf-single-column-media">
-                        <?php echo $media_html; ?>
-                    </div>
+                    <div class="pcf-single-column pcf-single-column-main">
+                        <div class="pcf-single-column pcf-single-column-media">
+                            <?php echo $media_html; ?>
+                        </div>
 
-                    <div class="pcf-single-column pcf-single-column-description">
-                        <?php if ( $description_html ) : ?>
-                            <div class="pcf-description-wrap">
-                                <div class="pcf-description-label">Description</div>
-                                <div class="pcf-description-inner">
-                                    <?php echo $description_html; ?>
+                        <div class="pcf-single-column pcf-single-column-description">
+                            <?php if ( $description_html ) : ?>
+                                <div class="pcf-description-wrap">
+                                    <div class="pcf-description-label">Description</div>
+                                    <div class="pcf-description-inner">
+                                        <?php echo $description_html; ?>
+                                    </div>
                                 </div>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </section>
             <?php endif; ?>

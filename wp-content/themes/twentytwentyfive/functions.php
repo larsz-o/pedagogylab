@@ -47,11 +47,19 @@ if ( ! function_exists( 'twentytwentyfive_enqueue_styles' ) ) :
 	 */
 	function twentytwentyfive_enqueue_styles() {
 		$src = 'style.css';
+		$google_fonts_url = 'https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap';
+
+		wp_enqueue_style(
+			'twentytwentyfive-google-fonts',
+			$google_fonts_url,
+			array(),
+			null
+		);
 
 		wp_enqueue_style(
 			'twentytwentyfive-style',
 			get_parent_theme_file_uri( $src ),
-			array(),
+			array( 'twentytwentyfive-google-fonts' ),
 			wp_get_theme()->get( 'Version' )
 		);
 		wp_style_add_data(
@@ -62,6 +70,95 @@ if ( ! function_exists( 'twentytwentyfive_enqueue_styles' ) ) :
 	}
 endif;
 add_action( 'wp_enqueue_scripts', 'twentytwentyfive_enqueue_styles' );
+
+if ( ! function_exists( 'twentytwentyfive_render_inline_header' ) ) :
+	/**
+	 * Renders an inline header with site title and right-aligned navigation,
+	 * excluding the home page from the navigation list.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @return void
+	 */
+	function twentytwentyfive_render_inline_header() {
+		if ( ! function_exists( 'do_blocks' ) ) {
+			return;
+		}
+
+		$header_markup = '<!-- wp:group --><div id="header" class="pcf-inline-header"><!-- wp:group {"layout":{"type":"constrained"}} --><div class="wp-block-group"><!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"var:preset|spacing|30","bottom":"var:preset|spacing|30"}}},"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between"}} --><div class="wp-block-group alignwide"><!-- wp:site-title {"level":0} /--><!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"right"}} --><div class="wp-block-group"><!-- wp:navigation {"overlayBackgroundColor":"contrast","overlayTextColor":"base","layout":{"type":"flex","justifyContent":"right","flexWrap":"wrap"}} /--></div><!-- /wp:group --></div><!-- /wp:group --></div><!-- /wp:group --></div><!-- /wp:group -->';
+		$header_html   = do_blocks( $header_markup );
+
+		if ( class_exists( 'DOMDocument' ) && class_exists( 'DOMXPath' ) ) {
+			$previous = libxml_use_internal_errors( true );
+
+			$dom = new DOMDocument();
+			$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $header_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+			$xpath = new DOMXPath( $dom );
+
+			$home_url_parts = wp_parse_url( home_url( '/' ) );
+			$home_host      = strtolower( $home_url_parts['host'] ?? '' );
+			$home_path      = '/' . ltrim( (string) ( $home_url_parts['path'] ?? '/' ), '/' );
+			$home_path      = '/' === $home_path ? '/' : untrailingslashit( $home_path );
+
+			foreach ( $xpath->query( '//li[contains(@class, "wp-block-navigation-item")]' ) as $item ) {
+				$link = $xpath->query( './/a[@href]', $item )->item( 0 );
+				if ( ! $link ) {
+					continue;
+				}
+
+				$href       = html_entity_decode( $link->getAttribute( 'href' ) );
+				$href_parts = wp_parse_url( $href );
+				$href_host  = strtolower( $href_parts['host'] ?? '' );
+				$href_path  = '/' . ltrim( (string) ( $href_parts['path'] ?? '/' ), '/' );
+				$href_path  = '/' === $href_path ? '/' : untrailingslashit( $href_path );
+
+				$is_home_link = false;
+
+				if ( '' === $href_host ) {
+					$is_home_link = '/' === $href_path || $href_path === $home_path;
+				} else {
+					$is_home_link = $href_host === $home_host && $href_path === $home_path;
+				}
+
+				if ( $is_home_link && $item->parentNode ) {
+					$item->parentNode->removeChild( $item );
+				}
+			}
+
+			$header_html = $dom->saveHTML();
+			libxml_clear_errors();
+			libxml_use_internal_errors( $previous );
+		}
+
+		echo $header_html;
+	}
+endif;
+
+if ( ! function_exists( 'twentytwentyfive_google_fonts_resource_hints' ) ) :
+	/**
+	 * Adds preconnect hints for Google Fonts.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param array  $urls          URLs to print for resource hints.
+	 * @param string $relation_type The relation type the URLs are printed for.
+	 * @return array
+	 */
+	function twentytwentyfive_google_fonts_resource_hints( $urls, $relation_type ) {
+		if ( 'preconnect' !== $relation_type ) {
+			return $urls;
+		}
+
+		$urls[] = 'https://fonts.googleapis.com';
+		$urls[] = array(
+			'href'        => 'https://fonts.gstatic.com',
+			'crossorigin' => 'anonymous',
+		);
+
+		return $urls;
+	}
+endif;
+add_filter( 'wp_resource_hints', 'twentytwentyfive_google_fonts_resource_hints', 10, 2 );
 
 if ( ! function_exists( 'twentytwentyfive_block_styles' ) ) :
 	/**

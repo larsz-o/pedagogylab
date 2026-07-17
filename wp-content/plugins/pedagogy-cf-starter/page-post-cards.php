@@ -6,6 +6,10 @@
 
 get_header();
 
+if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
+    twentytwentyfive_render_inline_header();
+}
+
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
 $defs = array();
@@ -376,22 +380,12 @@ function pedagogy_post_cover_image_url( $post_id ) {
             <?php while ( $post_query->have_posts() ) : $post_query->the_post(); ?>
                 <?php
                 $cover_url = pedagogy_post_cover_image_url( get_the_ID() );
-                $material_types = pedagogy_post_material_types( get_the_ID(), $defs );
                 ?>
                 <article class="post-card">
                     <a class="post-card-link" href="<?php the_permalink(); ?>">
                         <div class="post-card-image" style="background-image: url('<?php echo esc_url( $cover_url ? $cover_url : get_template_directory_uri() . '/assets/default-card.png' ); ?>');"></div>
                         <div class="post-card-body">
                             <h2 class="post-card-title"><?php the_title(); ?></h2>
-                            <?php if ( ! empty( $material_types ) ) : ?>
-                                <div class="post-card-formats">
-                                    <?php foreach ( $material_types as $material_type ) : ?>
-                                        <span class="post-card-format"><?php echo esc_html( $material_type ); ?></span>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php else : ?>
-                                <div class="post-card-formats post-card-formats-empty"><?php esc_html_e( 'No material type metadata available', 'twentytwentyfive' ); ?></div>
-                            <?php endif; ?>
                         </div>
                     </a>
                 </article>

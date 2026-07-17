@@ -64,6 +64,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 }
 .pcf-post-layout {
   display: block;
+  padding: 2rem 0;
   min-width: 0;
 }
 .pcf-metadata-card {
@@ -72,7 +73,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   width: 100%;
   max-height: none;
   overflow: visible;
-  background: linear-gradient(180deg, #fff, #fbf7ff);
+  background-color: #280c22;
   border: 1px solid rgba(94, 63, 219, 0.12);
   border-radius: 1rem;
   padding: 0.9rem;
@@ -95,9 +96,8 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   gap: 0.5rem;
   align-items: start;
   padding: 0.6rem 0.65rem;
-  background: rgba(255,255,255,0.98);
   border-radius: 0.75rem;
-  border: 1px solid rgba(94, 63, 219, 0.06);
+  border: 1px solid #280c22;
 }
 .pcf-meta-label {
   min-width: 0;
@@ -150,7 +150,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 .entry-content {
 	padding: 2rem;
 	margin: 0 auto;
-  background-color: white;
+  background-color: #eab4a0;
 }
 
 .pcf-back-link-wrap {
@@ -230,6 +230,8 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 
 .pcf-description-inner {
 	padding: 0.75rem 1rem;
+  line-height: 1.4;
+  
 }
 
 .pcf-description-inner p:first-child {
@@ -244,7 +246,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   margin: 1.75rem 0 0;
   padding-bottom: 2.5rem;
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-columns: minmax(280px, 0.95fr) minmax(0, 2.15fr);
   column-gap: 2.25rem;
   row-gap: 1.5rem;
   align-items: start;
@@ -254,6 +256,21 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   min-width: 0;
 }
 
+.pcf-single-column-meta {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.pcf-single-column-main {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  row-gap: 1.25rem;
+  padding: 0.9rem;
+
+
+}
+
 .entry-header {
   text-align: center;
   margin-bottom: 0.75rem;
@@ -261,22 +278,23 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 
 .pcf-single-column-meta .pcf-metadata-card {
   margin-top: 0;
-  background: #fff;
-  border: 1px solid rgba(94, 63, 219, 0.12);
+  background: #dcd7d8;
+  border: 0px solid #280c22;
   box-shadow: none;
 }
 
 .pcf-single-column-media .pcf-embed-wrap {
   margin-top: 0;
+  justify-content: center;
 }
 
 .pcf-single-column-media .pcf-embed-inner {
-  width: 100%;
+  width: min(100%, 760px);
+  margin: 0 auto;
   padding: 0.75rem;
-  background: #fff;
-  border: 1px solid rgba(94, 63, 219, 0.12);
+  border: 0;
   border-radius: 1rem;
-  box-shadow: 0 8px 20px rgba(74, 55, 160, 0.04);
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -292,17 +310,22 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   max-width: none;
   margin-top: 0;
   padding: 0.75rem;
-  background: #fff;
-  border: 1px solid rgba(94, 63, 219, 0.12);
+  background: transparent;
+  border: 0;
   border-radius: 1rem;
-  box-shadow: 0 8px 20px rgba(74, 55, 160, 0.04);
+  box-shadow: none;
 }
 
 .pcf-single-column-description .pcf-description-inner {
   padding: 0.85rem 0.95rem;
-  background: rgba(255,255,255,0.98);
+  background: transparent;
   border-radius: 0.75rem;
-  border: 1px solid rgba(94, 63, 219, 0.06);
+  border: 0;
+}
+
+.pcf-single-column-meta .pcf-meta-item {
+ background-color: rgba(255, 255, 255, .9)
+  /* border: 1px solid #280c22; */
 }
 
 body .wp-site-blocks {
@@ -332,6 +355,25 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
 
 #header a, #footer a {
   color: #fff;
+}
+
+#header .alignwide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+#header .alignwide > .wp-block-group:last-child {
+  margin-left: auto;
+}
+
+#header .wp-block-navigation {
+  justify-content: flex-end;
+}
+
+#header .wp-block-navigation__container {
+  justify-content: flex-end;
 }
 
 a {
@@ -370,6 +412,13 @@ hr {
     row-gap: 1rem;
   }
 
+  .pcf-single-column-meta,
+  .pcf-single-column-main {
+    grid-column: auto;
+    grid-row: auto;
+    /* background-color: rgba(255, 255, 255, .9) !important; */
+  }
+
   .pcf-description-metadata-grid {
     grid-template-columns: 1fr;
   }
@@ -382,15 +431,7 @@ hr {
     width: 100%;
   }
 }
-Requires at least: 6.7
-Tested up to: 7.0
-Requires PHP: 7.2
-Version: 1.5
-License: GNU General Public License v2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: twentytwentyfive
-Tags: one-column, custom-colors, custom-menu, custom-logo, editor-style, featured-images, full-site-editing, block-patterns, rtl-language-support, sticky-post, threaded-comments, translation-ready, wide-blocks, block-styles, style-variations, accessibility-ready, blog, portfolio, news
-*/
+
 
 /*
  * IMPORTANT: This file is only served on the frontend when `SCRIPT_DEBUG` is enabled;
@@ -441,12 +482,13 @@ html, body {
   background-color: #dcd7d8;
     margin: 0;
     padding: 0;
-    font-family: "Atkinson Hyperlegible", sans-serif;
-    line-height: 1.2;
+    font-family: "Roboto", sans-serif;
+    line-height: 1.5;
     transition: all 0.25s linear;
     font-size: 18px;
+    font-weight: 400;
     scroll-behavior: smooth;
-	  line-height: 1.15; /* 1 */
+	  line-height: 1.5; /* 1 */
   -webkit-text-size-adjust: 100%; /* 2 */
 
 }
@@ -459,6 +501,12 @@ main {
  * `article` contexts in Chrome, Firefox, and Safari.
  */
 
+ h1, h2, h3, h4, h5, h6 {
+  font-family: "Roboto Slab", serif;
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+ }
 h1 {
   font-size: 2em;
   margin: 0.67em 0;
@@ -586,7 +634,7 @@ select,
 textarea {
   font-family: inherit; /* 1 */
   font-size: 100%; /* 1 */
-  line-height: 1.15; /* 1 */
+
   margin: 0; /* 2 */
 }
 
@@ -1227,7 +1275,6 @@ input[type="reset"] {
   background-color: #ffffff;
   border-radius: 999px;
   padding: 0.72rem 1.1rem;
-  line-height: 1.1;
   letter-spacing: 0.01em;
   box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08);
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;

@@ -276,6 +276,8 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
 ?>
 
 <div class="post-cards-page">
+    <div class="post-cards-layout">
+    <aside class="post-cards-sidebar">
     <div class="post-cards-header">
         <div>
             <h1><?php the_title(); ?></h1>
@@ -287,7 +289,9 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
             <button type="submit"><?php esc_html_e( 'Search', 'twentytwentyfive' ); ?></button>
         </form>
     </div>
+    </aside>
 
+    <div class="post-cards-content">
     <div id="<?php echo esc_attr( $results_anchor ); ?>">
     <?php if ( $post_query->have_posts() ) : ?>
         <div class="post-cards-grid">
@@ -351,6 +355,8 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
             <p><?php esc_html_e( 'Try another keyword or check the metadata values you are searching for.', 'twentytwentyfive' ); ?></p>
         </div>
     <?php endif; ?>
+    </div>
+    </div>
     </div>
 
     <?php wp_reset_postdata(); ?>

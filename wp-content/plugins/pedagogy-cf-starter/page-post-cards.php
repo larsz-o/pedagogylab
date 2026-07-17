@@ -221,13 +221,12 @@ function pedagogy_post_cover_image_url( $post_id ) {
 ?>
 
 <div class="post-cards-page">
- <div class="post-cards-header">
-        <div>
-            <h1><?php the_title(); ?></h1>
-                      <p class="post-cards-intro">Search publications and metadata across all entries.</p>
-        </div>
-         <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() . '#' . $results_anchor ); ?>">
-     <div class="post-cards-search-row">
+    <div class="post-cards-page-title">
+        <h1><?php the_title(); ?></h1>
+        <p class="post-cards-intro">Search publications and metadata across all entries.</p>
+
+        <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() . '#' . $results_anchor ); ?>">
+            <div class="post-cards-search-row">
                 <label for="pcf_search" class="screen-reader-text"><?php esc_html_e( 'Search entries and metadata', 'twentytwentyfive' ); ?></label>
                 <input id="pcf_search" name="pcf_search" type="search" value="<?php echo esc_attr( $search_term ); ?>" placeholder="Search titles, descriptions, formats, tags...">
                 <button type="submit"><?php esc_html_e( 'Search', 'twentytwentyfive' ); ?></button>
@@ -235,9 +234,24 @@ function pedagogy_post_cover_image_url( $post_id ) {
                     <a class="post-cards-clear" href="<?php echo esc_url( get_permalink() ); ?>"><?php esc_html_e( 'Clear', 'twentytwentyfive' ); ?></a>
                 <?php endif; ?>
             </div>
+
+            <?php foreach ( $filter_definitions as $name => $filter ) : ?>
+                <?php $selected_values = array_filter( (array) ( $filter_values[ $name ] ?? array() ) ); ?>
+                <?php foreach ( $selected_values as $selected_value ) : ?>
+                    <input type="hidden" name="pcf_filter_<?php echo esc_attr( $name ); ?>[]" value="<?php echo esc_attr( $selected_value ); ?>">
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+        </form>
+    </div>
+    <div class="post-cards-layout">
+ <aside class="post-cards-sidebar">
+ <div class="post-cards-header">
             <?php if ( ! empty( $filter_definitions ) ) : ?>
-                <details class="post-cards-filter-drawer" <?php if ( $has_filters || $search_term !== '' ) : ?>open<?php endif; ?> >
-                    <summary><?php esc_html_e( 'Filter by', 'twentytwentyfive' ); ?></summary>
+                <form class="post-cards-filter-form" method="get" action="<?php echo esc_url( get_permalink() . '#' . $results_anchor ); ?>">
+                    <input type="hidden" name="pcf_search" value="<?php echo esc_attr( $search_term ); ?>">
+                <details class="post-cards-filter-drawer" open>
+                    <summary class="post-cards-filter-drawer-title pcf-meta-label"><?php esc_html_e( 'Filter by', 'twentytwentyfive' ); ?></summary>
+                    <div class="post-cards-filter-drawer-body">
                     <div class="post-cards-filters">
                         <?php foreach ( $filter_definitions as $name => $filter ) : ?>
                             <?php $selected_values = array_filter( (array) $filter_values[ $name ] ); ?>
@@ -252,12 +266,38 @@ function pedagogy_post_cover_image_url( $post_id ) {
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    </div>
                 </details>
+                </form>
+                <script>
+                (function() {
+                    const drawer = document.querySelector('.post-cards-filter-drawer');
+                    const summary = drawer ? drawer.querySelector('summary') : null;
+                    if (!drawer) return;
+                    const mq = window.matchMedia('(max-width: 760px)');
+                    const syncDrawer = () => {
+                        drawer.open = !mq.matches;
+                    };
+                    syncDrawer();
+                    if (summary) {
+                        summary.addEventListener('click', function(event) {
+                            if (!mq.matches) {
+                                event.preventDefault();
+                            }
+                        });
+                    }
+                    if (mq.addEventListener) {
+                        mq.addEventListener('change', syncDrawer);
+                    } else if (mq.addListener) {
+                        mq.addListener(syncDrawer);
+                    }
+                })();
+                </script>
             <?php endif; ?>
-        </form>
     </div>
+    </aside>
    
-       
+    <div class="post-cards-content">
     <div id="<?php echo esc_attr( $results_anchor ); ?>">
     <?php if ( $search_term !== '' || $has_filters ) : ?>
         <div class="post-cards-summary">
@@ -309,6 +349,8 @@ function pedagogy_post_cover_image_url( $post_id ) {
             <p><?php esc_html_e( 'Try another keyword or adjust the filters to see matching content.', 'twentytwentyfive' ); ?></p>
         </div>
     <?php endif; ?>
+    </div>
+    </div>
     </div>
 
     <?php wp_reset_postdata(); ?>

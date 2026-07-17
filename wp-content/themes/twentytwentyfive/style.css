@@ -759,8 +759,8 @@ template {
   }
 }
   border-radius: 999px;
-  background: #280c22;
-  color: #fff;
+  color: #280c22;
+  border: 1px solid #280c22;
   font-size: 0.95rem;
   font-weight: 400
 }
@@ -1052,12 +1052,22 @@ template {
   justify-content: space-between;
   padding: 0.85rem 1rem;
   cursor: pointer;
-  /* background: blue;
-  background-color: #280c22; */
   border-radius: 0.85rem;
-  border: 1px solid #280c22;
+  /* border: 1px solid #280c22; */
   font-size: 0.95rem;
   color: #280c22;
+}
+
+.post-cards-filter-drawer .post-cards-filter-drawer-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  cursor: default;
+  border-radius: 0.85rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  font-size: 0.95rem;
 }
 
 .post-cards-filter-drawer summary::-webkit-details-marker {
@@ -1074,6 +1084,14 @@ template {
   display: grid;
   gap: 0.85rem;
   margin-top: 0;
+}
+
+.post-cards-filter-drawer-body {
+  overflow: hidden;
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 180ms ease, opacity 180ms ease, transform 180ms ease;
 }
 
 .post-cards-filter-item {
@@ -1148,8 +1166,57 @@ input[type="reset"]:focus-visible {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
 
+.post-cards-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 30%) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.post-cards-sidebar {
+  min-width: 0;
+}
+
+.post-cards-content {
+  min-width: 0;
+}
+
+.post-cards-page-title {
+  text-align: center;
+  margin: 0 auto 1.5rem;
+}
+
+.post-cards-page-title .post-cards-intro {
+  margin: 0.5rem auto 0;
+}
+
+.post-cards-page-title .post-cards-search {
+  max-width: 38rem;
+  margin: 0.9rem auto 0;
+}
+
+.post-cards-page-title .post-cards-search-row input[type="search"] {
+  margin: 0;
+}
+
 @media (max-width: 760px) {
+  .post-cards-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
   .post-cards-grid {
     grid-template-columns: 1fr !important;
   }
+
+  .post-cards-filter-drawer:not([open]) .post-cards-filter-drawer-body {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+  .post-cards-filter-drawer summary {
+ 
+  border: 1px solid #280c22;
+cursor: pointer !important;
+}
 }

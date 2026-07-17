@@ -46,8 +46,7 @@ if ( ! function_exists( 'twentytwentyfive_enqueue_styles' ) ) :
 	 * @return void
 	 */
 	function twentytwentyfive_enqueue_styles() {
-		$suffix = SCRIPT_DEBUG ? '' : '.min';
-		$src    = 'style' . $suffix . '.css';
+		$src = 'style.css';
 
 		wp_enqueue_style(
 			'twentytwentyfive-style',

@@ -22,9 +22,33 @@ foreach ( $defs as $name => $def ) {
     $meta_keys[] = 'pcf_' . $name;
 }
 
+global $wpdb;
+$db_meta_keys = $wpdb->get_col(
+    $wpdb->prepare(
+        "
+        SELECT DISTINCT pm.meta_key
+        FROM {$wpdb->postmeta} pm
+        INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+        WHERE pm.meta_key LIKE %s
+            AND p.post_type = %s
+            AND p.post_status = %s
+        ",
+        $wpdb->esc_like( 'pcf_' ) . '%',
+        'post',
+        'publish'
+    )
+);
+
+if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
+    $meta_keys = array_values( array_unique( array_merge( $meta_keys, $db_meta_keys ) ) );
+}
+
 $search_ids = null;
+$force_no_results = false;
 if ( $search_term !== '' ) {
     $search_ids = array();
+    $search_tokens = preg_split( '/\s+/', $search_term );
+    $search_tokens = is_array( $search_tokens ) ? array_values( array_unique( array_filter( array_map( 'trim', $search_tokens ) ) ) ) : array();
 
     $search_query = new WP_Query( array(
         'post_type'      => 'post',
@@ -46,6 +70,18 @@ if ( $search_term !== '' ) {
                 'value'   => $search_term,
                 'compare' => 'LIKE',
             );
+
+            foreach ( $search_tokens as $search_token ) {
+                if ( mb_strlen( $search_token ) < 2 ) {
+                    continue;
+                }
+
+                $meta_query[] = array(
+                    'key'     => $meta_key,
+                    'value'   => $search_token,
+                    'compare' => 'LIKE',
+                );
+            }
         }
 
         $meta_search_query = new WP_Query( array(
@@ -62,6 +98,7 @@ if ( $search_term !== '' ) {
     }
 
     if ( empty( $search_ids ) ) {
+        $force_no_results = true;
         $search_ids = array( 0 );
     }
 }
@@ -79,7 +116,12 @@ if ( is_array( $search_ids ) ) {
     $query_args['orderby'] = 'post__in';
 }
 
+if ( $force_no_results ) {
+    $query_args['post__in'] = array( 0 );
+}
+
 $post_query = new WP_Query( $query_args );
+$results_anchor = 'post-cards-results';
 
 function pedagogy_post_material_types( $post_id, $defs ) {
     $material_names = array(
@@ -239,13 +281,14 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
             <h1><?php the_title(); ?></h1>
             <p class="post-cards-intro">Search publications and metadata across all posts.</p>
         </div>
-        <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() ); ?>">
+        <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() . '#' . $results_anchor ); ?>">
             <label for="pcf_search" class="screen-reader-text"><?php esc_html_e( 'Search posts and metadata', 'twentytwentyfive' ); ?></label>
             <input id="pcf_search" name="pcf_search" type="search" value="<?php echo esc_attr( $search_term ); ?>" placeholder="Search titles, descriptions, formats, tags...">
             <button type="submit"><?php esc_html_e( 'Search', 'twentytwentyfive' ); ?></button>
         </form>
     </div>
 
+    <div id="<?php echo esc_attr( $results_anchor ); ?>">
     <?php if ( $post_query->have_posts() ) : ?>
         <div class="post-cards-grid">
             <?php while ( $post_query->have_posts() ) : $post_query->the_post(); ?>
@@ -308,6 +351,7 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
             <p><?php esc_html_e( 'Try another keyword or check the metadata values you are searching for.', 'twentytwentyfive' ); ?></p>
         </div>
     <?php endif; ?>
+    </div>
 
     <?php wp_reset_postdata(); ?>
 </div>

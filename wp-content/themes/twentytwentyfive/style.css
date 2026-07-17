@@ -68,7 +68,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   word-break: break-word;
 }
 .pcf-meta-value a {
-  color: #2563EB;
+  color: #a84f3a;
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -110,10 +110,10 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: #2563EB;
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
+  margin-top: 1em
 }
 
 .pcf-back-link:hover {
@@ -176,7 +176,6 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #543fbf;
 }
 
 .pcf-description-inner {
@@ -227,26 +226,25 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
 }
 
 #header {
-  background-color: #F7F5F4;
+  background-color: #280c22;
   padding: 2rem 1.5rem;
-  color: #111111;
+  color: #fff;
 }
 
 #footer {
-  background-color: #F7F5F4;
-  padding: 0.75rem 1rem;
-  color: #111111;
+   background-color: #280c22;
+  padding: 2rem 1.5rem;
+  color: #fff;
   margin-bottom: 0;
 }
 
-#header a,
-#footer a {
-  color: #111111;
+#header a, #footer a {
+  color: #fff;
 }
 
 a {
 	text-decoration: none;
-	color: #2563EB;
+	color: #a84f3a;
 	font-weight: bold;
 }
 hr {
@@ -310,7 +308,7 @@ Tags: one-column, custom-colors, custom-menu, custom-logo, editor-style, feature
  */
 a {
 	text-decoration-thickness: 1px !important;
-	text-underline-offset: .1em;
+	text-underline-offset: 0.1em;
 }
 
 /* Focus styles */
@@ -343,6 +341,7 @@ h1, h2, h3, h4, h5, h6, blockquote, caption, figcaption, p {
 }
 html, body {
 	height: 100vh;
+  background-color: #dcd7d8;
     margin: 0;
     padding: 0;
     font-family: "Atkinson Hyperlegible", sans-serif;
@@ -760,9 +759,10 @@ template {
   }
 }
   border-radius: 999px;
-  background: rgba(17, 23, 39, 0.08);
-  color: #111;
+  background: #280c22;
+  color: #fff;
   font-size: 0.95rem;
+  font-weight: 400
 }
 
 .post-card-formats-empty {
@@ -860,6 +860,8 @@ template {
 
 .post-cards-search-row input[type="search"] {
   min-width: 0;
+  max-width: 90vw;
+  border-radius: 1em;
 }
 
 .post-cards-search-row button {
@@ -952,6 +954,8 @@ template {
   min-width: 0;
   padding: 0.75rem 0.9rem;
   font-size: 0.95rem;
+  margin: 0.75em;
+  border: 1px solid #280c22;
 }
 .post-cards-search-row button,
 .post-cards-clear {
@@ -989,11 +993,11 @@ template {
   width: 100%;
   padding: 0.85rem 1.1rem;
   border-radius: 0.75rem;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid #280c22;
   background: #fff;
-  color: #1e3a5f;
+  color: #000;
   font-size: 0.95rem;
-  accent-color: #2563EB;
+  accent-color: #280c22;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .post-cards-filter-item select:focus {
@@ -1034,11 +1038,12 @@ template {
 }
 
 .post-cards-filter-drawer {
-  background: #fafafa;
   border: 1px solid #e6e6e6;
+  background-color: #fff;
   border-radius: 1rem;
   padding: 0.5rem;
   margin-top: 1rem;
+  max-width: 90vw
 }
 
 .post-cards-filter-drawer summary {
@@ -1047,12 +1052,12 @@ template {
   justify-content: space-between;
   padding: 0.85rem 1rem;
   cursor: pointer;
-  background: #fff;
+  /* background: blue;
+  background-color: #280c22; */
   border-radius: 0.85rem;
-  border: 1px solid #d2d2d2;
-  font-weight: 600;
+  border: 1px solid #280c22;
   font-size: 0.95rem;
-  color: #111;
+  color: #280c22;
 }
 
 .post-cards-filter-drawer summary::-webkit-details-marker {
@@ -1073,7 +1078,7 @@ template {
 
 .post-cards-filter-item {
   background: #fff;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid #280c22;
   border-radius: 0.85rem;
   padding: 0.9rem 1rem;
 }
@@ -1085,16 +1090,15 @@ template {
   text-transform: uppercase;
   margin-bottom: 0.45rem;
   display: block;
-  color: #2563EB;
+  color: #280c22;
 }
 
 .post-cards-filter-item select {
   padding: 0.75rem 1rem;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid #280c22;
   background: #fff;
-  color: #1e3a5f;
   border-radius: 0.6rem;
-  accent-color: #2563EB;
+  accent-color: #280c22;
 }
 
 /* Modern button styles */
@@ -1137,4 +1141,15 @@ input[type="button"]:focus-visible,
 input[type="reset"]:focus-visible {
   outline: 2px solid #111111;
   outline-offset: 2px;
+}
+
+.post-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 760px) {
+  .post-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

@@ -54,9 +54,33 @@ foreach ( $defs as $name => $def ) {
     }
 }
 
+global $wpdb;
+$db_meta_keys = $wpdb->get_col(
+    $wpdb->prepare(
+        "
+        SELECT DISTINCT pm.meta_key
+        FROM {$wpdb->postmeta} pm
+        INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+        WHERE pm.meta_key LIKE %s
+            AND p.post_type = %s
+            AND p.post_status = %s
+        ",
+        $wpdb->esc_like( 'pcf_' ) . '%',
+        'post',
+        'publish'
+    )
+);
+
+if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
+    $meta_keys = array_values( array_unique( array_merge( $meta_keys, $db_meta_keys ) ) );
+}
+
 $search_ids = null;
+$force_no_results = false;
 if ( $search_term !== '' ) {
     $search_ids = array();
+    $search_tokens = preg_split( '/\s+/', $search_term );
+    $search_tokens = is_array( $search_tokens ) ? array_values( array_unique( array_filter( array_map( 'trim', $search_tokens ) ) ) ) : array();
 
     $search_query = new WP_Query( array(
         'post_type'      => 'post',
@@ -78,6 +102,18 @@ if ( $search_term !== '' ) {
                 'value'   => $search_term,
                 'compare' => 'LIKE',
             );
+
+            foreach ( $search_tokens as $search_token ) {
+                if ( mb_strlen( $search_token ) < 2 ) {
+                    continue;
+                }
+
+                $meta_query[] = array(
+                    'key'     => $meta_key,
+                    'value'   => $search_token,
+                    'compare' => 'LIKE',
+                );
+            }
         }
 
         $meta_search_query = new WP_Query( array(
@@ -94,6 +130,7 @@ if ( $search_term !== '' ) {
     }
 
     if ( empty( $search_ids ) ) {
+        $force_no_results = true;
         $search_ids = array( 0 );
     }
 }
@@ -109,6 +146,10 @@ $query_args = array(
 if ( is_array( $search_ids ) ) {
     $query_args['post__in'] = $search_ids;
     $query_args['orderby'] = 'post__in';
+}
+
+if ( $force_no_results ) {
+    $query_args['post__in'] = array( 0 );
 }
 
 $filter_meta_query = array( 'relation' => 'AND' );
@@ -143,6 +184,7 @@ if ( $has_filters ) {
 }
 
 $post_query = new WP_Query( $query_args );
+$results_anchor = 'post-cards-results';
 
 function pedagogy_post_material_types( $post_id, $defs ) {
     $materials = array();
@@ -179,13 +221,13 @@ function pedagogy_post_cover_image_url( $post_id ) {
 ?>
 
 <div class="post-cards-page">
-    <div class="post-cards-header">
+ <div class="post-cards-header">
         <div>
             <h1><?php the_title(); ?></h1>
-            <p class="post-cards-intro">Search publications and metadata across all entries.</p>
+                      <p class="post-cards-intro">Search publications and metadata across all entries.</p>
         </div>
-        <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() ); ?>">
-            <div class="post-cards-search-row">
+         <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() . '#' . $results_anchor ); ?>">
+     <div class="post-cards-search-row">
                 <label for="pcf_search" class="screen-reader-text"><?php esc_html_e( 'Search entries and metadata', 'twentytwentyfive' ); ?></label>
                 <input id="pcf_search" name="pcf_search" type="search" value="<?php echo esc_attr( $search_term ); ?>" placeholder="Search titles, descriptions, formats, tags...">
                 <button type="submit"><?php esc_html_e( 'Search', 'twentytwentyfive' ); ?></button>
@@ -193,7 +235,6 @@ function pedagogy_post_cover_image_url( $post_id ) {
                     <a class="post-cards-clear" href="<?php echo esc_url( get_permalink() ); ?>"><?php esc_html_e( 'Clear', 'twentytwentyfive' ); ?></a>
                 <?php endif; ?>
             </div>
-
             <?php if ( ! empty( $filter_definitions ) ) : ?>
                 <details class="post-cards-filter-drawer" <?php if ( $has_filters || $search_term !== '' ) : ?>open<?php endif; ?> >
                     <summary><?php esc_html_e( 'Filter by', 'twentytwentyfive' ); ?></summary>
@@ -215,7 +256,9 @@ function pedagogy_post_cover_image_url( $post_id ) {
             <?php endif; ?>
         </form>
     </div>
-
+   
+       
+    <div id="<?php echo esc_attr( $results_anchor ); ?>">
     <?php if ( $search_term !== '' || $has_filters ) : ?>
         <div class="post-cards-summary">
             <p><?php echo sprintf( esc_html__( 'Showing %s results for selected search and filters.', 'twentytwentyfive' ), intval( $post_query->found_posts ) ); ?></p>
@@ -266,6 +309,7 @@ function pedagogy_post_cover_image_url( $post_id ) {
             <p><?php esc_html_e( 'Try another keyword or adjust the filters to see matching content.', 'twentytwentyfive' ); ?></p>
         </div>
     <?php endif; ?>
+    </div>
 
     <?php wp_reset_postdata(); ?>
 </div>

@@ -368,6 +368,19 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                 }
             }
 
+            $identity_meta_items = array();
+            if ( '' !== $creator_display ) {
+                $identity_meta_items['Creator'] = esc_html( $creator_display );
+            }
+
+            if ( '' !== $date_display ) {
+                $identity_meta_items['Created'] = esc_html( $date_display );
+            }
+
+            if ( ! empty( $identity_meta_items ) ) {
+                $top_meta_items = $identity_meta_items + $top_meta_items;
+            }
+
             if ( $media_html || $description_html || ! empty( $top_meta_items ) || ! empty( $post_meta_items ) ) :
             ?>
                 <section class="pcf-single-content-grid">
@@ -400,34 +413,17 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                         <?php echo $description_html; ?>
                                     </div>
                                 </div>
-                                  <?php if ( '' !== $creator_display || '' !== $date_display ) : ?>
-                                <div class="pcf-description-meta-line">
-                                    <?php
-                                    if ( '' !== $creator_display && '' !== $date_display ) {
-                                        $meta_line = sprintf( __( 'By: %1$s | %2$s', 'twentytwentyfive' ), $creator_display, $date_display );
-                                    } elseif ( '' !== $creator_display ) {
-                                        $meta_line = sprintf( __( 'By: %s', 'twentytwentyfive' ), $creator_display );
-                                    } else {
-                                        $meta_line = $date_display;
-                                    }
-                                    ?>
-                                    <span class="pcf-description-meta-combined"><?php echo esc_html( $meta_line ); ?></span>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if ( $description_html ) : ?>
-                                <?php if ( ! empty( $top_meta_items ) ) : ?>
-                                    <aside class="pcf-metadata-card pcf-metadata-card-bottom pcf-metadata-card-inline">
-                                        <div class="pcf-meta-list">
-                                            <?php foreach ( $top_meta_items as $label => $val ) : ?>
-                                                <div class="pcf-meta-item">
-                                                    <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
-                                                    <div class="pcf-meta-value"><?php echo $val; ?></div>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </aside>
-                                <?php endif; ?>
+                            <?php if ( ! empty( $top_meta_items ) ) : ?>
+                                <aside class="pcf-metadata-card pcf-metadata-card-bottom pcf-metadata-card-inline">
+                                    <div class="pcf-meta-list">
+                                        <?php foreach ( $top_meta_items as $label => $val ) : ?>
+                                            <div class="pcf-meta-item">
+                                                <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
+                                                <div class="pcf-meta-value"><?php echo $val; ?></div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </aside>
                             <?php endif; ?>
                         </div>
                     </div>

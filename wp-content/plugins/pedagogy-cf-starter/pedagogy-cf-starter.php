@@ -138,13 +138,14 @@ class Pedagogy_CF_Starter {
                         <th><label for="pcf_type">Datatype</label></th>
                         <td>
                             <select id="pcf_type" name="pcf_type">
-                                <option value="text" <?php selected( $editing && $edit_def['type'] === 'text' ); ?>>Text</option>
-                                <option value="textarea" <?php selected( $editing && $edit_def['type'] === 'textarea' ); ?>>Textarea</option>
+                                <option value="text" <?php selected( $editing && $edit_def['type'] === 'text' ); ?>>Short text</option>
+                                <option value="textarea" <?php selected( $editing && $edit_def['type'] === 'textarea' ); ?>>Rich text</option>
                                 <option value="number" <?php selected( $editing && $edit_def['type'] === 'number' ); ?>>Number</option>
-                                <option value="date" <?php selected( $editing && $edit_def['type'] === 'date' ); ?>>Date</option>
+                                <option value="date" <?php selected( $editing && $edit_def['type'] === 'date' ); ?>>Date Created (Full Date)</option>
+                                 <option value="year" <?php selected( $editing && $edit_def['type'] === 'year' ); ?>>Date Created (year)</option>
                                 <option value="select" <?php selected( $editing && $edit_def['type'] === 'select' ); ?>>Select (comma-separated options)</option>
-                                <option value="url" <?php selected( $editing && $edit_def['type'] === 'url' ); ?>>URL (link + label)</option>
-                                <option value="linked" <?php selected( $editing && $edit_def['type'] === 'linked' ); ?>>Linked Field Options</option>
+                                <option value="url" <?php selected( $editing && $edit_def['type'] === 'url' ); ?>>Hyperlink</option>
+                                <option value="linked" <?php selected( $editing && $edit_def['type'] === 'linked' ); ?>>Linked Field</option>
                             </select>
                         </td>
                     </tr>

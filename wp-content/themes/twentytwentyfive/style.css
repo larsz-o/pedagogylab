@@ -149,7 +149,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 }
 .entry-content {
 	padding: 2rem;
-	margin: 0 auto;
+	margin: 10vh auto;
   background-color: #eab4a0;
 }
 
@@ -203,7 +203,9 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   width: 100%;
   margin: 0 auto;
 }
-
+.pcf-description-meta-line{
+  text-align: center;
+}
 .pcf-cover-image {
   display: block;
   width: 100%;
@@ -211,10 +213,30 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   height: auto;
   object-fit: contain;
 }
+.post-card-material-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
+.post-card-material-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  color: #280c22;
+  background-color: #f7f5f4;
+  border: 1px solid #dcd7d8;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
 .pcf-description-wrap {
   margin: 1.5rem auto 0;
-  width: min(100%, 72ch);
+  width: max(90%, 72ch);
   text-align: left;
   padding: 0.35rem;
   display: flex;
@@ -245,11 +267,8 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 }
 
 .pcf-single-content-grid {
-  margin: 1.75rem 0 0;
-  /* padding-bottom: 2.5rem;
-  display: grid; */
-  /* grid-template-columns: minmax(280px, 0.95fr) minmax(0, 2.15fr); */
-  column-gap: 2.25rem;
+  margin: 0.75rem 0 0;
+  display: block;
   row-gap: 1.5rem;
   align-items: start;
 }
@@ -259,28 +278,32 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 }
 
 .pcf-single-column-meta {
-  grid-column: 1;
-  grid-row: 1 / span 2;
+  align-self: start;
 }
 
 .pcf-single-column-main {
-  grid-column: 2;
-  grid-row: 1 / span 2;
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 1.5rem;
   row-gap: 1.25rem;
+  align-items: center;
+  padding: 0;
+}
+
+.pcf-post-shell.pcf-meta-layout-side .pcf-single-content-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  column-gap: 2.25rem;
+}
+
+.pcf-post-shell.pcf-meta-layout-side .pcf-single-column-main {
   padding: 0.9rem;
-
-
 }
-.flex-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.flex-item {
-  flex: 1 1 0;
-  min-width: 0;
+
+.pcf-post-shell.pcf-meta-layout-side .pcf-single-column-meta {
+  position: sticky;
+  top: 5rem;
+  align-self: start;
 }
 .entry-header {
   text-align: center;
@@ -294,9 +317,52 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   box-shadow: none;
 }
 
+.pcf-post-shell.pcf-meta-layout-side .pcf-single-column-meta .pcf-metadata-card {
+  margin-top: 0;
+}
+
+.pcf-metadata-card-bottom {
+  margin: 1.5rem 0 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.pcf-metadata-card-bottom .pcf-meta-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.pcf-metadata-card-bottom .pcf-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #280c22;
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+.pcf-metadata-card-bottom .pcf-meta-label {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.pcf-metadata-card-bottom .pcf-meta-value {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
 .pcf-single-column-media .pcf-embed-wrap {
   margin-top: 0;
   justify-content: center;
+}
+
+.pcf-single-column-description {
+  min-width: 0;
 }
 
 .pcf-single-column-media .pcf-embed-inner {
@@ -319,18 +385,77 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 .pcf-single-column-description .pcf-description-wrap {
   width: 100%;
   max-width: none;
-  margin-top: 0;
-  /* padding: 0.75rem; */
-  background: transparent;
-  border: 0;
-  border-radius: 1rem;
+  margin: 2em 0;
+  padding: 0.6rem 0.65rem;
+  box-sizing: border-box;
+  /* border-radius: 0.75rem;
+  border: 1px solid #280c22;
+  background-color: rgba(255, 255, 255, 0.92); */
   box-shadow: none;
+}
+
+.pcf-single-column-description .pcf-description-label {
+  min-width: 0;
+  margin: 0 0 0.45rem;
+  padding: 0;
+  font-weight: 800;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+}
+
+.pcf-description-meta-line {
+  text-align:center;
+  line-height: 1.3;
+  margin-bottom: 1em
+}
+
+.pcf-description-meta-separator {
+  opacity: 0.7;
+}
+
+.pcf-description-creator-label {
+  font-weight: 600;
 }
 
 .pcf-single-column-description .pcf-description-inner {
   background: transparent;
-  border-radius: 0.75rem;
+  border-radius: 0;
   border: 0;
+  padding: 0;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.pcf-single-column-description .pcf-description-inner > * {
+  max-width: 100%;
+}
+
+.pcf-single-column-description .pcf-description-inner img,
+.pcf-single-column-description .pcf-description-inner video,
+.pcf-single-column-description .pcf-description-inner iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.pcf-single-column-description .pcf-description-inner table,
+.pcf-single-column-description .pcf-description-inner pre {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.pcf-metadata-card-inline {
+  margin: 0 0 0.9rem;
+}
+
+.pcf-metadata-card-inline .pcf-meta-list {
+  justify-content: center;
 }
 
 .pcf-single-column-meta .pcf-meta-item {
@@ -418,7 +543,6 @@ hr {
 
 @media (max-width: 760px) {
   .pcf-single-content-grid {
-    grid-template-columns: 1fr;
     row-gap: 1rem;
   }
 
@@ -426,7 +550,50 @@ hr {
   .pcf-single-column-main {
     grid-column: auto;
     grid-row: auto;
-    /* background-color: rgba(255, 255, 255, .9) !important; */
+  }
+
+  .pcf-single-column-main {
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+  }
+
+  .pcf-single-column-meta {
+    position: static;
+    top: auto;
+  }
+
+  .pcf-post-shell.pcf-meta-layout-side .pcf-single-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pcf-metadata-card-bottom .pcf-meta-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .pcf-metadata-card-bottom .pcf-meta-item {
+    display: grid;
+    align-items: start;
+    gap: 0.3rem;
+    width: 100%;
+    border-radius: 0.75rem;
+    box-sizing: border-box;
+  }
+
+  .pcf-metadata-card-bottom .pcf-meta-label,
+  .pcf-metadata-card-bottom .pcf-meta-value {
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .pcf-metadata-card-bottom .pcf-meta-value {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .pcf-metadata-card-inline {
+    margin-bottom: 0.75rem;
   }
 
   .pcf-description-metadata-grid {
@@ -676,6 +843,7 @@ button,
 [type="button"],
 [type="reset"],
 [type="submit"] {
+  appearance: button;
   -webkit-appearance: button;
 }
 
@@ -768,6 +936,7 @@ textarea {
  */
 
 [type="search"] {
+  appearance: textfield;
   -webkit-appearance: textfield; /* 1 */
   outline-offset: -2px; /* 2 */
 }
@@ -908,17 +1077,27 @@ template {
 .post-card-format {
   display: inline-flex;
   padding: 0.45rem 0.85rem;
-@media (max-width: 760px) {
-  .post-cards-grid {
-    grid-template-columns: 1fr;
-  }
-}
   border-radius: 999px;
   color: #280c22;
   background-color: #f7f5f4;
   border: 1px solid #dcd7d8;
   font-size: 0.95rem;
-  font-weight: 400
+  font-weight: 400;
+}
+
+@media (max-width: 760px) {
+  .post-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .post-card-material-types {
+    gap: 0.35rem;
+  }
+
+  .post-card-material-type {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.85rem;
+  }
 }
 
 .post-card-formats-empty {

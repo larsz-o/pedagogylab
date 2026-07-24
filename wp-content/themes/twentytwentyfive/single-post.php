@@ -37,9 +37,24 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
     <?php
     while ( have_posts() ) :
         the_post();
+
+        $post_id = get_the_ID();
+        $pcf_meta_layout = 'bottom';
+
+        if ( isset( $_GET['pcf_meta_layout'] ) ) {
+            $requested_layout = sanitize_key( wp_unslash( $_GET['pcf_meta_layout'] ) );
+            if ( in_array( $requested_layout, array( 'side', 'bottom' ), true ) ) {
+                $pcf_meta_layout = $requested_layout;
+            }
+        }
+
+        $pcf_meta_layout = apply_filters( 'pcf_single_meta_layout', $pcf_meta_layout, $post_id );
+        if ( ! in_array( $pcf_meta_layout, array( 'side', 'bottom' ), true ) ) {
+            $pcf_meta_layout = 'bottom';
+        }
     ?>
 
-        <article id="post-<?php the_ID(); ?>" <?php post_class( 'pcf-post-shell' ); ?>>
+        <article id="post-<?php the_ID(); ?>" <?php post_class( 'pcf-post-shell pcf-meta-layout-' . $pcf_meta_layout ); ?>>
 
             <div class="pcf-post-layout">
 
@@ -134,7 +149,6 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
                 }
 
-                $post_id = get_the_ID();
                 ?>
             </header>
 
@@ -224,10 +238,100 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                 }
             }
 
+            $creator_display = '';
+            $date_display = '';
+
+            $creator_raw = '';
+            $creator_field_candidates = array( 'people', 'creators', 'creator' );
+
+            if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
+                foreach ( $creator_field_candidates as $creator_field ) {
+                    $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $creator_field );
+                    if ( '' !== $candidate_value && null !== $candidate_value ) {
+                        $creator_raw = $candidate_value;
+                        break;
+                    }
+                }
+
+                if ( '' === $creator_raw || null === $creator_raw ) {
+                    $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
+                    if ( is_array( $defs ) ) {
+                        foreach ( $defs as $field_name => $field_def ) {
+                            $field_title = isset( $field_def['title'] ) ? strtolower( trim( $field_def['title'] ) ) : '';
+                            if ( false === strpos( $field_title, 'creator' ) && false === strpos( $field_title, 'people' ) ) {
+                                continue;
+                            }
+
+                            $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
+                            if ( '' !== $candidate_value && null !== $candidate_value ) {
+                                $creator_raw = $candidate_value;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ( '' === $creator_raw || null === $creator_raw ) {
+                foreach ( $creator_field_candidates as $creator_field ) {
+                    $candidate_value = get_post_meta( $post_id, 'pcf_' . $creator_field, true );
+                    if ( '' === $candidate_value || null === $candidate_value ) {
+                        $candidate_value = get_post_meta( $post_id, $creator_field, true );
+                    }
+
+                    if ( '' !== $candidate_value && null !== $candidate_value ) {
+                        $creator_raw = $candidate_value;
+                        break;
+                    }
+                }
+            }
+
+            $date_created_raw = class_exists( 'Pedagogy_CF_Starter' ) ? Pedagogy_CF_Starter::get_value( $post_id, 'date_created' ) : '';
+            if ( '' === $date_created_raw || null === $date_created_raw ) {
+                $date_created_raw = get_post_meta( $post_id, 'pcf_date_created', true );
+                if ( '' === $date_created_raw || null === $date_created_raw ) {
+                    $date_created_raw = get_post_meta( $post_id, 'date_created', true );
+                }
+            }
+
+            $year_raw = class_exists( 'Pedagogy_CF_Starter' ) ? Pedagogy_CF_Starter::get_value( $post_id, 'year' ) : '';
+            if ( '' === $year_raw || null === $year_raw ) {
+                $year_raw = get_post_meta( $post_id, 'pcf_year', true );
+                if ( '' === $year_raw || null === $year_raw ) {
+                    $year_raw = get_post_meta( $post_id, 'year', true );
+                }
+            }
+
+            $creator_display = pcf_normalize_value( $creator_raw );
+            $date_created_display = pcf_normalize_value( $date_created_raw );
+            $year_display = pcf_normalize_value( $year_raw );
+
+            if ( '' !== $date_created_display ) {
+                $timestamp = strtotime( $date_created_display );
+                if ( false !== $timestamp ) {
+                    $date_display = wp_date( 'F j, Y', $timestamp );
+                } else {
+                    $date_display = $date_created_display;
+                }
+            } elseif ( '' !== $year_display ) {
+                $year_candidate = trim( $year_display );
+                if ( preg_match( '/^\d{4}$/', $year_candidate ) ) {
+                    $date_display = $year_candidate;
+                } else {
+                    $year_timestamp = strtotime( $year_candidate );
+                    if ( false !== $year_timestamp ) {
+                        $date_display = wp_date( 'F j, Y', $year_timestamp );
+                    } else {
+                        $date_display = $year_candidate;
+                    }
+                }
+            }
+
             $post_meta_items = array();
+            $top_meta_items = array();
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
-                $skip = array( 'media_embed', 'embed', 'media', 'people', 'date_created', 'description' );
+                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'date_created', 'year', 'description' );
                 if ( is_array( $defs ) && ! empty( $defs ) ) {
                     foreach ( $defs as $name => $def ) {
                         if ( in_array( $name, $skip, true ) ) {
@@ -239,29 +343,36 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                         }
                         $label = isset( $def['title'] ) ? $def['title'] : ucwords( str_replace( array( '_', '-' ), ' ', $name ) );
                         $label_key = strtolower( trim( $label ) );
-                        if ( in_array( $label_key, array( 'media embed', 'people', 'description','date created', ), true ) ) {
+                        if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'description', 'date created', 'year' ), true ) ) {
                             continue;
                         }
                         $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );
+                        $is_top_meta_item = in_array( $name, array( 'material_type', 'material_types', 'file_format', 'file_formats', 'format' ), true )
+                            || false !== strpos( $label_key, 'material type' )
+                            || false !== strpos( $label_key, 'file format' );
+
                         if ( $is_link ) {
-                            $post_meta_items[ $label ] = pcf_format_link_value( $value );
+                            $formatted_value = pcf_format_link_value( $value );
                         } elseif ( isset( $def['type'] ) && 'textarea' === $def['type'] ) {
-                            $post_meta_items[ $label ] = wp_kses_post( $value );
+                            $formatted_value = wp_kses_post( $value );
                         } else {
-                            $post_meta_items[ $label ] = esc_html( pcf_normalize_value( $value ) );
+                            $formatted_value = esc_html( pcf_normalize_value( $value ) );
+                        }
+
+                        if ( $is_top_meta_item ) {
+                            $top_meta_items[ $label ] = $formatted_value;
+                        } else {
+                            $post_meta_items[ $label ] = $formatted_value;
                         }
                     }
                 }
             }
 
-            if ( $media_html || $description_html || ! empty( $post_meta_items ) ) :
+            if ( $media_html || $description_html || ! empty( $top_meta_items ) || ! empty( $post_meta_items ) ) :
             ?>
                 <section class="pcf-single-content-grid">
-                    <div class="pcf-single-column pcf-single-column-main flex-row">
-                        <div class="pcf-single-column pcf-single-column-media flex-item">
-                            <?php echo $media_html; ?>
-                                  <div class="pcf-single-column pcf-single-column-meta">
-                        <?php if ( ! empty( $post_meta_items ) ) : ?>
+                    <?php if ( 'side' === $pcf_meta_layout && ! empty( $post_meta_items ) ) : ?>
+                        <div class="pcf-single-column pcf-single-column-meta">
                             <aside class="pcf-metadata-card">
                                 <div class="pcf-meta-list">
                                     <?php foreach ( $post_meta_items as $label => $val ) : ?>
@@ -272,20 +383,52 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                     <?php endforeach; ?>
                                 </div>
                             </aside>
-                        <?php endif; ?>
-                    </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="pcf-single-column pcf-single-column-main">
+                        <div class="pcf-single-column pcf-single-column-media">
+                            <?php echo $media_html; ?>
                         </div>
 
-                        <div class="pcf-single-column pcf-single-column-description flex-item ">
-                            <?php if ( $description_html ) : ?>
+                        <div class="pcf-single-column pcf-single-column-description">
+                          
+
                                 <div class="pcf-description-wrap">
-                                    <div class="pcf-description-label">Description</div>
+                                    <div class="pcf-description-label ">Description</div>
                                     <div class="pcf-description-inner">
                                         <?php echo $description_html; ?>
                                     </div>
                                 </div>
+                                  <?php if ( '' !== $creator_display || '' !== $date_display ) : ?>
+                                <div class="pcf-description-meta-line">
+                                    <?php
+                                    if ( '' !== $creator_display && '' !== $date_display ) {
+                                        $meta_line = sprintf( __( 'By: %1$s | %2$s', 'twentytwentyfive' ), $creator_display, $date_display );
+                                    } elseif ( '' !== $creator_display ) {
+                                        $meta_line = sprintf( __( 'By: %s', 'twentytwentyfive' ), $creator_display );
+                                    } else {
+                                        $meta_line = $date_display;
+                                    }
+                                    ?>
+                                    <span class="pcf-description-meta-combined"><?php echo esc_html( $meta_line ); ?></span>
+                                </div>
                             <?php endif; ?>
-                       
+
+                            <?php if ( $description_html ) : ?>
+                                <?php if ( ! empty( $top_meta_items ) ) : ?>
+                                    <aside class="pcf-metadata-card pcf-metadata-card-bottom pcf-metadata-card-inline">
+                                        <div class="pcf-meta-list">
+                                            <?php foreach ( $top_meta_items as $label => $val ) : ?>
+                                                <div class="pcf-meta-item">
+                                                    <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
+                                                    <div class="pcf-meta-value"><?php echo $val; ?></div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </aside>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </section>
@@ -297,6 +440,19 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                 <?php the_content(); ?>
                 <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
             </div>
+
+            <?php if ( 'bottom' === $pcf_meta_layout && ! empty( $post_meta_items ) ) : ?>
+                <aside class="pcf-metadata-card pcf-metadata-card-bottom">
+                    <div class="pcf-meta-list">
+                        <?php foreach ( $post_meta_items as $label => $val ) : ?>
+                            <div class="pcf-meta-item">
+                                <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
+                                <div class="pcf-meta-value"><?php echo $val; ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </aside>
+            <?php endif; ?>
 
             </div>
 

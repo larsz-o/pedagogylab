@@ -380,12 +380,20 @@ function pedagogy_post_cover_image_url( $post_id ) {
             <?php while ( $post_query->have_posts() ) : $post_query->the_post(); ?>
                 <?php
                 $cover_url = pedagogy_post_cover_image_url( get_the_ID() );
+                $material_types = pedagogy_post_material_types( get_the_ID(), $defs );
                 ?>
                 <article class="post-card">
                     <a class="post-card-link" href="<?php the_permalink(); ?>">
                         <div class="post-card-image" style="background-image: url('<?php echo esc_url( $cover_url ? $cover_url : get_template_directory_uri() . '/assets/default-card.png' ); ?>');"></div>
                         <div class="post-card-body">
                             <h2 class="post-card-title"><?php the_title(); ?></h2>
+                            <?php if ( ! empty( $material_types ) ) : ?>
+                                <ul class="post-card-material-types">
+                                    <?php foreach ( $material_types as $material_type ) : ?>
+                                        <li class="post-card-material-type"><?php echo esc_html( $material_type ); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
                         </div>
                     </a>
                 </article>

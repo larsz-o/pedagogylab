@@ -253,3 +253,18 @@ if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
 		}
 	}
 endif;
+
+if ( ! function_exists( 'twentytwentyfive_force_single_meta_bottom' ) ) :
+	/**
+	 * Forces Pedagogy single-post metadata layout to bottom.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param string $layout Current metadata layout.
+	 * @return string
+	 */
+	function twentytwentyfive_force_single_meta_bottom( $layout ) {
+		return 'bottom';
+	}
+endif;
+add_filter( 'pcf_single_meta_layout', 'twentytwentyfive_force_single_meta_bottom', 99 );

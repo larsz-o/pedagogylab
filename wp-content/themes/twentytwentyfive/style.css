@@ -6,6 +6,10 @@ Author URI: https://wordpress.org
 Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offers flexible design options, supported by a variety of patterns for different page types, such as services and landing pages, making it ideal for building personal blogs, professional portfolios, online magazines, or business websites. Its templates cater to various blog styles, from text-focused to image-heavy layouts. Additionally, it supports international typography and diverse color palettes, ensuring accessibility and customization for users worldwide.
 
 /* Pedagogy metadata card styles */
+
+iframe {
+  margin-top: 5vh !important
+}
 .pcf-post-shell {
   display: block;
 }
@@ -286,7 +290,7 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 1.5rem;
   row-gap: 1.25rem;
-  align-items: center;
+  align-items: start;
   padding: 0;
 }
 
@@ -458,6 +462,36 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
   justify-content: center;
 }
 
+.pcf-metadata-card-inline.pcf-metadata-card-no-content .pcf-meta-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.45rem;
+}
+
+.pcf-metadata-card-inline.pcf-metadata-card-no-content .pcf-meta-item {
+  display: inline-grid;
+  align-items: start;
+  gap: 0.25rem;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 0.75rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.pcf-metadata-card-inline.pcf-metadata-card-no-content .pcf-meta-label {
+  min-width: 0;
+  white-space: normal;
+}
+
+.pcf-metadata-card-inline.pcf-metadata-card-no-content .pcf-meta-value {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .pcf-single-column-meta .pcf-meta-item {
  background-color: rgba(255, 255, 255, .9);
   /* border: 1px solid #280c22; */
@@ -594,6 +628,14 @@ hr {
 
   .pcf-metadata-card-inline {
     margin-bottom: 0.75rem;
+  }
+
+  .pcf-metadata-card-inline.pcf-metadata-card-no-content .pcf-meta-list {
+    gap: 0.4rem;
+  }
+
+  .pcf-metadata-card-inline.pcf-metadata-card-no-content .pcf-meta-item {
+    padding: 0.3rem 0.55rem;
   }
 
   .pcf-description-metadata-grid {

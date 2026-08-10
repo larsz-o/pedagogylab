@@ -218,25 +218,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             ?>
 
             <?php
-            $description_html = '';
-            if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-                $description_raw = Pedagogy_CF_Starter::get_value( $post_id, 'description' );
-                if ( is_array( $description_raw ) ) {
-                    $description_raw = reset( $description_raw );
-                }
-                if ( is_string( $description_raw ) && trim( $description_raw ) !== '' ) {
-                    $description_html = wp_kses_post( wpautop( $description_raw ) );
-                }
-            }
-            if ( ! $description_html ) {
-                $description_fallback = get_post_meta( $post_id, 'pcf_description', true );
-                if ( is_array( $description_fallback ) ) {
-                    $description_fallback = reset( $description_fallback );
-                }
-                if ( is_string( $description_fallback ) && trim( $description_fallback ) !== '' ) {
-                    $description_html = wp_kses_post( wpautop( $description_fallback ) );
-                }
-            }
+           
 
             $creator_display = '';
             $date_display = '';
@@ -326,6 +308,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
                 }
             }
+            
 
             $post_meta_items = array();
             $top_meta_items = array();
@@ -370,7 +353,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
 
             $identity_meta_items = array();
             if ( '' !== $creator_display ) {
-                $identity_meta_items['Creator'] = esc_html( $creator_display );
+                $identity_meta_items['Creator(s)'] = esc_html( $creator_display );
             }
 
             if ( '' !== $date_display ) {
@@ -380,93 +363,76 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             if ( ! empty( $identity_meta_items ) ) {
                 $top_meta_items = $identity_meta_items + $top_meta_items;
             }
+             $description_html = '';
+            if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
+                $description_raw = Pedagogy_CF_Starter::get_value( $post_id, 'description' );
+                if ( is_array( $description_raw ) ) {
+                    $description_raw = reset( $description_raw );
+                }
+                if ( is_string( $description_raw ) && trim( $description_raw ) !== '' ) {
+                    $description_html = wp_kses_post( wpautop( $description_raw ) );
+                }
+            }
+            if ( ! $description_html ) {
+                $description_fallback = get_post_meta( $post_id, 'pcf_description', true );
+                if ( is_array( $description_fallback ) ) {
+                    $description_fallback = reset( $description_fallback );
+                }
+                if ( is_string( $description_fallback ) && trim( $description_fallback ) !== '' ) {
+                    $description_html = wp_kses_post( wpautop( $description_fallback ) );
+                }
+            }
 
             $has_entry_content = '' !== trim( (string) get_post_field( 'post_content', $post_id ) );
             $combined_meta_items = $top_meta_items + $post_meta_items;
-
-            if ( $media_html || $description_html || ! empty( $top_meta_items ) || ! empty( $post_meta_items ) ) :
+            $has_main_content = $media_html || $description_html || $has_entry_content;
             ?>
-                <section class="pcf-single-content-grid">
-                    <?php if ( 'side' === $pcf_meta_layout && ! empty( $post_meta_items ) ) : ?>
-                        <div class="pcf-single-column pcf-single-column-meta">
-                            <aside class="pcf-metadata-card">
+            
+            <?php if ( ! empty( $combined_meta_items ) || $has_main_content ) : ?>
+                <section class="pcf-single-content-grid pcf-single-content-grid-with-sidebar">
+                
+                    <?php if ( ! empty( $combined_meta_items ) ) : ?>
+                        <aside class="pcf-single-column pcf-single-column-meta pcf-single-column-meta-sticky">
+                            <div class="pcf-metadata-card pcf-metadata-card-sidebar">
                                 <div class="pcf-meta-list">
-                                    <?php foreach ( $post_meta_items as $label => $val ) : ?>
+                                    <?php foreach ( $combined_meta_items as $label => $val ) : ?>
                                         <div class="pcf-meta-item">
                                             <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
                                             <div class="pcf-meta-value"><?php echo $val; ?></div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
-                            </aside>
-                        </div>
+                            </div>
+                        </aside>
                     <?php endif; ?>
 
-                    <div class="pcf-single-column pcf-single-column-main">
-                        <div class="pcf-single-column pcf-single-column-media">
-                            <?php echo $media_html; ?>
-                        </div>
+                    <div class="pcf-single-column pcf-single-column-content">
+                        <?php if ( $media_html || $description_html ) : ?>
+                            <div class="pcf-single-column pcf-single-column-main">
+                                <div class="pcf-single-column pcf-single-column-media">
+                                    <?php echo $media_html; ?>
+                                </div>
 
-                        <div class="pcf-single-column pcf-single-column-description">
-                          
-
-                                <div class="pcf-description-wrap">
-                                    <div class="pcf-description-label ">Description</div>
-                                    <div class="pcf-description-inner">
-                                        <?php echo $description_html; ?>
+                                <div class="pcf-single-column pcf-single-column-description">
+                                    <div class="pcf-description-wrap">
+                                        <div class="pcf-description-label ">Description</div>
+                                        <div class="pcf-description-inner">
+                                            <?php echo $description_html; ?>
+                                        </div>
                                     </div>
                                 </div>
-                            <?php if ( $has_entry_content && ! empty( $top_meta_items ) ) : ?>
-                                <aside class="pcf-metadata-card pcf-metadata-card-bottom pcf-metadata-card-inline">
-                                    <div class="pcf-meta-list">
-                                        <?php foreach ( $top_meta_items as $label => $val ) : ?>
-                                            <div class="pcf-meta-item">
-                                                <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
-                                                <div class="pcf-meta-value"><?php echo $val; ?></div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </aside>
-                            <?php elseif ( ! $has_entry_content && ! empty( $combined_meta_items ) ) : ?>
-                                <aside class="pcf-metadata-card pcf-metadata-card-bottom pcf-metadata-card-inline pcf-metadata-card-no-content">
-                                  
-                                    <div class="pcf-meta-list">
-                                        <?php foreach ( $combined_meta_items as $label => $val ) : ?>
-                                            <div class="pcf-meta-item">
-                                                <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
-                                                <div class="pcf-meta-value"><?php echo $val; ?></div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </aside>
-                            <?php endif; ?>
-                        </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ( $has_entry_content ) : ?>
+                            <div class="entry-content">
+                                <?php add_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
+                                <?php the_content(); ?>
+                                <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </section>
-                 
-            <?php endif; ?>
-
-            <?php if ( $has_entry_content ) : ?>
-                <div class="entry-content">
-                    <?php add_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
-                    <?php the_content(); ?>
-                    <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if ( $has_entry_content && 'bottom' === $pcf_meta_layout && ! empty( $post_meta_items ) ) : ?>
-                <aside class="pcf-metadata-card pcf-metadata-card-bottom">
-                          <h3>More Info</h3>
-                    <div class="pcf-meta-list">
-                    
-                        <?php foreach ( $post_meta_items as $label => $val ) : ?>
-                            <div class="pcf-meta-item">
-                                <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
-                                <div class="pcf-meta-value"><?php echo $val; ?></div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </aside>
             <?php endif; ?>
 
             </div>

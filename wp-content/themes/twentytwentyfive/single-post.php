@@ -89,6 +89,34 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
                 }
 
+                if ( ! function_exists( 'pcf_value_to_list' ) ) {
+                    function pcf_value_to_list( $val ) {
+                        $items = array();
+
+                        if ( is_array( $val ) ) {
+                            foreach ( $val as $item ) {
+                                if ( is_scalar( $item ) ) {
+                                    $items[] = trim( (string) $item );
+                                }
+                            }
+                        } else {
+                            $raw = trim( (string) $val );
+                            if ( '' === $raw ) {
+                                return array();
+                            }
+                            $split = preg_split( '/\s*,\s*/', $raw );
+                            if ( is_array( $split ) ) {
+                                $items = $split;
+                            } else {
+                                $items = array( $raw );
+                            }
+                        }
+
+                        $items = array_values( array_filter( array_map( 'trim', $items ), 'strlen' ) );
+                        return $items;
+                    }
+                }
+
                 if ( ! function_exists( 'pcf_format_link_value' ) ) {
                     function pcf_format_link_value( $value ) {
                         if ( is_array( $value ) ) {
@@ -223,38 +251,36 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             $creator_display = '';
             $date_display = '';
 
-            $creator_raw = '';
-            $creator_field_candidates = array( 'people', 'creators', 'creator' );
+            $creator_raw_values = array();
+            $creator_field_candidates = array( 'people', 'creators', 'creator', 'contributors', 'contributor' );
 
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 foreach ( $creator_field_candidates as $creator_field ) {
                     $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $creator_field );
                     if ( '' !== $candidate_value && null !== $candidate_value ) {
-                        $creator_raw = $candidate_value;
-                        break;
+                        $creator_raw_values = array_merge( $creator_raw_values, pcf_value_to_list( $candidate_value ) );
                     }
                 }
 
-                if ( '' === $creator_raw || null === $creator_raw ) {
+                if ( empty( $creator_raw_values ) ) {
                     $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
                     if ( is_array( $defs ) ) {
                         foreach ( $defs as $field_name => $field_def ) {
                             $field_title = isset( $field_def['title'] ) ? strtolower( trim( $field_def['title'] ) ) : '';
-                            if ( false === strpos( $field_title, 'creator' ) && false === strpos( $field_title, 'people' ) ) {
+                            if ( false === strpos( $field_title, 'creator' ) && false === strpos( $field_title, 'people' ) && false === strpos( $field_title, 'contributor' ) ) {
                                 continue;
                             }
 
                             $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
                             if ( '' !== $candidate_value && null !== $candidate_value ) {
-                                $creator_raw = $candidate_value;
-                                break;
+                                $creator_raw_values = array_merge( $creator_raw_values, pcf_value_to_list( $candidate_value ) );
                             }
                         }
                     }
                 }
             }
 
-            if ( '' === $creator_raw || null === $creator_raw ) {
+            if ( empty( $creator_raw_values ) ) {
                 foreach ( $creator_field_candidates as $creator_field ) {
                     $candidate_value = get_post_meta( $post_id, 'pcf_' . $creator_field, true );
                     if ( '' === $candidate_value || null === $candidate_value ) {
@@ -262,11 +288,13 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
 
                     if ( '' !== $candidate_value && null !== $candidate_value ) {
-                        $creator_raw = $candidate_value;
-                        break;
+                        $creator_raw_values = array_merge( $creator_raw_values, pcf_value_to_list( $candidate_value ) );
                     }
                 }
             }
+
+            $creator_raw_values = array_values( array_unique( array_filter( $creator_raw_values, 'strlen' ) ) );
+            $creator_raw = implode( ', ', $creator_raw_values );
 
             $date_created_raw = class_exists( 'Pedagogy_CF_Starter' ) ? Pedagogy_CF_Starter::get_value( $post_id, 'date_created' ) : '';
             if ( '' === $date_created_raw || null === $date_created_raw ) {
@@ -314,7 +342,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             $top_meta_items = array();
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
-                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'date_created', 'year', 'description' );
+                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'contributor', 'contributors', 'date_created', 'year', 'description' );
                 if ( is_array( $defs ) && ! empty( $defs ) ) {
                     foreach ( $defs as $name => $def ) {
                         if ( in_array( $name, $skip, true ) ) {
@@ -326,7 +354,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                         }
                         $label = isset( $def['title'] ) ? $def['title'] : ucwords( str_replace( array( '_', '-' ), ' ', $name ) );
                         $label_key = strtolower( trim( $label ) );
-                        if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'description', 'date created', 'year' ), true ) ) {
+                        if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'contributor', 'contributors', 'description', 'date created', 'year' ), true ) ) {
                             continue;
                         }
                         $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );

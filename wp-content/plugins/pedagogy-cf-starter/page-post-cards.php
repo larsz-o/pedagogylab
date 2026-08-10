@@ -10,6 +10,42 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
     twentytwentyfive_render_inline_header();
 }
 
+if ( ! function_exists( 'pedagogy_build_search_stems' ) ) {
+    function pedagogy_build_search_stems( $token ) {
+        $token = mb_strtolower( trim( (string) $token ) );
+        if ( mb_strlen( $token ) < 4 ) {
+            return array();
+        }
+
+        $stems = array();
+        $suffixes = array( 'izations', 'ization', 'ational', 'fulness', 'ousness', 'iveness', 'tional', 'biliti', 'lessly', 'ingly', 'ments', 'ment', 'tions', 'tion', 'ships', 'ship', 'ences', 'ance', 'ence', 'ities', 'ity', 'ably', 'ably', 'edly', 'edly', 'ally', 'ably', 'ing', 'ers', 'ies', 'ied', 'est', 'ism', 'ist', 'ous', 'ive', 'ize', 'ise', 'ed', 'es', 'er', 'ly', 's' );
+
+        foreach ( $suffixes as $suffix ) {
+            $suffix_len = mb_strlen( $suffix );
+            if ( mb_strlen( $token ) <= $suffix_len + 2 ) {
+                continue;
+            }
+            if ( mb_substr( $token, -$suffix_len ) === $suffix ) {
+                $stem = mb_substr( $token, 0, mb_strlen( $token ) - $suffix_len );
+                if ( mb_strlen( $stem ) >= 3 ) {
+                    $stems[] = $stem;
+                }
+            }
+        }
+
+        if ( mb_strlen( $token ) >= 7 ) {
+            $stems[] = mb_substr( $token, 0, mb_strlen( $token ) - 1 );
+            $stems[] = mb_substr( $token, 0, mb_strlen( $token ) - 2 );
+        }
+
+        $stems = array_filter( array_unique( $stems ), static function( $stem ) use ( $token ) {
+            return $stem !== $token && mb_strlen( $stem ) >= 3;
+        } );
+
+        return array_values( $stems );
+    }
+}
+
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
 $defs = array();
@@ -18,15 +54,73 @@ if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
     if ( ! is_array( $defs ) ) {
         $defs = array();
     }
+
+    uasort( $defs, static function( $a, $b ) {
+        $a_order = isset( $a['order'] ) ? intval( $a['order'] ) : PHP_INT_MAX;
+        $b_order = isset( $b['order'] ) ? intval( $b['order'] ) : PHP_INT_MAX;
+        if ( $a_order === $b_order ) {
+            return 0;
+        }
+        return $a_order < $b_order ? -1 : 1;
+    } );
 }
 
 $meta_keys = array();
 $filter_definitions = array();
 $filter_values = array();
+$people_source_fields = array( 'creators', 'contributors' );
+$people_options = array();
+
+foreach ( $defs as $name => $def ) {
+    if ( ! in_array( $name, $people_source_fields, true ) ) {
+        continue;
+    }
+
+    if ( isset( $def['type'] ) && in_array( $def['type'], array( 'select', 'linked' ), true ) ) {
+        $options = array();
+        if ( 'select' === $def['type'] ) {
+            $options = isset( $def['options'] ) && is_array( $def['options'] ) ? $def['options'] : array();
+        } elseif ( 'linked' === $def['type'] && isset( $def['source_field'] ) ) {
+            $source_name = $def['source_field'];
+            if ( isset( $defs[ $source_name ] ) && isset( $defs[ $source_name ]['options'] ) && is_array( $defs[ $source_name ]['options'] ) ) {
+                $options = $defs[ $source_name ]['options'];
+            }
+        }
+        if ( ! empty( $options ) ) {
+            $people_options = array_merge( $people_options, $options );
+        }
+    }
+}
+
+if ( ! empty( $people_options ) ) {
+    $people_options = array_values( array_unique( $people_options ) );
+    usort( $people_options, 'strcasecmp' );
+}
+
+$people_filter_inserted = false;
 foreach ( $defs as $name => $def ) {
     $meta_keys[] = 'pcf_' . $name;
 
     if ( 'people' === $name ) {
+        continue;
+    }
+
+    if ( in_array( $name, $people_source_fields, true ) ) {
+        if ( ! $people_filter_inserted && ! empty( $people_options ) ) {
+            $filter_definitions['people'] = array(
+                'title'   => 'People',
+                'options' => $people_options,
+            );
+
+            $raw_people_filter_value = wp_unslash( $_GET['pcf_filter_people'] ?? array() );
+            if ( is_array( $raw_people_filter_value ) ) {
+                $filter_values['people'] = array_map( 'sanitize_text_field', $raw_people_filter_value );
+            } else {
+                $filter_values['people'] = array( sanitize_text_field( $raw_people_filter_value ) );
+            }
+
+            $people_filter_inserted = true;
+        }
         continue;
     }
 
@@ -44,6 +138,7 @@ foreach ( $defs as $name => $def ) {
 
         if ( ! empty( $options ) ) {
             usort( $options, 'strcasecmp' );
+
             $filter_definitions[ $name ] = array(
                 'title'   => isset( $def['title'] ) ? $def['title'] : $name,
                 'options' => $options,
@@ -86,16 +181,37 @@ if ( $search_term !== '' ) {
     $search_tokens = preg_split( '/\s+/', $search_term );
     $search_tokens = is_array( $search_tokens ) ? array_values( array_unique( array_filter( array_map( 'trim', $search_tokens ) ) ) ) : array();
 
-    $search_query = new WP_Query( array(
-        'post_type'      => 'post',
-        'post_status'    => 'publish',
-        'posts_per_page' => -1,
-        'fields'         => 'ids',
-        's'              => $search_term,
-    ) );
+    // Keep only meaningful tokens for broader matching when the query is long.
+    $search_tokens_for_matching = array_values(
+        array_filter(
+            $search_tokens,
+            static function( $search_token ) {
+                return mb_strlen( $search_token ) >= 2;
+            }
+        )
+    );
 
-    if ( $search_query->have_posts() ) {
-        $search_ids = array_merge( $search_ids, $search_query->posts );
+    $search_stems = array();
+    foreach ( $search_tokens_for_matching as $search_token ) {
+        $search_stems = array_merge( $search_stems, pedagogy_build_search_stems( $search_token ) );
+    }
+    $search_stems = array_values( array_unique( $search_stems ) );
+
+    // Try the full search phrase, then each token individually, and union results.
+    $search_terms_to_try = array_values( array_unique( array_merge( array( $search_term ), $search_tokens_for_matching, $search_stems ) ) );
+
+    foreach ( $search_terms_to_try as $search_term_to_try ) {
+        $search_query = new WP_Query( array(
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            's'              => $search_term_to_try,
+        ) );
+
+        if ( $search_query->have_posts() ) {
+            $search_ids = array_merge( $search_ids, $search_query->posts );
+        }
     }
 
     if ( ! empty( $meta_keys ) ) {
@@ -107,11 +223,7 @@ if ( $search_term !== '' ) {
                 'compare' => 'LIKE',
             );
 
-            foreach ( $search_tokens as $search_token ) {
-                if ( mb_strlen( $search_token ) < 2 ) {
-                    continue;
-                }
-
+            foreach ( array_merge( $search_tokens_for_matching, $search_stems ) as $search_token ) {
                 $meta_query[] = array(
                     'key'     => $meta_key,
                     'value'   => $search_token,
@@ -163,7 +275,20 @@ foreach ( $filter_definitions as $name => $filter ) {
     $values = is_array( $values ) ? array_filter( $values ) : array( $values );
     if ( ! empty( $values ) ) {
         $has_filters = true;
-        if ( count( $values ) > 1 ) {
+
+        if ( 'people' === $name ) {
+            $people_query = array( 'relation' => 'OR' );
+            foreach ( $values as $value ) {
+                foreach ( $people_source_fields as $people_field ) {
+                    $people_query[] = array(
+                        'key'     => 'pcf_' . $people_field,
+                        'value'   => $value,
+                        'compare' => 'LIKE',
+                    );
+                }
+            }
+            $filter_meta_query[] = $people_query;
+        } elseif ( count( $values ) > 1 ) {
             $sub_query = array( 'relation' => 'OR' );
             foreach ( $values as $value ) {
                 $sub_query[] = array(

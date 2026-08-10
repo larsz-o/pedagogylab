@@ -270,8 +270,8 @@ iframe {
   align-items: center;
   padding: 0.45rem 0.85rem;
   border-radius: 999px;
-  color: #280c22;
-  background-color: #f7f5f4;
+  background-color: #280c22;
+  color: white;
   border: 1px solid #dcd7d8;
   font-size: 0.95rem;
   font-weight: 400;
@@ -969,7 +969,6 @@ select,
 textarea {
   font-family: inherit; /* 1 */
   font-size: 100%; /* 1 */
-
   margin: 0; /* 2 */
 }
 
@@ -1334,7 +1333,6 @@ template {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #2563EB;
 }
 
 .post-cards-filter-item select {
@@ -1487,7 +1485,6 @@ template {
   width: 100%;
   padding: 0.85rem 1.1rem;
   border-radius: 0.75rem;
-  border: 1.5px solid #280c22;
   background: #fff;
   color: #000;
   font-size: 0.95rem;
@@ -1605,7 +1602,7 @@ template {
 
 .post-cards-filter-item select {
   padding: 0.75rem 1rem;
-  border: 1.5px solid #280c22;
+  border: 0;
   background: #fff;
   border-radius: 0.6rem;
   accent-color: #280c22;

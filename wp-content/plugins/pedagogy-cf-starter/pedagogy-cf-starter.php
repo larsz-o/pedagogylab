@@ -26,6 +26,8 @@ class Pedagogy_CF_Starter {
         add_filter( 'theme_templates', array( $this, 'register_page_template' ), 10, 4 );
         add_filter( 'theme_page_templates', array( $this, 'register_page_template' ), 10, 4 );
         add_filter( 'template_include', array( $this, 'load_page_template' ) );
+        add_filter( 'get_user_option_meta-box-order_post', array( $this, 'filter_meta_box_order_post' ), 10, 3 );
+        add_filter( 'get_user_option_meta-box-order_page', array( $this, 'filter_meta_box_order_page' ), 10, 3 );
     }
 
     public function register_page_template( $templates, $theme, $post, $post_type ) {
@@ -178,6 +180,13 @@ class Pedagogy_CF_Starter {
                         <th>Allow multiple selection (select)</th>
                         <td><label><input type="checkbox" name="pcf_select_multiple" value="1" <?php echo $editing && ! empty( $edit_def['multiple'] ) ? 'checked' : ''; ?>> Allow multiple values</label></td>
                     </tr>
+                    <tr id="allow_post_options_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && in_array( $edit_def['type'], array( 'select', 'linked' ), true ) ) ? 'table-row' : 'none'; ?>;">
+                        <th>Allow adding options while editing posts</th>
+                        <td>
+                            <label><input type="checkbox" name="pcf_allow_post_options" value="1" <?php checked( $editing && ! empty( $edit_def['allow_post_options'] ) ); ?>> Editors can add new options from the post editor</label>
+                            <p class="description">For linked fields, new options are added to the linked source field.</p>
+                        </td>
+                    </tr>
                     <tr id="linked_source_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'linked' ) ? 'table-row' : 'none'; ?>;">
                         <th><label for="pcf_linked_source">Linked Source Field</label></th>
                         <td>
@@ -276,6 +285,7 @@ class Pedagogy_CF_Starter {
             var linkedSourceRow = document.getElementById('linked_source_row');
             var linkedMultipleRow = document.getElementById('linked_multiple_row');
             var selectMultipleRow = document.getElementById('select_multiple_row');
+            var allowPostOptionsRow = document.getElementById('allow_post_options_row');
             var urlRow = document.getElementById('url_row');
             var hidden = document.getElementById('pcf_options');
             var container = document.getElementById('pcf_chips_container');
@@ -341,6 +351,9 @@ class Pedagogy_CF_Starter {
                 if ( selectMultipleRow ) {
                     selectMultipleRow.style.display = type.value === 'select' ? '' : 'none';
                 }
+                if ( allowPostOptionsRow ) {
+                    allowPostOptionsRow.style.display = ( type.value === 'select' || type.value === 'linked' ) ? '' : 'none';
+                }
                 if ( urlRow ) {
                     urlRow.style.display = type.value === 'url' ? '' : 'none';
                 }
@@ -365,6 +378,7 @@ class Pedagogy_CF_Starter {
         $opts  = sanitize_text_field( wp_unslash( $_POST['pcf_options'] ?? '' ) );
         $order = isset( $_POST['pcf_order'] ) ? intval( wp_unslash( $_POST['pcf_order'] ) ) : 0;
         $select_multiple = isset( $_POST['pcf_select_multiple'] ) ? true : false;
+        $allow_post_options = isset( $_POST['pcf_allow_post_options'] ) ? true : false;
         $original = isset( $_POST['original_name'] ) ? sanitize_text_field( wp_unslash( $_POST['original_name'] ) ) : '';
 
         if ( ! preg_match( '/^[a-z0-9_]+$/', $name ) ) {
@@ -380,6 +394,7 @@ class Pedagogy_CF_Starter {
             natcasesort( $options );
             $entry['options'] = array_values( $options );
             $entry['multiple'] = $select_multiple;
+            $entry['allow_post_options'] = $allow_post_options;
         } elseif ( 'url' === $type ) {
             // no definition-level extras required for URL fields; per-post values are stored separately
         } elseif ( 'linked' === $type ) {
@@ -390,6 +405,7 @@ class Pedagogy_CF_Starter {
                 $entry['source_field'] = '';
             }
             $entry['multiple'] = isset( $_POST['pcf_linked_multiple'] ) ? true : false;
+            $entry['allow_post_options'] = $allow_post_options;
         }
 
         if ( $order <= 0 ) {
@@ -567,11 +583,83 @@ class Pedagogy_CF_Starter {
         }
         foreach ( array( 'post', 'page' ) as $pt ) {
             foreach ( $defs as $name => $d ) {
+                if ( 'post' === $pt && 'people' === $name ) {
+                    continue;
+                }
                 add_meta_box( 'pcf_' . $name, $d['title'], function( $post, $box ) use ( $name, $d ) {
                     $this->render_field_box( $post, $name, $d );
                 }, $pt, 'normal', 'default' );
             }
         }
+    }
+
+    private function get_ordered_pcf_box_ids( $post_type ) {
+        $defs = $this->get_definitions();
+        if ( empty( $defs ) ) {
+            return array();
+        }
+
+        $ids = array();
+        foreach ( $defs as $name => $d ) {
+            if ( 'post' === $post_type && 'people' === $name ) {
+                continue;
+            }
+            $ids[] = 'pcf_' . $name;
+        }
+
+        return $ids;
+    }
+
+    private function parse_meta_box_order_ids( $ids ) {
+        if ( ! is_string( $ids ) || '' === $ids ) {
+            return array();
+        }
+
+        $parts = array_map( 'trim', explode( ',', $ids ) );
+        return array_values( array_filter( $parts, static function( $id ) {
+            return '' !== $id;
+        } ) );
+    }
+
+    private function enforce_pcf_meta_box_order( $sorted, $post_type ) {
+        $pcf_ids = $this->get_ordered_pcf_box_ids( $post_type );
+        if ( empty( $pcf_ids ) ) {
+            return $sorted;
+        }
+
+        $normalized = is_array( $sorted ) ? $sorted : array();
+        $contexts = array( 'normal', 'advanced', 'side' );
+        foreach ( $contexts as $ctx ) {
+            if ( ! isset( $normalized[ $ctx ] ) ) {
+                $normalized[ $ctx ] = '';
+            }
+        }
+
+        $remaining = array();
+        foreach ( $normalized as $ctx => $ids ) {
+            $current_ids = $this->parse_meta_box_order_ids( $ids );
+            $remaining[ $ctx ] = array_values( array_filter( $current_ids, static function( $id ) use ( $pcf_ids ) {
+                return ! in_array( $id, $pcf_ids, true );
+            } ) );
+        }
+
+        $remaining_normal = isset( $remaining['normal'] ) ? $remaining['normal'] : array();
+        $remaining['normal'] = array_values( array_unique( array_merge( $remaining_normal, $pcf_ids ) ) );
+
+        $out = array();
+        foreach ( $remaining as $ctx => $ids ) {
+            $out[ $ctx ] = implode( ',', $ids );
+        }
+
+        return $out;
+    }
+
+    public function filter_meta_box_order_post( $result, $option, $user ) {
+        return $this->enforce_pcf_meta_box_order( $result, 'post' );
+    }
+
+    public function filter_meta_box_order_page( $result, $option, $user ) {
+        return $this->enforce_pcf_meta_box_order( $result, 'page' );
     }
 
     private function render_field_box( $post, $name, $def ) {
@@ -610,7 +698,11 @@ class Pedagogy_CF_Starter {
                 break;
             case 'select':
                 $is_multiple = ! empty( $def['multiple'] );
+                $allow_post_options = ! empty( $def['allow_post_options'] );
                 $select_name = esc_attr( $meta_key . ( $is_multiple ? '[]' : '' ) );
+                $select_id = esc_attr( $meta_key . '_select' );
+                $new_option_name = esc_attr( $meta_key . '_new_option' );
+                $new_option_id = esc_attr( $meta_key . '_new_option' );
                 echo '<select name="' . $select_name . '" class="widefat"' . ( $is_multiple ? ' multiple size="5"' : '' ) . '>';
                 $opts = $def['options'] ?? array();
                 if ( ! empty( $opts ) && is_array( $opts ) ) {
@@ -630,6 +722,75 @@ class Pedagogy_CF_Starter {
                     echo '<option value="' . esc_attr( $o ) . '" ' . $sel . '>' . esc_html( $o ) . '</option>';
                 }
                 echo '</select>';
+                if ( $allow_post_options ) {
+                    echo '<div class="pcf-post-option-add" style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+                    echo '<input type="text" id="' . $new_option_id . '" name="' . $new_option_name . '" value="" placeholder="' . esc_attr__( 'Add a new option', 'pedagogy' ) . '" class="regular-text">';
+                    echo '<button type="button" class="button" id="' . esc_attr( $meta_key . '_add_option_btn' ) . '">' . esc_html__( 'Add option', 'pedagogy' ) . '</button>';
+                    echo '</div>';
+                    echo '<p class="description">' . esc_html__( 'Adds to this field option list for future posts.', 'pedagogy' ) . '</p>';
+                    ?>
+                    <script>
+                    (function(){
+                        var input = document.getElementById(<?php echo wp_json_encode( $meta_key . '_new_option' ); ?>);
+                        var button = document.getElementById(<?php echo wp_json_encode( $meta_key . '_add_option_btn' ); ?>);
+                        var select = document.getElementsByName(<?php echo wp_json_encode( $meta_key . ( $is_multiple ? '[]' : '' ) ); ?>)[0];
+                        if (!input || !button || !select) { return; }
+
+                        function addOptionFromInput() {
+                            var val = input.value.trim();
+                            if (!val) { return; }
+                            var exists = false;
+                            var selectedValues = Array.prototype.filter.call(select.options, function(opt){
+                                return opt.selected && opt.value !== '';
+                            }).map(function(opt){
+                                return opt.value;
+                            });
+                            Array.prototype.forEach.call(select.options, function(opt){
+                                if (opt.value.toLowerCase() === val.toLowerCase()) {
+                                    exists = true;
+                                    opt.selected = true;
+                                }
+                            });
+                            if (!exists) {
+                                var option = new Option(val, val, true, true);
+                                select.add(option);
+                                selectedValues.push(val);
+                            }
+                            var options = Array.prototype.slice.call(select.options);
+                            var placeholder = null;
+                            if (options.length && options[0].value === '') {
+                                placeholder = options.shift();
+                            }
+                            options.sort(function(a, b){
+                                return a.text.toLowerCase().localeCompare(b.text.toLowerCase());
+                            });
+                            select.innerHTML = '';
+                            if (placeholder) {
+                                select.add(placeholder);
+                            }
+                            options.forEach(function(opt){
+                                opt.selected = selectedValues.indexOf(opt.value) !== -1;
+                                select.add(opt);
+                            });
+                            if (!<?php echo wp_json_encode( $is_multiple ); ?>) {
+                                select.value = val;
+                            }
+                        }
+
+                        button.addEventListener('click', function(){
+                            addOptionFromInput();
+                        });
+
+                        input.addEventListener('keydown', function(e){
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addOptionFromInput();
+                            }
+                        });
+                    })();
+                    </script>
+                    <?php
+                }
                 break;
             case 'url':
                 $href_key = esc_attr( $meta_key . '_href' );
@@ -645,6 +806,7 @@ class Pedagogy_CF_Starter {
                 break;
             case 'linked':
                 $source = isset( $def['source_field'] ) ? $def['source_field'] : '';
+                $allow_post_options = ! empty( $def['allow_post_options'] );
                 $opts = array();
                 if ( $source ) {
                     $source_defs = $this->get_definitions();
@@ -662,6 +824,8 @@ class Pedagogy_CF_Starter {
                 }
                 $is_multiple = ! empty( $def['multiple'] );
                 $select_name = esc_attr( $meta_key . ( $is_multiple ? '[]' : '' ) );
+                $new_option_name = esc_attr( $meta_key . '_new_option' );
+                $new_option_id = esc_attr( $meta_key . '_new_option' );
                 echo '<select name="' . $select_name . '" class="widefat"' . ( $is_multiple ? ' multiple size="5"' : '' ) . '>';
                 if ( ! $is_multiple ) {
                     echo '<option value="">' . esc_html__( '-- Select option --', 'pedagogy' ) . '</option>';
@@ -677,6 +841,75 @@ class Pedagogy_CF_Starter {
                     echo '<option value="' . esc_attr( $o ) . '" ' . $sel . '>' . esc_html( $o ) . '</option>';
                 }
                 echo '</select>';
+                if ( $allow_post_options ) {
+                    echo '<div class="pcf-post-option-add" style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+                    echo '<input type="text" id="' . $new_option_id . '" name="' . $new_option_name . '" value="" placeholder="' . esc_attr__( 'Add a new option', 'pedagogy' ) . '" class="regular-text">';
+                    echo '<button type="button" class="button" id="' . esc_attr( $meta_key . '_add_option_btn' ) . '">' . esc_html__( 'Add option', 'pedagogy' ) . '</button>';
+                    echo '</div>';
+                    echo '<p class="description">' . esc_html__( 'Adds to the linked source field option list for future posts.', 'pedagogy' ) . '</p>';
+                    ?>
+                    <script>
+                    (function(){
+                        var input = document.getElementById(<?php echo wp_json_encode( $meta_key . '_new_option' ); ?>);
+                        var button = document.getElementById(<?php echo wp_json_encode( $meta_key . '_add_option_btn' ); ?>);
+                        var select = document.getElementsByName(<?php echo wp_json_encode( $meta_key . ( $is_multiple ? '[]' : '' ) ); ?>)[0];
+                        if (!input || !button || !select) { return; }
+
+                        function addOptionFromInput() {
+                            var val = input.value.trim();
+                            if (!val) { return; }
+                            var exists = false;
+                            var selectedValues = Array.prototype.filter.call(select.options, function(opt){
+                                return opt.selected && opt.value !== '';
+                            }).map(function(opt){
+                                return opt.value;
+                            });
+                            Array.prototype.forEach.call(select.options, function(opt){
+                                if (opt.value.toLowerCase() === val.toLowerCase()) {
+                                    exists = true;
+                                    opt.selected = true;
+                                }
+                            });
+                            if (!exists) {
+                                var option = new Option(val, val, true, true);
+                                select.add(option);
+                                selectedValues.push(val);
+                            }
+                            var options = Array.prototype.slice.call(select.options);
+                            var placeholder = null;
+                            if (options.length && options[0].value === '') {
+                                placeholder = options.shift();
+                            }
+                            options.sort(function(a, b){
+                                return a.text.toLowerCase().localeCompare(b.text.toLowerCase());
+                            });
+                            select.innerHTML = '';
+                            if (placeholder) {
+                                select.add(placeholder);
+                            }
+                            options.forEach(function(opt){
+                                opt.selected = selectedValues.indexOf(opt.value) !== -1;
+                                select.add(opt);
+                            });
+                            if (!<?php echo wp_json_encode( $is_multiple ); ?>) {
+                                select.value = val;
+                            }
+                        }
+
+                        button.addEventListener('click', function(){
+                            addOptionFromInput();
+                        });
+
+                        input.addEventListener('keydown', function(e){
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addOptionFromInput();
+                            }
+                        });
+                    })();
+                    </script>
+                    <?php
+                }
                 break;
             case 'text':
             default:
@@ -698,7 +931,13 @@ class Pedagogy_CF_Starter {
             return;
         }
 
+        $defs_updated = false;
+
         foreach ( $defs as $name => $d ) {
+            if ( 'post' === get_post_type( $post_id ) && 'people' === $name ) {
+                continue;
+            }
+
             $meta_key = 'pcf_' . $name;
 
             // Special handling for URL fields (separate href + label inputs)
@@ -719,9 +958,43 @@ class Pedagogy_CF_Starter {
             }
 
             if ( ! isset( $_POST[ $meta_key ] ) ) {
+                $raw = null;
+            } else {
+                $raw = wp_unslash( $_POST[ $meta_key ] );
+            }
+
+            $new_option_key = $meta_key . '_new_option';
+            $new_option = isset( $_POST[ $new_option_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $new_option_key ] ) ) : '';
+            if ( ! empty( $d['allow_post_options'] ) && $new_option !== '' && in_array( $d['type'], array( 'select', 'linked' ), true ) ) {
+                if ( 'linked' === $d['type'] && ! empty( $d['source_field'] ) && isset( $defs[ $d['source_field'] ] ) ) {
+                    if ( ! isset( $defs[ $d['source_field'] ]['options'] ) || ! is_array( $defs[ $d['source_field'] ]['options'] ) ) {
+                        $defs[ $d['source_field'] ]['options'] = array();
+                    }
+                    $existing = array_map( 'strtolower', $defs[ $d['source_field'] ]['options'] );
+                    if ( ! in_array( strtolower( $new_option ), $existing, true ) ) {
+                        $defs[ $d['source_field'] ]['options'][] = $new_option;
+                        natcasesort( $defs[ $d['source_field'] ]['options'] );
+                        $defs[ $d['source_field'] ]['options'] = array_values( $defs[ $d['source_field'] ]['options'] );
+                        $defs_updated = true;
+                    }
+                } elseif ( 'select' === $d['type'] ) {
+                    if ( ! isset( $defs[ $name ]['options'] ) || ! is_array( $defs[ $name ]['options'] ) ) {
+                        $defs[ $name ]['options'] = array();
+                    }
+                    $existing = array_map( 'strtolower', $defs[ $name ]['options'] );
+                    if ( ! in_array( strtolower( $new_option ), $existing, true ) ) {
+                        $defs[ $name ]['options'][] = $new_option;
+                        natcasesort( $defs[ $name ]['options'] );
+                        $defs[ $name ]['options'] = array_values( $defs[ $name ]['options'] );
+                        $defs_updated = true;
+                    }
+                }
+            }
+
+            if ( null === $raw ) {
                 continue;
             }
-            $raw = wp_unslash( $_POST[ $meta_key ] );
+
             switch ( $d['type'] ) {
                 case 'number':
                     $val = floatval( $raw );
@@ -734,14 +1007,14 @@ class Pedagogy_CF_Starter {
                     break;
                 case 'linked':
                     if ( is_array( $raw ) ) {
-                        $val = array_map( 'sanitize_text_field', $raw );
+                        $val = array_values( array_filter( array_map( 'sanitize_text_field', $raw ), 'strlen' ) );
                     } else {
                         $val = sanitize_text_field( $raw );
                     }
                     break;
                 case 'select':
                     if ( is_array( $raw ) ) {
-                        $val = array_map( 'sanitize_text_field', $raw );
+                        $val = array_values( array_filter( array_map( 'sanitize_text_field', $raw ), 'strlen' ) );
                     } else {
                         $val = sanitize_text_field( $raw );
                     }
@@ -751,7 +1024,17 @@ class Pedagogy_CF_Starter {
                     $val = sanitize_text_field( $raw );
                     break;
             }
-            update_post_meta( $post_id, $meta_key, $val );
+            if ( is_array( $val ) && empty( $val ) ) {
+                delete_post_meta( $post_id, $meta_key );
+            } elseif ( ! is_array( $val ) && trim( (string) $val ) === '' ) {
+                delete_post_meta( $post_id, $meta_key );
+            } else {
+                update_post_meta( $post_id, $meta_key, $val );
+            }
+        }
+
+        if ( $defs_updated ) {
+            update_option( self::OPTION_KEY, $defs );
         }
     }
 
@@ -866,7 +1149,7 @@ public static function get_definition( $name ) {
             }
             $meta_key = 'pcf_' . $name;
             $val = get_post_meta( $post_id, $meta_key, true );
-            if ( $val === '' || $val === null ) {
+            if ( ! $this->has_meaningful_meta_value( $val, $d ) ) {
                 continue;
             }
 
@@ -929,6 +1212,32 @@ public static function get_definition( $name ) {
         }
 
         return $out . $content;
+    }
+
+    private function has_meaningful_meta_value( $val, $def = array() ) {
+        if ( $val === null ) {
+            return false;
+        }
+
+        if ( is_array( $val ) ) {
+            // URL field values are arrays with href/label keys.
+            if ( isset( $def['type'] ) && 'url' === $def['type'] ) {
+                $href = isset( $val['href'] ) ? trim( (string) $val['href'] ) : '';
+                return '' !== $href;
+            }
+
+            foreach ( $val as $item ) {
+                if ( is_array( $item ) || is_object( $item ) ) {
+                    return true;
+                }
+                if ( trim( (string) $item ) !== '' ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return trim( (string) $val ) !== '';
     }
 
 }

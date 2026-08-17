@@ -358,7 +358,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                             continue;
                         }
                         $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );
-                        $is_top_meta_item = in_array( $name, array( 'material_type', 'material_types', 'file_format', 'file_formats', 'format' ), true )
+                        $is_top_meta_item = in_array( $name, array( 'material_type', 'file_format' ), true )
                             || false !== strpos( $label_key, 'material type' )
                             || false !== strpos( $label_key, 'file format' );
 
@@ -418,21 +418,6 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             
             <?php if ( ! empty( $combined_meta_items ) || $has_main_content ) : ?>
                 <section class="pcf-single-content-grid pcf-single-content-grid-with-sidebar">
-                
-                    <?php if ( ! empty( $combined_meta_items ) ) : ?>
-                        <aside class="pcf-single-column pcf-single-column-meta pcf-single-column-meta-sticky">
-                            <div class="pcf-metadata-card pcf-metadata-card-sidebar">
-                                <div class="pcf-meta-list">
-                                    <?php foreach ( $combined_meta_items as $label => $val ) : ?>
-                                        <div class="pcf-meta-item">
-                                            <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
-                                            <div class="pcf-meta-value"><?php echo $val; ?></div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </aside>
-                    <?php endif; ?>
 
                     <div class="pcf-single-column pcf-single-column-content">
                         <?php if ( $media_html || $description_html ) : ?>
@@ -460,6 +445,22 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                             </div>
                         <?php endif; ?>
                     </div>
+
+                    <?php if ( ! empty( $combined_meta_items ) ) : ?>
+                        <div class="row-center">///</div>
+                        <aside class="pcf-single-column pcf-single-column-meta pcf-single-column-meta-sticky">
+                            <div class="pcf-metadata-card pcf-metadata-card-sidebar">
+                                <div class="pcf-meta-list">
+                                    <?php foreach ( $combined_meta_items as $label => $val ) : ?>
+                                        <div class="pcf-meta-item">
+                                            <div class="pcf-meta-label"><?php echo esc_html( $label ); ?></div>
+                                            <div class="pcf-meta-value"><?php echo $val; ?></div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </aside>
+                    <?php endif; ?>
                 </section>
             <?php endif; ?>
 

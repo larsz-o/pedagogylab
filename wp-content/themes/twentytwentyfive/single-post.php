@@ -177,6 +177,127 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
                 }
 
+                if ( ! function_exists( 'pcf_add_iframe_fragment_to_content' ) ) {
+                    function pcf_add_iframe_fragment_to_content( $content ) {
+                        if ( ! is_string( $content ) || '' === trim( $content ) ) {
+                            return $content;
+                        }
+
+                        $fragment = 'page=5&zoom=200&toolbar=1';
+
+                        return preg_replace_callback(
+                            '/<iframe\\b[^>]*\\bsrc=(["\'])([^"\']+)\\1[^>]*>/i',
+                            static function ( $matches ) use ( $fragment ) {
+                                if ( empty( $matches[2] ) ) {
+                                    return $matches[0];
+                                }
+
+                                $quote = $matches[1];
+                                $src = html_entity_decode( trim( (string) $matches[2] ), ENT_QUOTES, 'UTF-8' );
+                                if ( '' === $src ) {
+                                    return $matches[0];
+                                }
+
+                                if ( false !== strpos( $src, '#' ) ) {
+                                    list( $base, $existing_fragment ) = explode( '#', $src, 2 );
+                                    if ( '' === trim( $existing_fragment ) ) {
+                                        $updated_src = $base . '#' . $fragment;
+                                    } else {
+                                        $updated_src = $base . '#' . rtrim( $existing_fragment, '&' ) . '&' . $fragment;
+                                    }
+                                } else {
+                                    $updated_src = $src . '#' . $fragment;
+                                }
+
+                                $replacement = $quote . esc_url( $updated_src ) . $quote;
+                                return str_replace( $quote . $matches[2] . $quote, $replacement, $matches[0] );
+                            },
+                            $content
+                        );
+                    }
+                }
+
+                if ( ! function_exists( 'pcf_add_h2_anchors_and_toc' ) ) {
+                    function pcf_add_h2_anchors_and_toc( $content ) {
+                        $result = array(
+                            'content' => $content,
+                            'toc'     => '',
+                        );
+
+                        if ( ! is_string( $content ) || '' === trim( $content ) ) {
+                            return $result;
+                        }
+
+                        $headings = array();
+                        $used_ids = array();
+
+                        $processed_content = preg_replace_callback(
+                            '/<h2\b([^>]*)>(.*?)<\/h2>/is',
+                            static function ( $matches ) use ( &$headings, &$used_ids ) {
+                                $attrs = isset( $matches[1] ) ? $matches[1] : '';
+                                $inner_html = isset( $matches[2] ) ? $matches[2] : '';
+
+                                $heading_text = trim( wp_strip_all_tags( html_entity_decode( $inner_html, ENT_QUOTES, 'UTF-8' ) ) );
+                                if ( '' === $heading_text ) {
+                                    return $matches[0];
+                                }
+
+                                $base_id = sanitize_title( $heading_text );
+                                if ( '' === $base_id ) {
+                                    $base_id = 'section';
+                                }
+
+                                $anchor_id = $base_id;
+                                $counter = 2;
+                                while ( isset( $used_ids[ $anchor_id ] ) ) {
+                                    $anchor_id = $base_id . '-' . $counter;
+                                    $counter++;
+                                }
+                                $used_ids[ $anchor_id ] = true;
+
+                                $headings[] = array(
+                                    'id'    => $anchor_id,
+                                    'label' => $heading_text,
+                                );
+
+                                // Add an explicit anchor element and mirror the id on h2 for robust browser targeting.
+                                $anchor_html = '<a id="' . esc_attr( $anchor_id ) . '" class="pcf-h2-anchor" aria-hidden="true"></a>';
+
+                                if ( preg_match( '/\bid\s*=\s*(["\']).*?\1/i', $attrs ) ) {
+                                    $attrs = preg_replace( '/\bid\s*=\s*(["\']).*?\1/i', ' id="' . esc_attr( $anchor_id ) . '"', $attrs, 1 );
+                                } else {
+                                    $attrs .= ' id="' . esc_attr( $anchor_id ) . '"';
+                                }
+
+                                return $anchor_html . '<h2' . $attrs . '>' . $inner_html . '</h2>';
+                            },
+                            $content
+                        );
+
+                        if ( null === $processed_content ) {
+                            return $result;
+                        }
+
+                        $result['content'] = $processed_content;
+
+                        if ( empty( $headings ) ) {
+                            return $result;
+                        }
+
+                        $toc_items_html = '';
+                        foreach ( $headings as $heading ) {
+                            $toc_items_html .= '<li><a href="#' . esc_attr( $heading['id'] ) . '">' . esc_html( $heading['label'] ) . '</a></li>';
+                        }
+
+                        $result['toc'] = '<nav id="toc" class="pcf-content-toc" aria-label="' . esc_attr__( 'Table of contents', 'twentytwentyfive' ) . '">'
+                            . '<div class="pcf-content-toc-title">' . esc_html__( 'Contents', 'twentytwentyfive' ) . '</div>'
+                            . '<ul class="pcf-content-toc-list" style="display:flex; flex-wrap:wrap; gap:0.75rem 1rem; list-style:none; padding:0; margin:0 0 1.25rem;">' . $toc_items_html . '</ul>'
+                            . '</nav>';
+
+                        return $result;
+                    }
+                }
+
                 ?>
             </header>
 
@@ -440,8 +561,14 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                         <?php if ( $has_entry_content ) : ?>
                             <div class="entry-content">
                                 <?php add_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
-                                <?php the_content(); ?>
+                                <?php $entry_content_html = apply_filters( 'the_content', get_the_content() ); ?>
                                 <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
+                                <?php $entry_content_with_iframe_params = pcf_add_iframe_fragment_to_content( $entry_content_html ); ?>
+                                <?php $entry_content_with_toc = pcf_add_h2_anchors_and_toc( $entry_content_with_iframe_params ); ?>
+                                <?php if ( ! empty( $entry_content_with_toc['toc'] ) ) : ?>
+                                    <?php echo $entry_content_with_toc['toc']; ?>
+                                <?php endif; ?>
+                                <?php echo $entry_content_with_toc['content']; ?>
                             </div>
                         <?php endif; ?>
                     </div>

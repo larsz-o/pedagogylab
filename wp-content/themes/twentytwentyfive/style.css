@@ -660,14 +660,22 @@ a {
 	font-weight: bold;
 }
 .block-shade-1 {
-  background-color: rgb(254,169,133);
-  color:white;
-  padding: 1em
+background-color: rgba(254,169,133, .5);
+border-radius: 10px;
+  padding: 1em;
+}
+.block-shade-2 {
+  padding: 1em;
+}
+.embed-pdf-viewer-wrapper {
+  margin: 0;
+  padding:0
 }
 iframe {
   border: none;
   margin: 0;
   padding: 0;
+  width: 100% !important;
 }
 hr {
 	display: none
@@ -680,13 +688,17 @@ hr {
 .flex-between {
   align-content: space-between;
 }
-
 /* Site title styling in header and footer */
 .wp-block-site-title {
   font-weight: 700;
   text-decoration: none;
 }
-
+.pcf-content-toc-title {
+  font-family: "Roboto Slab", serif;
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
 .wp-block-site-title a {
   text-decoration: none;
 }

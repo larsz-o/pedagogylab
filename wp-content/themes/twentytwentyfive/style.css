@@ -659,8 +659,26 @@ a {
 	color: #a84f3a;
 	font-weight: bold;
 }
+.block-shade-1 {
+  background-color: rgb(254,169,133);
+  color:white;
+  padding: 1em
+}
+iframe {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
 hr {
 	display: none
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+.flex-between {
+  align-content: space-between;
 }
 
 /* Site title styling in header and footer */

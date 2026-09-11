@@ -153,6 +153,33 @@ foreach ( $defs as $name => $def ) {
     }
 }
 
+// Show key taxonomy-like filters first in the sidebar when they exist.
+$preferred_filter_order = array(
+    'material_type',
+    'audience_types',
+    'subjects_topics',
+    'disciplinary_areas',
+    'intended_use',
+);
+
+if ( ! empty( $filter_definitions ) ) {
+    $ordered_filter_definitions = array();
+
+    foreach ( $preferred_filter_order as $preferred_filter_name ) {
+        if ( isset( $filter_definitions[ $preferred_filter_name ] ) ) {
+            $ordered_filter_definitions[ $preferred_filter_name ] = $filter_definitions[ $preferred_filter_name ];
+        }
+    }
+
+    foreach ( $filter_definitions as $filter_name => $filter_definition ) {
+        if ( ! isset( $ordered_filter_definitions[ $filter_name ] ) ) {
+            $ordered_filter_definitions[ $filter_name ] = $filter_definition;
+        }
+    }
+
+    $filter_definitions = $ordered_filter_definitions;
+}
+
 global $wpdb;
 $db_meta_keys = $wpdb->get_col(
     $wpdb->prepare(

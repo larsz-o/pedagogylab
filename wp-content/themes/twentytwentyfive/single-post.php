@@ -41,6 +41,139 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
         $post_id = get_the_ID();
         $pcf_meta_layout = 'bottom';
 
+        $pcf_callout_normalize = static function ( $value ) {
+            if ( is_array( $value ) ) {
+                $flattened = array();
+                foreach ( $value as $item ) {
+                    if ( is_scalar( $item ) ) {
+                        $flattened[] = trim( (string) $item );
+                    }
+                }
+                return implode( ', ', array_values( array_filter( $flattened, 'strlen' ) ) );
+            }
+
+            if ( is_object( $value ) && method_exists( $value, '__toString' ) ) {
+                return trim( (string) $value );
+            }
+
+            if ( is_bool( $value ) ) {
+                return $value ? 'Yes' : 'No';
+            }
+
+            if ( null === $value ) {
+                return '';
+            }
+
+            return trim( (string) $value );
+        };
+
+        $pcf_callout_get_meta_value = static function ( $post_id, $field_names ) use ( $pcf_callout_normalize ) {
+            foreach ( $field_names as $field_name ) {
+                $value = '';
+
+                if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
+                    $value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
+                }
+
+                if ( '' === $value || null === $value ) {
+                    $value = get_post_meta( $post_id, 'pcf_' . $field_name, true );
+                }
+
+                if ( '' === $value || null === $value ) {
+                    $value = get_post_meta( $post_id, $field_name, true );
+                }
+
+                $normalized = $pcf_callout_normalize( $value );
+                if ( '' !== $normalized ) {
+                    return $normalized;
+                }
+            }
+
+            return '';
+        };
+
+        $pcf_callout_split_list = static function ( $value ) {
+            if ( is_array( $value ) ) {
+                $items = array();
+                foreach ( $value as $item ) {
+                    if ( is_scalar( $item ) ) {
+                        $items[] = trim( (string) $item );
+                    }
+                }
+                return array_values( array_filter( $items, 'strlen' ) );
+            }
+
+            $raw = trim( (string) $value );
+            if ( '' === $raw ) {
+                return array();
+            }
+
+            $parts = preg_split( '/\s*,\s*/', $raw );
+            if ( ! is_array( $parts ) ) {
+                return array( $raw );
+            }
+
+            return array_values( array_filter( array_map( 'trim', $parts ), 'strlen' ) );
+        };
+
+        $pcf_callout_join_with_and = static function ( $items ) {
+            $items = array_values( array_filter( array_map( 'trim', (array) $items ), 'strlen' ) );
+            $count = count( $items );
+
+            if ( 0 === $count ) {
+                return '';
+            }
+
+            if ( 1 === $count ) {
+                return $items[0];
+            }
+
+            if ( 2 === $count ) {
+                return $items[0] . ' and ' . $items[1];
+            }
+
+            $last_item = array_pop( $items );
+            return implode( ', ', $items ) . ', and ' . $last_item;
+        };
+
+        $pcf_intended_use = $pcf_callout_get_meta_value( $post_id, array( 'intended_use' ) );
+        $pcf_material_type = $pcf_callout_get_meta_value( $post_id, array( 'material_type' ) );
+        $pcf_audience_types = $pcf_callout_get_meta_value( $post_id, array( 'audience_types' ) );
+        $pcf_teaching_note_raw = '';
+        if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
+            $pcf_teaching_note_raw = Pedagogy_CF_Starter::get_value( $post_id, 'teaching_note' );
+        }
+        if ( is_array( $pcf_teaching_note_raw ) ) {
+            $pcf_teaching_note_raw = reset( $pcf_teaching_note_raw );
+        }
+        if ( '' === $pcf_teaching_note_raw || null === $pcf_teaching_note_raw ) {
+            $pcf_teaching_note_raw = get_post_meta( $post_id, 'pcf_teaching_note', true );
+        }
+        if ( is_array( $pcf_teaching_note_raw ) ) {
+            $pcf_teaching_note_raw = reset( $pcf_teaching_note_raw );
+        }
+        if ( '' === $pcf_teaching_note_raw || null === $pcf_teaching_note_raw ) {
+            $pcf_teaching_note_raw = get_post_meta( $post_id, 'teaching_note', true );
+        }
+        if ( is_array( $pcf_teaching_note_raw ) ) {
+            $pcf_teaching_note_raw = reset( $pcf_teaching_note_raw );
+        }
+
+        $pcf_teaching_note_html = '';
+        if ( is_string( $pcf_teaching_note_raw ) && '' !== trim( $pcf_teaching_note_raw ) ) {
+            $pcf_teaching_note_html = wp_kses_post( wpautop( $pcf_teaching_note_raw ) );
+        }
+
+        $pcf_resource_components = array_merge(
+            $pcf_callout_split_list( $pcf_intended_use ),
+            $pcf_callout_split_list( $pcf_material_type )
+        );
+        $pcf_resource_components = array_values( array_unique( array_filter( $pcf_resource_components, 'strlen' ) ) );
+
+        $pcf_resource_summary = ! empty( $pcf_resource_components ) ? $pcf_callout_join_with_and( $pcf_resource_components ) : 'Not specified';
+        $pcf_audience_list = $pcf_callout_split_list( $pcf_audience_types );
+        $pcf_audience_summary = ! empty( $pcf_audience_list ) ? $pcf_callout_join_with_and( $pcf_audience_list ) : 'Not specified';
+
         if ( isset( $_GET['pcf_meta_layout'] ) ) {
             $requested_layout = sanitize_key( wp_unslash( $_GET['pcf_meta_layout'] ) );
             if ( in_array( $requested_layout, array( 'side', 'bottom' ), true ) ) {
@@ -174,6 +307,36 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                             return esc_html( $trimmed );
                         }
                         return esc_html( pcf_normalize_value( $value ) );
+                    }
+                }
+
+                if ( ! function_exists( 'pcf_has_display_value' ) ) {
+                    function pcf_has_display_value( $value ) {
+                        if ( is_array( $value ) ) {
+                            foreach ( $value as $item ) {
+                                if ( pcf_has_display_value( $item ) ) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+
+                        if ( is_object( $value ) ) {
+                            if ( method_exists( $value, '__toString' ) ) {
+                                return '' !== trim( (string) $value );
+                            }
+                            return false;
+                        }
+
+                        if ( is_bool( $value ) ) {
+                            return $value;
+                        }
+
+                        if ( null === $value ) {
+                            return false;
+                        }
+
+                        return '' !== trim( (string) $value );
                     }
                 }
 
@@ -463,19 +626,19 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             $top_meta_items = array();
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
-                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'contributor', 'contributors', 'date_created', 'year', 'description' );
+                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'contributor', 'contributors', 'date_created', 'year', 'description', 'teaching_note' );
                 if ( is_array( $defs ) && ! empty( $defs ) ) {
                     foreach ( $defs as $name => $def ) {
                         if ( in_array( $name, $skip, true ) ) {
                             continue;
                         }
                         $value = Pedagogy_CF_Starter::get_value( $post_id, $name );
-                        if ( '' === $value || null === $value ) {
+                        if ( ! pcf_has_display_value( $value ) ) {
                             continue;
                         }
                         $label = isset( $def['title'] ) ? $def['title'] : ucwords( str_replace( array( '_', '-' ), ' ', $name ) );
                         $label_key = strtolower( trim( $label ) );
-                        if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'contributor', 'contributors', 'description', 'date created', 'year' ), true ) ) {
+                        if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'contributor', 'contributors', 'description', 'date created', 'year', 'teaching note' ), true ) ) {
                             continue;
                         }
                         $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );
@@ -554,6 +717,20 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                             <?php echo $description_html; ?>
                                         </div>
                                     </div>
+
+                                    <section class="pcf-resource-callout" aria-label="How to use this resource">
+                                        <h2 class="pcf-description-label">How to use this resource</h2>
+                                        <p class="pcf-resource-callout-body">
+                                            This resource is or includes: <?php echo esc_html( $pcf_resource_summary ); ?>. It's intended for the following audiences and educational settings: <?php echo esc_html( $pcf_audience_summary ); ?>.
+                                        </p>
+                                    </section>
+
+                                    <?php if ( '' !== $pcf_teaching_note_html ) : ?>
+                                        <section class="entry-item-highlight" aria-label="Teaching note">
+                                            <h2 class="pcf-description-label">Teaching Note</h2>
+                                            <div class="pcf-resource-callout-body"><?php echo $pcf_teaching_note_html; ?></div>
+                                        </section>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -598,6 +775,72 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
         </article>
 
     <?php endwhile; ?>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var darkBlocks = document.querySelectorAll('.entry-item-dark');
+
+        darkBlocks.forEach(function (block, index) {
+            if (block.classList.contains('is-accordion-ready')) {
+                return;
+            }
+
+            var heading = block.querySelector('h1, h2, h3, h4, h5, h6');
+            var titleText = heading ? heading.textContent.trim() : '';
+            if (!titleText) {
+                titleText = block.getAttribute('data-title') || 'Details';
+            }
+
+            if (heading) {
+                heading.remove();
+            }
+
+            var contentNodes = Array.from(block.childNodes);
+            var panelId = 'entry-item-dark-panel-' + index;
+
+            var toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'entry-item-dark-toggle';
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.setAttribute('aria-controls', panelId);
+
+            var toggleLabel = document.createElement('span');
+            toggleLabel.className = 'entry-item-dark-toggle-label';
+            toggleLabel.textContent = titleText;
+
+            var toggleIcon = document.createElement('span');
+            toggleIcon.className = 'entry-item-dark-toggle-icon';
+            toggleIcon.setAttribute('aria-hidden', 'true');
+            toggleIcon.textContent = '+';
+
+            toggle.appendChild(toggleLabel);
+            toggle.appendChild(toggleIcon);
+
+            var panel = document.createElement('div');
+            panel.id = panelId;
+            panel.className = 'entry-item-dark-panel';
+            panel.hidden = true;
+
+            block.textContent = '';
+            block.appendChild(toggle);
+            block.appendChild(panel);
+
+            contentNodes.forEach(function (node) {
+                panel.appendChild(node);
+            });
+
+            block.classList.add('is-accordion-ready');
+
+            toggle.addEventListener('click', function () {
+                var isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+                panel.hidden = isExpanded;
+                toggleIcon.textContent = isExpanded ? '+' : '-';
+                block.classList.toggle('is-open', !isExpanded);
+            });
+        });
+    });
+    </script>
 
 </main>
 

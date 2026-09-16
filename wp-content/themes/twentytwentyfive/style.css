@@ -183,6 +183,85 @@ iframe {
   border-left: 20px solid #280c22;
   margin-bottom: 2em;
 }
+.entry-item-dark {
+  background-color: rgba(40, 12, 34, .9);
+padding: 3em; 
+  border-radius: 0.75rem;
+  color: white;
+  border: 1px solid #280c22;
+  border-left: 20px solid #280c22;
+  margin-bottom: 3em;
+}
+
+.entry-item-dark.is-accordion-ready {
+  padding: 1rem 1.15rem;
+}
+
+.entry-item-dark-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.entry-item-dark-toggle-label {
+  font-family: "Roboto Slab", serif;
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.entry-item-dark-toggle-icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  position: relative;
+}
+
+.entry-item-dark-toggle[aria-expanded="false"] .entry-item-dark-toggle-icon::before {
+  content: "(click to expand)";
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: "Roboto", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.entry-item-dark-panel {
+  padding-top: 0.85rem;
+}
+
+.entry-item-dark-panel[hidden] {
+  display: none;
+}
+
+.entry-item-dark .entry-item-dark-toggle:hover,
+.entry-item-dark .entry-item-dark-toggle:focus-visible,
+.entry-item-dark .entry-item-dark-toggle:active {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
 .entry-item-dull {
   padding: 1em;
   border-radius: 0.75rem;
@@ -424,6 +503,27 @@ align-items: center;
 .entry-header {
   text-align: center;
   margin-bottom: 0.75rem;
+}
+
+.pcf-resource-callout {
+  margin-top: .3em;
+  margin-bottom: .75em;
+  padding: 0.75rem 0.9rem;
+  text-align: left;
+  /* background: #f7f5f4; */
+  /* border: 1px solid #d5bd62; */
+}
+
+.pcf-resource-callout-title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(0.95rem, 1.45vw, 1.08rem);
+  line-height: 1.25;
+}
+
+.pcf-resource-callout-body {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.45;
 }
 
 .pcf-single-column-meta .pcf-metadata-card {

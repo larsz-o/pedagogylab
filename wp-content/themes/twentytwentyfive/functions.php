@@ -99,6 +99,8 @@ if ( ! function_exists( 'twentytwentyfive_render_inline_header' ) ) :
 			$home_host      = strtolower( $home_url_parts['host'] ?? '' );
 			$home_path      = '/' . ltrim( (string) ( $home_url_parts['path'] ?? '/' ), '/' );
 			$home_path      = '/' === $home_path ? '/' : untrailingslashit( $home_path );
+			$header_logo_src = get_theme_file_uri( 'assets/images/Brand Mark - Logo.png' );
+			$header_logo_alt = get_bloginfo( 'name' );
 
 			foreach ( $xpath->query( '//li[contains(@class, "wp-block-navigation-item")]' ) as $item ) {
 				$link = $xpath->query( './/a[@href]', $item )->item( 0 );
@@ -125,6 +127,24 @@ if ( ! function_exists( 'twentytwentyfive_render_inline_header' ) ) :
 				}
 			}
 
+			$site_title_nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " wp-block-site-title ")]' );
+			if ( $site_title_nodes instanceof DOMNodeList && $site_title_nodes->length > 0 ) {
+				foreach ( $site_title_nodes as $site_title_node ) {
+					$logo_link = $dom->createElement( 'a' );
+					$logo_link->setAttribute( 'href', home_url( '/' ) );
+					$logo_link->setAttribute( 'class', 'pcf-header-logo-link' );
+					$logo_link->setAttribute( 'aria-label', $header_logo_alt );
+
+					$logo_img = $dom->createElement( 'img' );
+					$logo_img->setAttribute( 'src', $header_logo_src );
+					$logo_img->setAttribute( 'alt', $header_logo_alt );
+					$logo_img->setAttribute( 'class', 'pcf-header-logo-image' );
+
+					$logo_link->appendChild( $logo_img );
+					$site_title_node->parentNode->replaceChild( $logo_link, $site_title_node );
+				}
+			}
+
 			$header_html = $dom->saveHTML();
 			libxml_clear_errors();
 			libxml_use_internal_errors( $previous );
@@ -133,6 +153,74 @@ if ( ! function_exists( 'twentytwentyfive_render_inline_header' ) ) :
 		echo $header_html;
 	}
 endif;
+
+if ( ! function_exists( 'twentytwentyfive_replace_header_site_title_with_logo' ) ) :
+	/**
+	 * Replaces rendered site-title blocks with the Brand Mark logo inside header template parts.
+	 *
+	 * This runs as a runtime fallback so existing Site Editor-saved headers also get the logo.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param string $block_content Rendered block HTML.
+	 * @param array  $block         Parsed block data.
+	 * @return string
+	 */
+	function twentytwentyfive_replace_header_site_title_with_logo( $block_content, $block ) {
+		if ( ! is_array( $block ) || ( $block['blockName'] ?? '' ) !== 'core/template-part' ) {
+			return $block_content;
+		}
+
+		$slug = (string) ( $block['attrs']['slug'] ?? '' );
+		$area = (string) ( $block['attrs']['area'] ?? '' );
+
+		if ( ! str_contains( $slug, 'header' ) && 'header' !== $area ) {
+			return $block_content;
+		}
+
+		if ( ! class_exists( 'DOMDocument' ) || ! class_exists( 'DOMXPath' ) ) {
+			return $block_content;
+		}
+
+		$previous = libxml_use_internal_errors( true );
+
+		$dom = new DOMDocument();
+		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $block_content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		$xpath = new DOMXPath( $dom );
+
+		$site_title_nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " wp-block-site-title ")]' );
+		if ( $site_title_nodes instanceof DOMNodeList && $site_title_nodes->length > 0 ) {
+			$header_logo_src = get_theme_file_uri( 'assets/images/Brand Mark - Logo.png' );
+			$header_logo_alt = get_bloginfo( 'name' );
+
+			foreach ( $site_title_nodes as $site_title_node ) {
+				$logo_link = $dom->createElement( 'a' );
+				$logo_link->setAttribute( 'href', home_url( '/' ) );
+				$logo_link->setAttribute( 'class', 'pcf-header-logo-link' );
+				$logo_link->setAttribute( 'aria-label', $header_logo_alt );
+
+				$logo_img = $dom->createElement( 'img' );
+				$logo_img->setAttribute( 'src', $header_logo_src );
+				$logo_img->setAttribute( 'alt', $header_logo_alt );
+				$logo_img->setAttribute( 'class', 'pcf-header-logo-image' );
+
+				$logo_link->appendChild( $logo_img );
+
+				if ( $site_title_node->parentNode ) {
+					$site_title_node->parentNode->replaceChild( $logo_link, $site_title_node );
+				}
+			}
+		}
+
+		$updated_html = $dom->saveHTML();
+
+		libxml_clear_errors();
+		libxml_use_internal_errors( $previous );
+
+		return is_string( $updated_html ) ? $updated_html : $block_content;
+	}
+endif;
+add_filter( 'render_block', 'twentytwentyfive_replace_header_site_title_with_logo', 20, 2 );
 
 if ( ! function_exists( 'twentytwentyfive_google_fonts_resource_hints' ) ) :
 	/**

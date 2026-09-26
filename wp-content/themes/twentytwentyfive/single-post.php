@@ -666,7 +666,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             $top_meta_items = array();
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
-                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'contributor', 'contributors', 'date_created', 'year', 'description', 'teaching_note' );
+                $skip = array( 'media_embed', 'embed', 'media', 'people', 'creator', 'creators', 'contributor', 'contributors', 'date_created', 'year', 'description', 'teaching_note', 'file_format', 'file_formats' );
                 if ( is_array( $defs ) && ! empty( $defs ) ) {
                     foreach ( $defs as $name => $def ) {
                         if ( in_array( $name, $skip, true ) ) {
@@ -678,15 +678,17 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                         }
                         $label = isset( $def['title'] ) ? $def['title'] : ucwords( str_replace( array( '_', '-' ), ' ', $name ) );
                         $label_key = strtolower( trim( $label ) );
+                        $name_key = strtolower( trim( str_replace( '-', '_', (string) $name ) ) );
+                        if ( in_array( $name_key, array( 'file_format', 'file_formats' ), true ) || false !== strpos( $name_key, 'file_format' ) || false !== strpos( $label_key, 'file format' ) ) {
+                            continue;
+                        }
                         if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'contributor', 'contributors', 'description', 'date created', 'year', 'teaching note' ), true ) ) {
                             continue;
                         }
                         $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );
-                        $is_top_meta_item = in_array( $name, array( 'material_type', 'file_format' ), true )
+                        $is_top_meta_item = in_array( $name, array( 'material_type' ), true )
                             || false !== strpos( $label_key, 'material type' )
-                            || false !== strpos( $label_key, 'file format' );
-
-                        $name_key = strtolower( trim( (string) $name ) );
+                            ;
                         if ( $is_link ) {
                             $formatted_value = pcf_format_link_value( $value );
                         } elseif ( isset( $def['type'] ) && 'textarea' === $def['type'] ) {

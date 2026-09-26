@@ -3,9 +3,7 @@
  * Template Name: Post Cards Search
  * Description: Page template for listing posts as cards with search over post metadata.
  */
-
 get_header();
-
 if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
     twentytwentyfive_render_inline_header();
 }
@@ -143,6 +141,15 @@ $filter_definitions = array();
 $filter_values = array();
 $people_source_fields = array( 'creators', 'contributors' );
 $people_options = array();
+$is_file_format_field = static function ( $field_name, $field_def ) {
+    $name_key = strtolower( trim( str_replace( '-', '_', (string) $field_name ) ) );
+    $title_key = strtolower( trim( str_replace( array( '-', '_' ), ' ', (string) ( $field_def['title'] ?? '' ) ) ) );
+
+    return in_array( $name_key, array( 'file_format', 'file_formats' ), true )
+        || false !== strpos( $name_key, 'file_format' )
+        || in_array( $title_key, array( 'file format', 'file formats' ), true )
+        || false !== strpos( $title_key, 'file format' );
+};
 
 foreach ( $defs as $name => $def ) {
     if ( ! in_array( $name, $people_source_fields, true ) ) {
@@ -175,6 +182,10 @@ foreach ( $defs as $name => $def ) {
     $meta_keys[] = 'pcf_' . $name;
 
     if ( 'people' === $name ) {
+        continue;
+    }
+
+    if ( $is_file_format_field( $name, $def ) ) {
         continue;
     }
 

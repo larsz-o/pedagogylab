@@ -208,7 +208,7 @@ padding: 3em;
 }
 
 .entry-item-dark-toggle-label {
-  font-family: "Roboto Slab", serif;
+  font-family: "Lora", serif;
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   font-weight: 500;
   line-height: 1.25;
@@ -236,7 +236,7 @@ padding: 3em;
   top: 50%;
   transform: translateY(-50%);
   white-space: nowrap;
-  font-family: "Roboto", sans-serif;
+  font-family: "Lexend", sans-serif;
   font-size: 0.78rem;
   font-weight: 400;
   opacity: 0.9;
@@ -712,7 +712,7 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
 #header {
   background-color: #6e4478;
   margin-top: 0 !important;
-  padding: 0 1.25rem 1.5rem;
+  padding: 0 !important;
   color: #36103a;
 }
 #header a {
@@ -738,15 +738,15 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
 }
 
 #header .alignwide > .wp-block-group:last-child {
-  position: relative;
-  top: auto;
-  z-index: 2;
+  position: sticky;
+  top: 0;
+  z-index: 1006;
   width: 100dvw;
   max-width: none;
   margin-top: 0;
   margin-left: calc(50% - 50dvw);
   margin-right: calc(50% - 50dvw);
-  padding: 0.3rem 1rem;
+  padding: 0.45rem 1rem 0.45rem 4.25rem;
   box-sizing: border-box;
   background-color: transparent;
   display: flex;
@@ -773,6 +773,83 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
   justify-content: flex-end;
 }
 
+body:not(.home) #header {
+  --page-nav-band-height: 3.1rem;
+  background-color: #6e4478;
+  position: relative;
+  overflow: visible;
+  background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive/assets/images/swirl.png');
+  background-repeat: no-repeat, no-repeat;
+  background-size: auto, 760px auto;
+  background-position: center top, left var(--page-nav-band-height);
+  min-height: 20vh;
+  height: 20vh;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+body:not(.home) #header > .wp-block-group {
+  position: relative;
+  z-index: 1;
+}
+
+body:not(.home) #header a {
+  color: #fff !important;
+}
+
+body:not(.home) #header > .wp-block-group,
+body:not(.home) #header > .wp-block-group > .alignwide {
+  min-height: auto;
+}
+
+body:not(.home) #header > .wp-block-group > .alignwide {
+  position: relative;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+body:not(.home) #header .alignwide {
+  position: relative;
+}
+
+body:not(.home) #header .wp-block-navigation,
+body:not(.home) #header .wp-block-navigation__container {
+  justify-content: flex-end;
+}
+
+body:not(.home) #header .wp-block-navigation {
+  margin-left: auto;
+  border-radius: 999px;
+  padding: 0;
+}
+
+body:not(.home) #header .alignwide > .wp-block-group:last-child {
+  order: -1;
+  justify-content: flex-end;
+  transform: none;
+}
+
+body:not(.home) #header .pcf-header-logo-link {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1010;
+  display: inline-flex;
+  margin-left: 0;
+  margin-right: 0.35rem;
+}
+
+body:not(.home) #header .pcf-header-logo-image {
+  max-height: 60px;
+  max-width: 60px;
+}
+
+body:not(.home) #header .wp-block-navigation a,
+body:not(.home) #header .wp-block-navigation-item__content {
+  font-size: 0.9rem;
+}
+
 body.home #header {
   --home-nav-band-height: 3.1rem;
   background-color: #6e4478;
@@ -784,7 +861,7 @@ body.home #header {
   background-position: center top, left var(--home-nav-band-height);
   min-height: calc(clamp(100vh, 34vw, 500px) + var(--home-nav-band-height));
   padding-top: 0;
-  padding-bottom: 0.65rem;
+  padding-bottom: 0;
 }
 
 
@@ -821,7 +898,7 @@ body.home #header .wp-block-navigation {
   margin-left: auto;
   /* background-color: #36103a; */
   border-radius: 999px;
-  padding: 0.4rem 0.9rem;
+  padding: 0;
 }
 
 body.home #header .alignwide > .wp-block-group:last-child {
@@ -907,10 +984,47 @@ body.home #header .wp-block-navigation-item__content {
 
 .pcf-header-logo-link {
   display: inline-flex;
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1010;
   align-items: center;
   line-height: 0;
   flex-shrink: 0;
-  margin-right: 0.5rem;
+  margin: 0;
+}
+
+body.page-template-page-post-cards #header .alignwide > .wp-block-group:last-child,
+body.page-template-page-post-cards-php #header .alignwide > .wp-block-group:last-child {
+  margin-top: 0 !important;
+}
+
+body.page-template-page-post-cards > header.wp-block-template-part:first-of-type,
+body.page-template-page-post-cards-php > header.wp-block-template-part:first-of-type {
+  display: none !important;
+}
+
+body.page-template-page-post-cards #header .wp-block-navigation,
+body.page-template-page-post-cards-php #header .wp-block-navigation {
+  margin-top: 0 !important;
+}
+
+body.page-template-page-post-cards #header,
+body.page-template-page-post-cards-php #header {
+  --page-nav-band-height: 3.9rem;
+  background-position: center top, left var(--page-nav-band-height);
+}
+
+body.page-template-page-post-cards #header > .wp-block-group > .alignwide,
+body.page-template-page-post-cards-php #header > .wp-block-group > .alignwide {
+  padding-top: 0 !important;
+}
+
+body.page-template-page-post-cards #header .alignwide > .wp-block-group:last-child,
+body.page-template-page-post-cards-php #header .alignwide > .wp-block-group:last-child {
+  top: 0;
+  z-index: 1012;
 }
 
  .pcf-header-logo-image {
@@ -962,7 +1076,7 @@ hr {
   text-decoration: none;
 }
 .pcf-content-toc-title {
-  font-family: "Roboto Slab", serif;
+  font-family: "Lora", serif;
   font-weight: 400;
   margin-top: 0;
   margin-bottom: 0.5rem;
@@ -990,15 +1104,27 @@ hr {
     background-size: auto, 100% auto;
   }
 
+  body:not(.home) #header {
+    --page-nav-band-height: 2.55rem;
+    min-height: 20vh;
+    height: 20vh;
+    background-position: center top, left var(--page-nav-band-height);
+    background-size: auto, 520px auto;
+  }
+
   #header .alignwide > .wp-block-group:last-child {
-    padding: 0.2rem 0.7rem;
+    padding: 0.3rem 0.7rem 0.3rem 3.4rem;
   }
 
   #header {
-    padding-left: 0.7rem;
-    padding-right: 0.7rem;
-    padding-bottom: 1rem;
+      padding: 0 !important;
   }
+
+    body.page-template-page-post-cards #header,
+    body.page-template-page-post-cards-php #header {
+      --page-nav-band-height: 3.1rem;
+      background-position: center top, left var(--page-nav-band-height);
+    }
 
   body.home #header > .wp-block-group,
   body.home #header > .wp-block-group > .alignwide {
@@ -1159,7 +1285,7 @@ html, body {
   background-color: white;
     margin: 0;
     padding: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Lexend", sans-serif;
     line-height: 1.5;
     transition: all 0.25s linear;
     font-size: 18px;
@@ -1180,7 +1306,7 @@ main {
  */
 
  h1, h2, h3, h4, h5, h6 {
-  font-family: "Roboto Slab", serif;
+  font-family: "Lora", serif;
   font-weight: 400;
   margin-top: 0;
   margin-bottom: 0.5rem;
@@ -1523,7 +1649,7 @@ template {
     position: relative;
   }
 .post-cards-page {
-  padding: 3rem 1.5rem;
+  padding: 1rem 1.5rem 3rem;
 }
 
 .post-cards-grid {
@@ -1751,7 +1877,7 @@ template {
 
 .post-cards-summary {
   margin-bottom: 1.5rem;
-  color: #4a4a4a;
+  color: #443326;
 }
 
 .post-cards-search-row input[type="search"] {
@@ -1769,6 +1895,8 @@ template {
 }
 .post-cards-header h1 {
   font-size: clamp(1.75rem, 2.5vw, 2.4rem);
+  margin-top: 0;
+  margin-bottom: 0.35rem;
 }
 .post-cards-intro {
   margin: 0.5rem 0 0;
@@ -1837,7 +1965,7 @@ template {
 .post-cards-summary {
   margin-bottom: 1rem;
   font-size: 0.95rem;
-  color: #4a4a4a;
+  color: #443326;
 }
 .post-cards-grid {
   gap: 1rem;

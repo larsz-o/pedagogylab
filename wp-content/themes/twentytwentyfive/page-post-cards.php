@@ -5,7 +5,7 @@
  * Description: Page template for listing posts as cards with search over post metadata.
  */
 
-get_header();
+echo do_blocks( '<!-- wp:template-part {"slug":"header"} /-->' );
 
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
@@ -334,4 +334,4 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
     <?php wp_reset_postdata(); ?>
 </div>
 
-<?php get_footer();
+<?php echo do_blocks( '<!-- wp:template-part {"slug":"footer"} /-->' );

@@ -47,7 +47,7 @@ if ( ! function_exists( 'twentytwentyfive_enqueue_styles' ) ) :
 	 */
 	function twentytwentyfive_enqueue_styles() {
 		$src = 'style.css';
-		$google_fonts_url = 'https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap';
+		$google_fonts_url = 'https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap';
 
 		wp_enqueue_style(
 			'twentytwentyfive-google-fonts',

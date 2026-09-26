@@ -79,6 +79,46 @@ if ( ! function_exists( 'pedagogy_option_titles' ) ) {
     }
 }
 
+if ( ! function_exists( 'pedagogy_option_description_map' ) ) {
+    function pedagogy_option_description_map( $options ) {
+        if ( ! is_array( $options ) ) {
+            return array();
+        }
+
+        $map = array();
+        foreach ( $options as $option ) {
+            $title = '';
+            $description = '';
+
+            if ( is_array( $option ) ) {
+                if ( isset( $option['title'] ) ) {
+                    $title = sanitize_text_field( $option['title'] );
+                } elseif ( isset( $option['label'] ) ) {
+                    $title = sanitize_text_field( $option['label'] );
+                } elseif ( isset( $option['value'] ) ) {
+                    $title = sanitize_text_field( $option['value'] );
+                }
+                if ( isset( $option['description'] ) ) {
+                    $description = sanitize_text_field( $option['description'] );
+                }
+            } else {
+                $title = sanitize_text_field( (string) $option );
+            }
+
+            if ( '' === $title ) {
+                continue;
+            }
+
+            $map[ strtolower( $title ) ] = array(
+                'title'       => $title,
+                'description' => $description,
+            );
+        }
+
+        return $map;
+    }
+}
+
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
 $defs = array();
@@ -234,28 +274,60 @@ if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
     $meta_keys = array_values( array_unique( array_merge( $meta_keys, $db_meta_keys ) ) );
 }
 
+$broader_collection_options_map = array();
+$broader_collections_def = null;
+$broader_collection_field_names = array();
+
+if ( isset( $defs['broader_collections'] ) && is_array( $defs['broader_collections'] ) ) {
+    $broader_collections_def = $defs['broader_collections'];
+    $broader_collection_field_names[] = 'broader_collections';
+}
+if ( isset( $defs['broader_collection'] ) && is_array( $defs['broader_collection'] ) ) {
+    if ( null === $broader_collections_def ) {
+        $broader_collections_def = $defs['broader_collection'];
+    }
+    $broader_collection_field_names[] = 'broader_collection';
+}
+if ( empty( $broader_collection_field_names ) ) {
+    $broader_collection_field_names[] = 'broader_collections';
+}
+
+if ( is_array( $broader_collections_def ) ) {
+
+    if ( isset( $broader_collections_def['type'] ) && 'linked' === $broader_collections_def['type'] && ! empty( $broader_collections_def['source_field'] ) ) {
+        $source_field = $broader_collections_def['source_field'];
+        if ( isset( $defs[ $source_field ]['options'] ) && is_array( $defs[ $source_field ]['options'] ) ) {
+            $broader_collection_options_map = pedagogy_option_description_map( $defs[ $source_field ]['options'] );
+        }
+    } elseif ( isset( $broader_collections_def['options'] ) && is_array( $broader_collections_def['options'] ) ) {
+        $broader_collection_options_map = pedagogy_option_description_map( $broader_collections_def['options'] );
+    }
+}
+
 $search_ids = null;
 $force_no_results = false;
 if ( $search_term !== '' ) {
     // Strict override mode: only exact broader_collections matches are allowed.
+    $strict_broader_collections_meta_query = array( 'relation' => 'OR' );
+    foreach ( $broader_collection_field_names as $broader_collection_field_name ) {
+        $strict_broader_collections_meta_query[] = array(
+            'key'     => 'pcf_' . $broader_collection_field_name,
+            'value'   => $search_term,
+            'compare' => '=',
+        );
+        $strict_broader_collections_meta_query[] = array(
+            'key'     => 'pcf_' . $broader_collection_field_name,
+            'value'   => '"' . $search_term . '"',
+            'compare' => 'LIKE',
+        );
+    }
+
     $broader_collections_query = new WP_Query( array(
         'post_type'      => 'post',
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'fields'         => 'ids',
-        'meta_query'     => array(
-            'relation' => 'OR',
-            array(
-                'key'     => 'pcf_broader_collections',
-                'value'   => $search_term,
-                'compare' => '=',
-            ),
-            array(
-                'key'     => 'pcf_broader_collections',
-                'value'   => '"' . $search_term . '"',
-                'compare' => 'LIKE',
-            ),
-        ),
+        'meta_query'     => $strict_broader_collections_meta_query,
     ) );
 
     $search_ids = $broader_collections_query->have_posts() ? $broader_collections_query->posts : array();
@@ -303,7 +375,7 @@ foreach ( $filter_definitions as $name => $filter ) {
                 }
             }
             $filter_meta_query[] = $people_query;
-        } elseif ( 'broader_collections' === $name ) {
+        } elseif ( in_array( $name, array( 'broader_collections', 'broader_collection' ), true ) ) {
             $broader_collections_query = array( 'relation' => 'OR' );
             foreach ( $values as $value ) {
                 $broader_collections_query[] = array(
@@ -347,6 +419,42 @@ $results_anchor = 'post-cards-results';
 
 $active_filter_chips = array();
 $clear_filters_url = '';
+$broader_collections_descriptions = array();
+
+$broader_collections_context_values = array();
+if ( '' !== $search_term ) {
+    $broader_collections_context_values[] = $search_term;
+}
+
+$selected_broader_collections = array_filter( (array) ( $filter_values['broader_collections'] ?? array() ), 'strlen' );
+if ( empty( $selected_broader_collections ) ) {
+    $selected_broader_collections = array_filter( (array) ( $filter_values['broader_collection'] ?? array() ), 'strlen' );
+}
+if ( ! empty( $selected_broader_collections ) ) {
+    $broader_collections_context_values = array_merge( $broader_collections_context_values, $selected_broader_collections );
+}
+
+$broader_collections_context_values = array_values( array_unique( array_map( 'sanitize_text_field', $broader_collections_context_values ) ) );
+foreach ( $broader_collections_context_values as $broader_collections_value ) {
+    $lookup_key = strtolower( $broader_collections_value );
+    if ( isset( $broader_collection_options_map[ $lookup_key ] ) && '' !== trim( (string) $broader_collection_options_map[ $lookup_key ]['description'] ) ) {
+        $broader_collections_descriptions[] = $broader_collection_options_map[ $lookup_key ];
+    }
+}
+
+if ( ! empty( $broader_collections_descriptions ) ) {
+    $deduped_descriptions = array();
+    $seen_titles = array();
+    foreach ( $broader_collections_descriptions as $description_item ) {
+        $title_key = strtolower( $description_item['title'] );
+        if ( isset( $seen_titles[ $title_key ] ) ) {
+            continue;
+        }
+        $seen_titles[ $title_key ] = true;
+        $deduped_descriptions[] = $description_item;
+    }
+    $broader_collections_descriptions = $deduped_descriptions;
+}
 
 if ( $has_filters ) {
     foreach ( $filter_definitions as $name => $filter ) {
@@ -527,6 +635,17 @@ function pedagogy_post_cover_image_url( $post_id ) {
     <?php if ( $search_term !== '' || $has_filters ) : ?>
         <div class="post-cards-summary">
             <p><?php echo sprintf( esc_html__( 'Showing %s results for selected search and filters.', 'twentytwentyfive' ), intval( $post_query->found_posts ) ); ?></p>
+        </div>
+    <?php endif; ?>
+
+    <?php if ( ! empty( $broader_collections_descriptions ) && intval( $post_query->found_posts ) > 0 ) : ?>
+        <div class="post-cards-summary">
+            <?php foreach ( $broader_collections_descriptions as $broader_collections_description ) : ?>
+                <div class="post-cards-broader-collection-context" style="text-align:center; margin:0 0 1.25rem;">
+                    <div class="post-cards-broader-collection-title" style="font-size:1.5rem; font-weight:700; line-height:1.25; margin-bottom:0.35rem;"><?php echo esc_html( $broader_collections_description['title'] ); ?></div>
+                    <div class="post-cards-broader-collection-description" style="font-size:1rem; font-weight:400; line-height:1.5;"><?php echo esc_html( $broader_collections_description['description'] ); ?></div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 

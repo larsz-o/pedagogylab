@@ -46,6 +46,39 @@ if ( ! function_exists( 'pedagogy_build_search_stems' ) ) {
     }
 }
 
+if ( ! function_exists( 'pedagogy_option_titles' ) ) {
+    function pedagogy_option_titles( $options ) {
+        if ( ! is_array( $options ) ) {
+            return array();
+        }
+
+        $titles = array();
+        foreach ( $options as $option ) {
+            if ( is_array( $option ) ) {
+                if ( isset( $option['title'] ) ) {
+                    $title = sanitize_text_field( $option['title'] );
+                } elseif ( isset( $option['label'] ) ) {
+                    $title = sanitize_text_field( $option['label'] );
+                } elseif ( isset( $option['value'] ) ) {
+                    $title = sanitize_text_field( $option['value'] );
+                } else {
+                    $title = '';
+                }
+            } else {
+                $title = sanitize_text_field( (string) $option );
+            }
+
+            if ( '' !== $title ) {
+                $titles[] = $title;
+            }
+        }
+
+        $titles = array_values( array_unique( $titles ) );
+        usort( $titles, 'strcasecmp' );
+        return $titles;
+    }
+}
+
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
 $defs = array();
@@ -79,11 +112,11 @@ foreach ( $defs as $name => $def ) {
     if ( isset( $def['type'] ) && in_array( $def['type'], array( 'select', 'linked' ), true ) ) {
         $options = array();
         if ( 'select' === $def['type'] ) {
-            $options = isset( $def['options'] ) && is_array( $def['options'] ) ? $def['options'] : array();
+            $options = isset( $def['options'] ) && is_array( $def['options'] ) ? pedagogy_option_titles( $def['options'] ) : array();
         } elseif ( 'linked' === $def['type'] && isset( $def['source_field'] ) ) {
             $source_name = $def['source_field'];
             if ( isset( $defs[ $source_name ] ) && isset( $defs[ $source_name ]['options'] ) && is_array( $defs[ $source_name ]['options'] ) ) {
-                $options = $defs[ $source_name ]['options'];
+                $options = pedagogy_option_titles( $defs[ $source_name ]['options'] );
             }
         }
         if ( ! empty( $options ) ) {
@@ -128,11 +161,11 @@ foreach ( $defs as $name => $def ) {
         $options = array();
 
         if ( 'select' === $def['type'] ) {
-            $options = isset( $def['options'] ) && is_array( $def['options'] ) ? $def['options'] : array();
+            $options = isset( $def['options'] ) && is_array( $def['options'] ) ? pedagogy_option_titles( $def['options'] ) : array();
         } elseif ( 'linked' === $def['type'] && isset( $def['source_field'] ) ) {
             $source_name = $def['source_field'];
             if ( isset( $defs[ $source_name ] ) && isset( $defs[ $source_name ]['options'] ) && is_array( $defs[ $source_name ]['options'] ) ) {
-                $options = $defs[ $source_name ]['options'];
+                $options = pedagogy_option_titles( $defs[ $source_name ]['options'] );
             }
         }
 
@@ -204,73 +237,28 @@ if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
 $search_ids = null;
 $force_no_results = false;
 if ( $search_term !== '' ) {
-    $search_ids = array();
-    $search_tokens = preg_split( '/\s+/', $search_term );
-    $search_tokens = is_array( $search_tokens ) ? array_values( array_unique( array_filter( array_map( 'trim', $search_tokens ) ) ) ) : array();
-
-    // Keep only meaningful tokens for broader matching when the query is long.
-    $search_tokens_for_matching = array_values(
-        array_filter(
-            $search_tokens,
-            static function( $search_token ) {
-                return mb_strlen( $search_token ) >= 2;
-            }
-        )
-    );
-
-    $search_stems = array();
-    foreach ( $search_tokens_for_matching as $search_token ) {
-        $search_stems = array_merge( $search_stems, pedagogy_build_search_stems( $search_token ) );
-    }
-    $search_stems = array_values( array_unique( $search_stems ) );
-
-    // Try the full search phrase, then each token individually, and union results.
-    $search_terms_to_try = array_values( array_unique( array_merge( array( $search_term ), $search_tokens_for_matching, $search_stems ) ) );
-
-    foreach ( $search_terms_to_try as $search_term_to_try ) {
-        $search_query = new WP_Query( array(
-            'post_type'      => 'post',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'fields'         => 'ids',
-            's'              => $search_term_to_try,
-        ) );
-
-        if ( $search_query->have_posts() ) {
-            $search_ids = array_merge( $search_ids, $search_query->posts );
-        }
-    }
-
-    if ( ! empty( $meta_keys ) ) {
-        $meta_query = array( 'relation' => 'OR' );
-        foreach ( $meta_keys as $meta_key ) {
-            $meta_query[] = array(
-                'key'     => $meta_key,
+    // Strict override mode: only exact broader_collections matches are allowed.
+    $broader_collections_query = new WP_Query( array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'meta_query'     => array(
+            'relation' => 'OR',
+            array(
+                'key'     => 'pcf_broader_collections',
                 'value'   => $search_term,
+                'compare' => '=',
+            ),
+            array(
+                'key'     => 'pcf_broader_collections',
+                'value'   => '"' . $search_term . '"',
                 'compare' => 'LIKE',
-            );
+            ),
+        ),
+    ) );
 
-            foreach ( array_merge( $search_tokens_for_matching, $search_stems ) as $search_token ) {
-                $meta_query[] = array(
-                    'key'     => $meta_key,
-                    'value'   => $search_token,
-                    'compare' => 'LIKE',
-                );
-            }
-        }
-
-        $meta_search_query = new WP_Query( array(
-            'post_type'      => 'post',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'fields'         => 'ids',
-            'meta_query'     => $meta_query,
-        ) );
-
-        if ( $meta_search_query->have_posts() ) {
-            $search_ids = array_unique( array_merge( $search_ids, $meta_search_query->posts ) );
-        }
-    }
+    $search_ids = $broader_collections_query->have_posts() ? $broader_collections_query->posts : array();
 
     if ( empty( $search_ids ) ) {
         $force_no_results = true;
@@ -315,6 +303,21 @@ foreach ( $filter_definitions as $name => $filter ) {
                 }
             }
             $filter_meta_query[] = $people_query;
+        } elseif ( 'broader_collections' === $name ) {
+            $broader_collections_query = array( 'relation' => 'OR' );
+            foreach ( $values as $value ) {
+                $broader_collections_query[] = array(
+                    'key'     => 'pcf_' . $name,
+                    'value'   => $value,
+                    'compare' => '=',
+                );
+                $broader_collections_query[] = array(
+                    'key'     => 'pcf_' . $name,
+                    'value'   => '"' . $value . '"',
+                    'compare' => 'LIKE',
+                );
+            }
+            $filter_meta_query[] = $broader_collections_query;
         } elseif ( count( $values ) > 1 ) {
             $sub_query = array( 'relation' => 'OR' );
             foreach ( $values as $value ) {

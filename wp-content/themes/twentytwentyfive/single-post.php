@@ -15,21 +15,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
 <main id="site-content" role="main" class="wrapper">
 
     <?php
-    $pcf_back_link = home_url( '/' );
-    $pcf_cards_page = get_posts(
-        array(
-            'post_type'      => 'page',
-            'post_status'    => 'publish',
-            'posts_per_page' => 1,
-            'meta_key'       => '_wp_page_template',
-            'meta_value'     => 'page-post-cards.php',
-            'fields'         => 'ids',
-        )
-    );
-
-    if ( ! empty( $pcf_cards_page ) ) {
-        $pcf_back_link = get_permalink( $pcf_cards_page[0] );
-    }
+    $pcf_oer_library_link = trailingslashit( home_url( '/oer-library/' ) );
     ?>
 
   
@@ -340,6 +326,60 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
                 }
 
+                if ( ! function_exists( 'pcf_format_search_links' ) ) {
+                    function pcf_format_search_links( $value, $base_url, $query_arg = 'pcf_search' ) {
+                        if ( ! is_string( $base_url ) || '' === trim( $base_url ) ) {
+                            return esc_html( pcf_normalize_value( $value ) );
+                        }
+
+                        $items = array();
+
+                        if ( is_array( $value ) ) {
+                            foreach ( $value as $item ) {
+                                if ( is_scalar( $item ) ) {
+                                    $items[] = trim( (string) $item );
+                                } elseif ( is_object( $item ) && isset( $item->name ) ) {
+                                    $items[] = trim( (string) $item->name );
+                                } elseif ( is_array( $item ) ) {
+                                    $candidate_keys = array( 'name', 'label', 'title', 'text', 'value' );
+                                    foreach ( $candidate_keys as $candidate_key ) {
+                                        if ( isset( $item[ $candidate_key ] ) && is_scalar( $item[ $candidate_key ] ) ) {
+                                            $items[] = trim( (string) $item[ $candidate_key ] );
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } elseif ( is_object( $value ) && isset( $value->name ) ) {
+                            $items[] = trim( (string) $value->name );
+                        } else {
+                            $items = pcf_value_to_list( $value );
+                        }
+
+                        $items = array_values( array_unique( array_filter( array_map( 'trim', $items ), 'strlen' ) ) );
+                        if ( empty( $items ) ) {
+                            return esc_html( pcf_normalize_value( $value ) );
+                        }
+
+                        $links = array();
+                        foreach ( $items as $item ) {
+                            $item = trim( (string) $item );
+                            if ( '' === $item ) {
+                                continue;
+                            }
+
+                            $search_url = add_query_arg( $query_arg, $item, $base_url ) . '#post-cards-results';
+                            $links[] = '<a href="' . esc_url( $search_url ) . '">' . esc_html( $item ) . '</a>';
+                        }
+
+                        if ( empty( $links ) ) {
+                            return esc_html( pcf_normalize_value( $value ) );
+                        }
+
+                        return implode( ', ', $links );
+                    }
+                }
+
                 if ( ! function_exists( 'pcf_add_iframe_fragment_to_content' ) ) {
                     function pcf_add_iframe_fragment_to_content( $content ) {
                         if ( ! is_string( $content ) || '' === trim( $content ) ) {
@@ -646,12 +686,13 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                             || false !== strpos( $label_key, 'material type' )
                             || false !== strpos( $label_key, 'file format' );
 
+                        $name_key = strtolower( trim( (string) $name ) );
                         if ( $is_link ) {
                             $formatted_value = pcf_format_link_value( $value );
                         } elseif ( isset( $def['type'] ) && 'textarea' === $def['type'] ) {
                             $formatted_value = wp_kses_post( $value );
                         } else {
-                            $formatted_value = esc_html( pcf_normalize_value( $value ) );
+                            $formatted_value = pcf_format_search_links( $value, $pcf_oer_library_link );
                         }
 
                         if ( $is_top_meta_item ) {
@@ -674,6 +715,31 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
 
             if ( ! empty( $identity_meta_items ) ) {
                 $top_meta_items = $identity_meta_items + $top_meta_items;
+            }
+
+            $has_custom_tag_meta = false;
+            foreach ( array_keys( $combined_meta_items = $top_meta_items + $post_meta_items ) as $existing_meta_label ) {
+                $existing_meta_label_key = strtolower( trim( (string) $existing_meta_label ) );
+                if ( false !== strpos( $existing_meta_label_key, 'tag' ) || false !== strpos( $existing_meta_label_key, 'keyword' ) ) {
+                    $has_custom_tag_meta = true;
+                    break;
+                }
+            }
+
+            if ( ! $has_custom_tag_meta ) {
+                $post_tags = get_the_terms( $post_id, 'post_tag' );
+                if ( ! is_wp_error( $post_tags ) && ! empty( $post_tags ) ) {
+                    $tag_values = array();
+                    foreach ( $post_tags as $post_tag ) {
+                        if ( isset( $post_tag->name ) ) {
+                            $tag_values[] = $post_tag->name;
+                        }
+                    }
+
+                    if ( ! empty( $tag_values ) ) {
+                        $post_meta_items['Tags'] = pcf_format_search_links( $tag_values, $pcf_oer_library_link );
+                    }
+                }
             }
              $description_html = '';
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
@@ -710,15 +776,22 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                     <?php echo $media_html; ?>
                                 </div>
 
-                                <div class="pcf-single-column pcf-single-column-description">
+                             
                                     <div class="pcf-description-wrap">
+                                           <div class="pcf-single-column pcf-single-column-description">
+                                       <div class="author-meta">
+                                        <?php if ( '' !== $creator_display ) : ?>
+                                            <div class="pcf-description-label"><?php esc_html_e( 'Creator(s)', 'twentytwentyfive' ); ?></div>
+                                            <div class="pcf-description-value"><?php echo esc_html( $creator_display ); ?></div>
+                                        <?php endif; ?>
+                                    </div>
                                         <div class="pcf-description-label ">Description</div>
                                         <div class="pcf-description-inner">
                                             <?php echo $description_html; ?>
                                         </div>
                                     </div>
-
-                                    <section class="pcf-resource-callout" aria-label="How to use this resource">
+                                 
+                                    <section class="pcf-resource-callout entry-item-highlight" aria-label="How to use this resource">
                                         <h2 class="pcf-description-label">How to use this resource</h2>
                                         <p class="pcf-resource-callout-body">
                                             This resource is or includes: <?php echo esc_html( $pcf_resource_summary ); ?>. It's intended for the following audiences and educational settings: <?php echo esc_html( $pcf_audience_summary ); ?>.

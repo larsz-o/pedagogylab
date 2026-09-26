@@ -105,6 +105,11 @@ class Pedagogy_CF_Starter {
             }
         }
 
+        $edit_options_input = '';
+        if ( $editing && isset( $edit_def['options'] ) ) {
+            $edit_options_input = $this->options_to_admin_lines( $edit_def['options'] );
+        }
+
         $new_order = 1;
         foreach ( $defs as $def ) {
             if ( isset( $def['order'] ) ) {
@@ -145,7 +150,7 @@ class Pedagogy_CF_Starter {
                                 <option value="number" <?php selected( $editing && $edit_def['type'] === 'number' ); ?>>Number</option>
                                 <option value="date" <?php selected( $editing && $edit_def['type'] === 'date' ); ?>>Date Created (Full Date)</option>
                                  <option value="year" <?php selected( $editing && $edit_def['type'] === 'year' ); ?>>Date Created (year)</option>
-                                <option value="select" <?php selected( $editing && $edit_def['type'] === 'select' ); ?>>Select (comma-separated options)</option>
+                                <option value="select" <?php selected( $editing && $edit_def['type'] === 'select' ); ?>>Select (title + optional description per line)</option>
                                 <option value="url" <?php selected( $editing && $edit_def['type'] === 'url' ); ?>>Hyperlink</option>
                                 <option value="linked" <?php selected( $editing && $edit_def['type'] === 'linked' ); ?>>Linked Field</option>
                             </select>
@@ -161,13 +166,8 @@ class Pedagogy_CF_Starter {
                     <tr id="options_row" style="display:<?php echo ( $editing && isset( $edit_def['options'] ) ) ? 'table-row' : 'none'; ?>;">
                         <th><label>Options</label></th>
                         <td>
-                            <input type="hidden" id="pcf_options" name="pcf_options" value="<?php echo $editing && isset( $edit_def['options'] ) ? esc_attr( implode( ', ', $edit_def['options'] ) ) : ''; ?>">
-                            <div id="pcf_chips_container" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:32px;"></div>
-                            <div style="display:flex;gap:8px;align-items:center;">
-                                <input id="pcf_option_input" type="text" placeholder="Add option and press Enter or Add" style="width:260px;">
-                                <button type="button" id="pcf_add_option_btn" class="button">Add</button>
-                            </div>
-                            <p class="description">Type an option and press Enter or click Add. Options are alphabetized automatically. Click &times; to remove.</p>
+                            <textarea id="pcf_options" name="pcf_options" rows="8" class="large-text" placeholder="Option title | Optional description\nAnother option | Another description"><?php echo esc_textarea( $edit_options_input ); ?></textarea>
+                            <p class="description">One option per line. Use <code>Title | Description</code>. Description is optional.</p>
                         </td>
                     </tr>
                     <tr id="url_row" style="display:<?php echo ( $editing && isset( $edit_def['type'] ) && $edit_def['type'] === 'url' ) ? 'table-row' : 'none'; ?>;">
@@ -227,9 +227,16 @@ class Pedagogy_CF_Starter {
                                         echo isset( $d['source_field'] ) ? esc_html( 'linked to ' . $d['source_field'] . ( ! empty( $d['multiple'] ) ? ' (multiple)' : '' ) ) : esc_html( 'no source set' );
                                     } else {
                                         if ( isset( $d['options'] ) ) {
-                                            $display_opts = $d['options'];
-                                            natcasesort( $display_opts );
-                                            echo esc_html( implode( ', ', $display_opts ) );
+                                            $display_opts = $this->normalize_options_list( $d['options'] );
+                                            $display_parts = array();
+                                            foreach ( $display_opts as $display_opt ) {
+                                                $part = $display_opt['title'];
+                                                if ( '' !== $display_opt['description'] ) {
+                                                    $part .= ' (' . $display_opt['description'] . ')';
+                                                }
+                                                $display_parts[] = $part;
+                                            }
+                                            echo esc_html( implode( ', ', $display_parts ) );
                                         }
                                     }
                                 ?></td>
@@ -252,32 +259,6 @@ class Pedagogy_CF_Starter {
             <?php endif; ?>
         </div>
 
-        <style>
-        .pcf-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #2563EB;
-            color: #fff;
-            border-radius: 999px;
-            padding: 4px 12px 4px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-        .pcf-chip-remove {
-            background: none;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            font-size: 15px;
-            line-height: 1;
-            padding: 0;
-            margin-left: 2px;
-            opacity: 0.8;
-        }
-        .pcf-chip-remove:hover { opacity: 1; }
-        </style>
         <script>
         (function(){
             var type = document.getElementById('pcf_type');
@@ -287,62 +268,6 @@ class Pedagogy_CF_Starter {
             var selectMultipleRow = document.getElementById('select_multiple_row');
             var allowPostOptionsRow = document.getElementById('allow_post_options_row');
             var urlRow = document.getElementById('url_row');
-            var hidden = document.getElementById('pcf_options');
-            var container = document.getElementById('pcf_chips_container');
-            var optInput = document.getElementById('pcf_option_input');
-            var addBtn = document.getElementById('pcf_add_option_btn');
-
-            function getOptions() {
-                var val = hidden.value.trim();
-                if (!val) return [];
-                return val.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-            }
-
-            function setOptions(arr) {
-                arr.sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
-                hidden.value = arr.join(', ');
-                renderChips(arr);
-            }
-
-            function renderChips(arr) {
-                container.innerHTML = '';
-                arr.forEach(function(opt) {
-                    var chip = document.createElement('span');
-                    chip.className = 'pcf-chip';
-                    chip.textContent = opt;
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'pcf-chip-remove';
-                    btn.innerHTML = '&times;';
-                    btn.setAttribute('aria-label', 'Remove ' + opt);
-                    btn.addEventListener('click', function(){
-                        var opts = getOptions().filter(function(o){ return o !== opt; });
-                        setOptions(opts);
-                    });
-                    chip.appendChild(btn);
-                    container.appendChild(chip);
-                });
-            }
-
-            function addOption() {
-                var val = optInput.value.trim();
-                if (!val) return;
-                var opts = getOptions();
-                if (opts.indexOf(val) === -1) {
-                    opts.push(val);
-                    setOptions(opts);
-                }
-                optInput.value = '';
-                optInput.focus();
-            }
-
-            addBtn.addEventListener('click', addOption);
-            optInput.addEventListener('keydown', function(e){
-                if (e.key === 'Enter') { e.preventDefault(); addOption(); }
-            });
-
-            // Initialize chips from existing hidden value
-            setOptions(getOptions());
 
             function update(){
                 optionsRow.style.display = type.value === 'select' ? '' : 'none';
@@ -375,7 +300,7 @@ class Pedagogy_CF_Starter {
         $title = sanitize_text_field( wp_unslash( $_POST['pcf_title'] ?? '' ) );
         $name  = sanitize_text_field( wp_unslash( $_POST['pcf_name'] ?? '' ) );
         $type  = sanitize_text_field( wp_unslash( $_POST['pcf_type'] ?? 'text' ) );
-        $opts  = sanitize_text_field( wp_unslash( $_POST['pcf_options'] ?? '' ) );
+        $opts  = sanitize_textarea_field( wp_unslash( $_POST['pcf_options'] ?? '' ) );
         $order = isset( $_POST['pcf_order'] ) ? intval( wp_unslash( $_POST['pcf_order'] ) ) : 0;
         $select_multiple = isset( $_POST['pcf_select_multiple'] ) ? true : false;
         $allow_post_options = isset( $_POST['pcf_allow_post_options'] ) ? true : false;
@@ -390,9 +315,7 @@ class Pedagogy_CF_Starter {
 
         $entry = array( 'title' => $title, 'type' => $type );
         if ( 'select' === $type ) {
-            $options = array_filter( array_map( 'trim', explode( ',', $opts ) ) );
-            natcasesort( $options );
-            $entry['options'] = array_values( $options );
+            $entry['options'] = $this->parse_options_input( $opts );
             $entry['multiple'] = $select_multiple;
             $entry['allow_post_options'] = $allow_post_options;
         } elseif ( 'url' === $type ) {
@@ -491,6 +414,12 @@ class Pedagogy_CF_Starter {
             $defs = array();
         }
 
+        foreach ( $defs as $field_name => $def ) {
+            if ( isset( $def['type'] ) && 'select' === $def['type'] && isset( $def['options'] ) && is_array( $def['options'] ) ) {
+                $defs[ $field_name ]['options'] = $this->normalize_options_list( $def['options'] );
+            }
+        }
+
         uasort( $defs, function( $a, $b ) {
             $a_order = isset( $a['order'] ) ? intval( $a['order'] ) : PHP_INT_MAX;
             $b_order = isset( $b['order'] ) ? intval( $b['order'] ) : PHP_INT_MAX;
@@ -501,6 +430,117 @@ class Pedagogy_CF_Starter {
         } );
 
         return $defs;
+    }
+
+    private function normalize_options_list( $options ) {
+        $normalized = array();
+        if ( ! is_array( $options ) ) {
+            return $normalized;
+        }
+
+        foreach ( $options as $option ) {
+            if ( is_array( $option ) ) {
+                $title = '';
+                if ( isset( $option['title'] ) ) {
+                    $title = sanitize_text_field( $option['title'] );
+                } elseif ( isset( $option['label'] ) ) {
+                    $title = sanitize_text_field( $option['label'] );
+                } elseif ( isset( $option['value'] ) ) {
+                    $title = sanitize_text_field( $option['value'] );
+                }
+
+                $description = isset( $option['description'] ) ? sanitize_text_field( $option['description'] ) : '';
+                if ( '' === $title ) {
+                    continue;
+                }
+
+                $normalized[] = array(
+                    'title'       => $title,
+                    'description' => $description,
+                );
+            } elseif ( is_scalar( $option ) ) {
+                $title = sanitize_text_field( (string) $option );
+                if ( '' === $title ) {
+                    continue;
+                }
+
+                $normalized[] = array(
+                    'title'       => $title,
+                    'description' => '',
+                );
+            }
+        }
+
+        $deduped = array();
+        $seen_titles = array();
+        foreach ( $normalized as $option ) {
+            $title_key = strtolower( trim( $option['title'] ) );
+            if ( '' === $title_key || isset( $seen_titles[ $title_key ] ) ) {
+                continue;
+            }
+
+            $seen_titles[ $title_key ] = true;
+            $deduped[] = $option;
+        }
+
+        usort( $deduped, static function( $a, $b ) {
+            return strcasecmp( $a['title'], $b['title'] );
+        } );
+
+        return $deduped;
+    }
+
+    private function options_to_admin_lines( $options ) {
+        $normalized = $this->normalize_options_list( $options );
+        if ( empty( $normalized ) ) {
+            return '';
+        }
+
+        $lines = array();
+        foreach ( $normalized as $option ) {
+            $line = $option['title'];
+            if ( '' !== $option['description'] ) {
+                $line .= ' | ' . $option['description'];
+            }
+            $lines[] = $line;
+        }
+
+        return implode( "\n", $lines );
+    }
+
+    private function parse_options_input( $raw_options ) {
+        $raw_options = is_string( $raw_options ) ? trim( $raw_options ) : '';
+        if ( '' === $raw_options ) {
+            return array();
+        }
+
+        $lines = preg_split( '/\r\n|\r|\n/', $raw_options );
+        if ( ! is_array( $lines ) ) {
+            $lines = array( $raw_options );
+        }
+
+        $options = array();
+        foreach ( $lines as $line ) {
+            $line = trim( (string) $line );
+            if ( '' === $line ) {
+                continue;
+            }
+
+            $title = $line;
+            $description = '';
+            if ( false !== strpos( $line, '|' ) ) {
+                list( $maybe_title, $maybe_description ) = array_map( 'trim', explode( '|', $line, 2 ) );
+                $title = $maybe_title;
+                $description = $maybe_description;
+            }
+
+            $options[] = array(
+                'title'       => sanitize_text_field( $title ),
+                'description' => sanitize_text_field( $description ),
+            );
+        }
+
+        return $this->normalize_options_list( $options );
     }
 
     private function get_default_order( $defs ) {
@@ -700,26 +740,28 @@ class Pedagogy_CF_Starter {
                 $is_multiple = ! empty( $def['multiple'] );
                 $allow_post_options = ! empty( $def['allow_post_options'] );
                 $select_name = esc_attr( $meta_key . ( $is_multiple ? '[]' : '' ) );
-                $select_id = esc_attr( $meta_key . '_select' );
                 $new_option_name = esc_attr( $meta_key . '_new_option' );
                 $new_option_id = esc_attr( $meta_key . '_new_option' );
                 echo '<select name="' . $select_name . '" class="widefat"' . ( $is_multiple ? ' multiple size="5"' : '' ) . '>';
-                $opts = $def['options'] ?? array();
-                if ( ! empty( $opts ) && is_array( $opts ) ) {
-                    usort( $opts, 'strcasecmp' );
-                }
+                $opts = isset( $def['options'] ) ? $this->normalize_options_list( $def['options'] ) : array();
                 if ( ! $is_multiple ) {
                     echo '<option value="">' . esc_html__( '-- Select option --', 'pedagogy' ) . '</option>';
                 }
-                foreach ( $opts as $o ) {
+                foreach ( $opts as $option ) {
+                    $option_value = $option['title'];
+                    $option_label = $option['title'];
+                    if ( '' !== $option['description'] ) {
+                        $option_label .= ' - ' . $option['description'];
+                    }
+
                     $selected = false;
                     if ( $is_multiple ) {
-                        $selected = is_array( $value ) && in_array( $o, $value, true );
+                        $selected = is_array( $value ) && in_array( $option_value, $value, true );
                     } else {
-                        $selected = $value === $o;
+                        $selected = $value === $option_value;
                     }
                     $sel = selected( $selected, true, false );
-                    echo '<option value="' . esc_attr( $o ) . '" ' . $sel . '>' . esc_html( $o ) . '</option>';
+                    echo '<option value="' . esc_attr( $option_value ) . '" ' . $sel . '>' . esc_html( $option_label ) . '</option>';
                 }
                 echo '</select>';
                 if ( $allow_post_options ) {
@@ -812,11 +854,8 @@ class Pedagogy_CF_Starter {
                     $source_defs = $this->get_definitions();
                     $source_def = isset( $source_defs[ $source ] ) ? $source_defs[ $source ] : null;
                     if ( $source_def && isset( $source_def['options'] ) ) {
-                        $opts = $source_def['options'];
+                        $opts = $this->normalize_options_list( $source_def['options'] );
                     }
-                }
-                if ( ! empty( $opts ) && is_array( $opts ) ) {
-                    usort( $opts, 'strcasecmp' );
                 }
                 if ( empty( $opts ) ) {
                     echo '<p>' . esc_html__( 'No source options found. Please select a valid source field or edit the source field options.', 'pedagogy' ) . '</p>';
@@ -830,15 +869,21 @@ class Pedagogy_CF_Starter {
                 if ( ! $is_multiple ) {
                     echo '<option value="">' . esc_html__( '-- Select option --', 'pedagogy' ) . '</option>';
                 }
-                foreach ( $opts as $o ) {
+                foreach ( $opts as $option ) {
+                    $option_value = $option['title'];
+                    $option_label = $option['title'];
+                    if ( '' !== $option['description'] ) {
+                        $option_label .= ' - ' . $option['description'];
+                    }
+
                     $selected = false;
                     if ( $is_multiple ) {
-                        $selected = is_array( $value ) && in_array( $o, $value, true );
+                        $selected = is_array( $value ) && in_array( $option_value, $value, true );
                     } else {
-                        $selected = $value === $o;
+                        $selected = $value === $option_value;
                     }
                     $sel = selected( $selected, true, false );
-                    echo '<option value="' . esc_attr( $o ) . '" ' . $sel . '>' . esc_html( $o ) . '</option>';
+                    echo '<option value="' . esc_attr( $option_value ) . '" ' . $sel . '>' . esc_html( $option_label ) . '</option>';
                 }
                 echo '</select>';
                 if ( $allow_post_options ) {
@@ -967,25 +1012,31 @@ class Pedagogy_CF_Starter {
             $new_option = isset( $_POST[ $new_option_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $new_option_key ] ) ) : '';
             if ( ! empty( $d['allow_post_options'] ) && $new_option !== '' && in_array( $d['type'], array( 'select', 'linked' ), true ) ) {
                 if ( 'linked' === $d['type'] && ! empty( $d['source_field'] ) && isset( $defs[ $d['source_field'] ] ) ) {
-                    if ( ! isset( $defs[ $d['source_field'] ]['options'] ) || ! is_array( $defs[ $d['source_field'] ]['options'] ) ) {
-                        $defs[ $d['source_field'] ]['options'] = array();
-                    }
-                    $existing = array_map( 'strtolower', $defs[ $d['source_field'] ]['options'] );
+                    $source_options = $this->normalize_options_list( $defs[ $d['source_field'] ]['options'] ?? array() );
+                    $existing = array_map( static function( $option ) {
+                        return strtolower( $option['title'] );
+                    }, $source_options );
+
                     if ( ! in_array( strtolower( $new_option ), $existing, true ) ) {
-                        $defs[ $d['source_field'] ]['options'][] = $new_option;
-                        natcasesort( $defs[ $d['source_field'] ]['options'] );
-                        $defs[ $d['source_field'] ]['options'] = array_values( $defs[ $d['source_field'] ]['options'] );
+                        $source_options[] = array(
+                            'title'       => $new_option,
+                            'description' => '',
+                        );
+                        $defs[ $d['source_field'] ]['options'] = $this->normalize_options_list( $source_options );
                         $defs_updated = true;
                     }
                 } elseif ( 'select' === $d['type'] ) {
-                    if ( ! isset( $defs[ $name ]['options'] ) || ! is_array( $defs[ $name ]['options'] ) ) {
-                        $defs[ $name ]['options'] = array();
-                    }
-                    $existing = array_map( 'strtolower', $defs[ $name ]['options'] );
+                    $field_options = $this->normalize_options_list( $defs[ $name ]['options'] ?? array() );
+                    $existing = array_map( static function( $option ) {
+                        return strtolower( $option['title'] );
+                    }, $field_options );
+
                     if ( ! in_array( strtolower( $new_option ), $existing, true ) ) {
-                        $defs[ $name ]['options'][] = $new_option;
-                        natcasesort( $defs[ $name ]['options'] );
-                        $defs[ $name ]['options'] = array_values( $defs[ $name ]['options'] );
+                        $field_options[] = array(
+                            'title'       => $new_option,
+                            'description' => '',
+                        );
+                        $defs[ $name ]['options'] = $this->normalize_options_list( $field_options );
                         $defs_updated = true;
                     }
                 }

@@ -46,56 +46,28 @@ if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
 $search_ids = null;
 $force_no_results = false;
 if ( $search_term !== '' ) {
-    $search_ids = array();
-    $search_tokens = preg_split( '/\s+/', $search_term );
-    $search_tokens = is_array( $search_tokens ) ? array_values( array_unique( array_filter( array_map( 'trim', $search_tokens ) ) ) ) : array();
-
-    $search_query = new WP_Query( array(
+    // Strict override mode: only exact broader_collections matches are allowed.
+    $broader_collections_query = new WP_Query( array(
         'post_type'      => 'post',
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'fields'         => 'ids',
-        's'              => $search_term,
+        'meta_query'     => array(
+            'relation' => 'OR',
+            array(
+                'key'     => 'pcf_broader_collections',
+                'value'   => $search_term,
+                'compare' => '=',
+            ),
+            array(
+                'key'     => 'pcf_broader_collections',
+                'value'   => '"' . $search_term . '"',
+                'compare' => 'LIKE',
+            ),
+        ),
     ) );
 
-    if ( $search_query->have_posts() ) {
-        $search_ids = array_merge( $search_ids, $search_query->posts );
-    }
-
-    if ( ! empty( $meta_keys ) ) {
-        $meta_query = array( 'relation' => 'OR' );
-        foreach ( $meta_keys as $meta_key ) {
-            $meta_query[] = array(
-                'key'     => $meta_key,
-                'value'   => $search_term,
-                'compare' => 'LIKE',
-            );
-
-            foreach ( $search_tokens as $search_token ) {
-                if ( mb_strlen( $search_token ) < 2 ) {
-                    continue;
-                }
-
-                $meta_query[] = array(
-                    'key'     => $meta_key,
-                    'value'   => $search_token,
-                    'compare' => 'LIKE',
-                );
-            }
-        }
-
-        $meta_search_query = new WP_Query( array(
-            'post_type'      => 'post',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'fields'         => 'ids',
-            'meta_query'     => $meta_query,
-        ) );
-
-        if ( $meta_search_query->have_posts() ) {
-            $search_ids = array_unique( array_merge( $search_ids, $meta_search_query->posts ) );
-        }
-    }
+    $search_ids = $broader_collections_query->have_posts() ? $broader_collections_query->posts : array();
 
     if ( empty( $search_ids ) ) {
         $force_no_results = true;

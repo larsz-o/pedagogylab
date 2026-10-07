@@ -46,28 +46,41 @@ if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
 $search_ids = null;
 $force_no_results = false;
 if ( $search_term !== '' ) {
-    // Strict override mode: only exact broader_collections matches are allowed.
-    $broader_collections_query = new WP_Query( array(
+    $content_query = new WP_Query( array(
         'post_type'      => 'post',
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'fields'         => 'ids',
-        'meta_query'     => array(
-            'relation' => 'OR',
-            array(
-                'key'     => 'pcf_broader_collections',
-                'value'   => $search_term,
-                'compare' => '=',
-            ),
-            array(
-                'key'     => 'pcf_broader_collections',
-                'value'   => '"' . $search_term . '"',
-                'compare' => 'LIKE',
-            ),
-        ),
+        's'              => $search_term,
+        'no_found_rows'  => true,
     ) );
 
-    $search_ids = $broader_collections_query->have_posts() ? $broader_collections_query->posts : array();
+    $meta_query = array( 'relation' => 'OR' );
+    foreach ( $meta_keys as $meta_key ) {
+        $meta_query[] = array(
+            'key'     => $meta_key,
+            'value'   => $search_term,
+            'compare' => 'LIKE',
+        );
+    }
+
+    $metadata_query_args = array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    );
+
+    if ( count( $meta_query ) > 1 ) {
+        $metadata_query_args['meta_query'] = $meta_query;
+    }
+
+    $metadata_query = new WP_Query( $metadata_query_args );
+
+    $content_ids = $content_query->have_posts() ? $content_query->posts : array();
+    $metadata_ids = $metadata_query->have_posts() ? $metadata_query->posts : array();
+    $search_ids = array_values( array_unique( array_merge( $content_ids, $metadata_ids ) ) );
 
     if ( empty( $search_ids ) ) {
         $force_no_results = true;

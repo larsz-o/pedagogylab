@@ -826,7 +826,9 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     </div>
 
                     <?php if ( ! empty( $combined_meta_items ) ) : ?>
-                        <div class="row-center">///</div>
+                        <div class="row-center">
+                            <img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/planet.png' ) ); ?>" alt="" class="pcf-meta-divider-image" />
+                        </div>
                         <aside class="pcf-single-column pcf-single-column-meta pcf-single-column-meta-sticky">
                             <div class="pcf-metadata-card pcf-metadata-card-sidebar">
                                 <div class="pcf-meta-list">

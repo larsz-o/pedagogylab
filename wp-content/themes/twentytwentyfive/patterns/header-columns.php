@@ -18,7 +18,7 @@
 	<div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--20);padding-bottom:var(--wp--preset--spacing--60)">
 		<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|20","padding":{"top":"0","bottom":"0","left":"0","right":"0"}}},"layout":{"type":"constrained"}} -->
 		<div class="wp-block-group" style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="pcf-header-logo-link" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"><img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/brand-mark-logo-2.png' ) ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" class="pcf-header-logo-image" /></a>
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="pcf-header-logo-link" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"><img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/lightpurpleicon.png' ) ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" class="pcf-header-logo-image" /></a>
 			<!-- wp:site-tagline /-->
 		</div>
 		<!-- /wp:group -->

@@ -318,30 +318,41 @@ if ( is_array( $broader_collections_def ) ) {
 $search_ids = null;
 $force_no_results = false;
 if ( $search_term !== '' ) {
-    // Strict override mode: only exact broader_collections matches are allowed.
-    $strict_broader_collections_meta_query = array( 'relation' => 'OR' );
-    foreach ( $broader_collection_field_names as $broader_collection_field_name ) {
-        $strict_broader_collections_meta_query[] = array(
-            'key'     => 'pcf_' . $broader_collection_field_name,
-            'value'   => $search_term,
-            'compare' => '=',
-        );
-        $strict_broader_collections_meta_query[] = array(
-            'key'     => 'pcf_' . $broader_collection_field_name,
-            'value'   => '"' . $search_term . '"',
-            'compare' => 'LIKE',
-        );
-    }
-
-    $broader_collections_query = new WP_Query( array(
+    $content_query = new WP_Query( array(
         'post_type'      => 'post',
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'fields'         => 'ids',
-        'meta_query'     => $strict_broader_collections_meta_query,
+        's'              => $search_term,
+        'no_found_rows'  => true,
     ) );
 
-    $search_ids = $broader_collections_query->have_posts() ? $broader_collections_query->posts : array();
+    $metadata_query_parts = array( 'relation' => 'OR' );
+    foreach ( $meta_keys as $meta_key ) {
+        $metadata_query_parts[] = array(
+            'key'     => $meta_key,
+            'value'   => $search_term,
+            'compare' => 'LIKE',
+        );
+    }
+
+    $metadata_query_args = array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    );
+
+    if ( count( $metadata_query_parts ) > 1 ) {
+        $metadata_query_args['meta_query'] = $metadata_query_parts;
+    }
+
+    $metadata_query = new WP_Query( $metadata_query_args );
+
+    $content_ids = $content_query->have_posts() ? $content_query->posts : array();
+    $metadata_ids = $metadata_query->have_posts() ? $metadata_query->posts : array();
+    $search_ids = array_values( array_unique( array_merge( $content_ids, $metadata_ids ) ) );
 
     if ( empty( $search_ids ) ) {
         $force_no_results = true;

@@ -117,7 +117,7 @@ iframe {
   word-break: break-word;
 }
 .pcf-meta-value a {
-  color: #d26b5b;
+  color: #6e4478;
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -197,7 +197,7 @@ hr{
   margin: 2em;
 }
 .entry-item-highlight {
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: #fff;
   padding: 1em; 
   border-radius: 0.75rem;
   border: 1px solid #36103a;
@@ -401,6 +401,7 @@ align-items: center;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-family: "Lexend", sans-serif;
 }
 
 .pcf-description-inner {
@@ -466,6 +467,15 @@ align-items: center;
 .row-center {
   text-align:center
 }
+
+.pcf-meta-divider-image {
+  display: inline-block;
+  width: min(84px, 22vw);
+  height: auto;
+  vertical-align: middle;
+  margin-bottom: 2rem;
+}
+
 .pcf-single-column-content {
   min-width: 0;
 }
@@ -562,7 +572,7 @@ align-items: center;
 }
 
 .pcf-resource-callout {
-  margin-top: .3em;
+  margin-top: 1em;
   margin-bottom: .75em;
   padding: 0.75rem 0.9rem;
   text-align: left;
@@ -571,7 +581,7 @@ align-items: center;
 }
 
 .pcf-resource-callout-title {
-  margin: 0 0 0.35rem;
+  margin: 1rem 0 0.35rem;
   font-size: clamp(0.95rem, 1.45vw, 1.08rem);
   line-height: 1.25;
 }
@@ -635,7 +645,9 @@ align-items: center;
 }
 
 .pcf-single-column-media .pcf-embed-inner {
-  width: min(100%, 760px);
+  /* width: min(100%, 760px); */
+  height: 100%;
+  width: 100%;
   margin: 0 auto;
   padding: 0.75rem;
   border: 0;
@@ -669,6 +681,7 @@ align-items: center;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   line-height: 1.25;
+  font-family: "Lexend", sans-serif;
 }
 
 .pcf-description-meta-line {
@@ -926,11 +939,12 @@ body.home #header {
 
 body.home #header > .wp-block-group {
   position: relative;
-  z-index: 1;
+  z-index: 4;
 }
 
 body.home #header a {
   color: #fff !important;
+
 }
 
 body.home #header .pcf-header-logo-link {
@@ -1064,11 +1078,13 @@ body.home #header .wp-block-navigation-item__content {
     padding-left: 0;
     padding-right: 0;
     text-align: right;
+    z-index: 100
   }
 
   #header .wp-block-navigation .wp-block-navigation__responsive-container-content .wp-block-navigation__submenu-container .wp-block-navigation-item__content {
     padding-left: 0;
     padding-right: 0;
+    z-index: 100
   }
 
   #header .wp-block-navigation .wp-block-navigation__responsive-container-content .wp-block-navigation__submenu-container .wp-block-navigation-item__content::before {
@@ -1093,10 +1109,11 @@ body.home #header .wp-block-navigation-item__content {
     border-color: transparent !important;
     box-shadow: none !important;
   }
- #header .wp-block-navigation > button.wp-block-navigation__responsive-container-open:hover,
+  #header .wp-block-navigation > button.wp-block-navigation__responsive-container-open:hover,
   #header .wp-block-navigation button.wp-block-navigation__responsive-container-open:hover {
-    cursor:pointer;
-  
+    cursor: pointer;
+  }
+
 
   #header .wp-block-navigation > button.wp-block-navigation__responsive-container-open svg,
   #header .wp-block-navigation button.wp-block-navigation__responsive-container-open svg,
@@ -1225,12 +1242,11 @@ body.page-template-long-item-page-php #header .alignwide > .wp-block-group:last-
 
 a {
 	text-decoration: none;
-	color: #d26b5b;
+	color: #6e4478;
 	font-weight: bold;
 }
 .block-shade-1 {
-background-color: rgba(254,169,133, .5);
-background-color: #ddc8aa;
+background-color: #efe3d1;
 border-radius: 10px;
   padding: 1em;
 }
@@ -1246,6 +1262,7 @@ iframe {
   margin: 0;
   padding: 0;
   width: 100% !important;
+  min-height: 400px
 }
 
 .flex-row {
@@ -1262,8 +1279,8 @@ iframe {
   text-decoration: none;
 }
 .pcf-content-toc-title {
-  font-family: "Lora", serif;
-  font-weight: 400;
+  font-family: "Lexend", sans-serif;
+  font-weight: 800;
   margin-top: 0;
   margin-bottom: 0.5rem;
 }
@@ -1281,6 +1298,27 @@ iframe {
   text-decoration: underline;
   opacity: 0.9;
 }
+
+#header .wp-block-pages-list__item__link.wp-block-navigation-item__content {
+  position: relative;
+  z-index: 1305 !important;
+}
+
+.post-cards-filter-item select {
+  background-color: #fafafa !important;
+  color: #0D031B !important;
+  border-color: #36103a !important;
+  accent-color: #36103a;
+  position: relative;
+  z-index: 1400;
+}
+
+.post-cards-filter-item select option {
+  background-color: #fafafa;
+  color: #0D031B;
+}
+
+
 
 @media (max-width: 760px) {
   body.home #header::after {
@@ -1471,6 +1509,19 @@ a {
 h1, h2, h3, h4, h5, h6, blockquote, caption, figcaption, p {
 	text-wrap: pretty;
 }
+
+/* Prevent hyphenation/forced word splitting; let text scale down responsively. */
+:where(h1, h2, h3, h4, h5, h6, p, li, a, span, figcaption, blockquote, td, th, label, button, input, select, textarea) {
+  hyphens: none !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+/* Fluid root text sizing to reduce overflow on narrow viewports. */
+html {
+  font-size: clamp(14px, 0.55vw + 12px, 18px);
+}
+
 html, body {
 	min-height: 100%;
   overflow-x: hidden;
@@ -1482,7 +1533,7 @@ html, body {
     font-family: "Lexend", sans-serif;
     line-height: 1.5;
     transition: all 0.25s linear;
-    font-size: 18px;
+    font-size: 1rem;
     font-weight: 400;
     scroll-behavior: smooth;
 	  line-height: 1.5; /* 1 */
@@ -1506,9 +1557,7 @@ main {
 
  h1, h2, h3, h4, h5, h6 {
   font-family: "Lora", serif;
-  font-weight: 400;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
+  font-weight: 800;
  }
 h1 {
   font-size: 2.66rem;
@@ -2175,7 +2224,9 @@ template {
   width: 100%;
   padding: 0.85rem 1.1rem;
   border-radius: 0.75rem;
-  color: #000;
+  color: #fafafa;
+  background-color: #36103a;
+  border: 1.5px solid #36103a;
   font-size: 0.95rem;
   accent-color: #36103a;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -2183,7 +2234,7 @@ template {
 .post-cards-filter-item select:focus {
   outline: none;
   border-color: #36103a;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  box-shadow: 0 0 0 3px rgba(54, 16, 58, 0.25);
 }
 .post-cards-summary {
   margin-bottom: 1rem;
@@ -2273,7 +2324,7 @@ template {
 }
 
 .post-cards-filter-item {
-  background: #f7f5f4;
+  background: #efe3d1;
   border: 1.5px solid #36103a;
   border-radius: 0.85rem;
   padding: 0.9rem 1rem;
@@ -2292,6 +2343,8 @@ template {
 .post-cards-filter-item select {
   padding: 0.75rem 1rem;
   border: 0;
+  color: black;
+  background-color: #fafafa;
   border-radius: 0.6rem;
   accent-color: #36103a;
 }

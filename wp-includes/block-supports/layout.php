@@ -106,7 +106,7 @@ function wp_get_layout_definitions() {
 		'constrained' => array(
 			'name'          => 'constrained',
 			'slug'          => 'constrained',
-			'className'     => 'is-layout-constrained',
+			'className'     => '',
 			'baseStyles'    => array(
 				array(
 					'selector' => ' > .alignleft',

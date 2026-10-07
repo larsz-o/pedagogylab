@@ -51,8 +51,8 @@ if ( is_singular() ) {
 </head>
 <body <?php body_class(); ?>>
 <div id="page">
-
+<!-- 
 <div id="header" role="banner">
 	
-</div>
+</div> -->
 <hr />

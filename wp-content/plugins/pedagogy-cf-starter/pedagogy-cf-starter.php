@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Pedagogy Custom Fields Starter
+ * Plugin Name: library-page
  * Description: Starter plugin to define custom fields (title + datatype) via an admin UI and automatically add meta boxes to posts/pages.
  * Version: 0.1
  * Author: Assistant
@@ -35,8 +35,8 @@ class Pedagogy_CF_Starter {
             return $templates;
         }
 
-        $templates['page-post-cards.php'] = __( 'Post Cards Search', 'pedagogy-cf-starter' );
-        $templates['page-post-cards'] = __( 'Post Cards Search', 'pedagogy-cf-starter' );
+        $templates['long-item-page.php'] = __( 'long-item-page', 'library-page' );
+        $templates['long-item-page'] = __( 'long-item-page', 'library-page' );
         return $templates;
     }
 
@@ -46,11 +46,11 @@ class Pedagogy_CF_Starter {
         }
 
         $post_template = get_page_template_slug( get_queried_object_id() );
-        if ( ! in_array( $post_template, array( 'page-post-cards.php', 'page-post-cards' ), true ) ) {
+        if ( ! in_array( $post_template, array( 'long-item-page.php', 'long-item-page', 'page-post-cards.php', 'page-post-cards' ), true ) ) {
             return $template;
         }
 
-        $plugin_template = plugin_dir_path( __FILE__ ) . 'page-post-cards.php';
+        $plugin_template = plugin_dir_path( __FILE__ ) . 'long-item-page.php';
         if ( file_exists( $plugin_template ) ) {
             return $plugin_template;
         }
@@ -244,11 +244,11 @@ class Pedagogy_CF_Starter {
                                     <div class="pcf-action-buttons">
                                         <a class="pcf-action-button pcf-action-button-edit" href="<?php echo esc_url( add_query_arg( array( 'page' => 'pedagogy-cf', 'edit' => $name ), admin_url( 'admin.php' ) ) ); ?>">
                                             <span class="dashicons dashicons-edit" aria-hidden="true"></span>
-                                            <span><?php esc_html_e( 'Edit', 'pedagogy-cf-starter' ); ?></span>
+                                            <span><?php esc_html_e( 'Edit', 'library-page' ); ?></span>
                                         </a>
                                         <a class="pcf-action-button pcf-action-button-delete" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pedagogy_cf_delete&name=' . $name ), 'pedagogy_cf_delete' ) ); ?>">
                                             <span class="dashicons dashicons-trash" aria-hidden="true"></span>
-                                            <span><?php esc_html_e( 'Delete', 'pedagogy-cf-starter' ); ?></span>
+                                            <span><?php esc_html_e( 'Delete', 'library-page' ); ?></span>
                                         </a>
                                     </div>
                                 </td>

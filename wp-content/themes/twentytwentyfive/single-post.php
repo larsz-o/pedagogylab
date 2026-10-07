@@ -769,7 +769,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
             ?>
             
             <?php if ( ! empty( $combined_meta_items ) || $has_main_content ) : ?>
-                <section class="pcf-single-content-grid pcf-single-content-grid-with-sidebar">
+                <section class="pcf-single-content-grid">
 
                     <div class="pcf-single-column pcf-single-column-content">
                         <?php if ( $media_html || $description_html ) : ?>

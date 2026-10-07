@@ -99,7 +99,7 @@ if ( ! function_exists( 'twentytwentyfive_render_inline_header' ) ) :
 			$home_host      = strtolower( $home_url_parts['host'] ?? '' );
 			$home_path      = '/' . ltrim( (string) ( $home_url_parts['path'] ?? '/' ), '/' );
 			$home_path      = '/' === $home_path ? '/' : untrailingslashit( $home_path );
-			$header_logo_src = get_theme_file_uri( 'assets/images/Brand Mark - Logo.png' );
+			$header_logo_src = get_theme_file_uri( 'assets/images/brand-mark-logo-2.png' );
 			$header_logo_alt = get_bloginfo( 'name' );
 
 			foreach ( $xpath->query( '//li[contains(@class, "wp-block-navigation-item")]' ) as $item ) {
@@ -190,7 +190,7 @@ if ( ! function_exists( 'twentytwentyfive_replace_header_site_title_with_logo' )
 
 		$site_title_nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " wp-block-site-title ")]' );
 		if ( $site_title_nodes instanceof DOMNodeList && $site_title_nodes->length > 0 ) {
-			$header_logo_src = get_theme_file_uri( 'assets/images/Brand Mark - Logo.png' );
+			$header_logo_src = get_theme_file_uri( 'assets/images/brand-mark-logo-2.png' );
 			$header_logo_alt = get_bloginfo( 'name' );
 
 			foreach ( $site_title_nodes as $site_title_node ) {

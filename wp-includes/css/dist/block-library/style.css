@@ -3521,6 +3521,7 @@ p.has-text-align-left[style*="writing-mode:vertical-lr"] {
 .wp-block-post-title {
   word-break: break-word;
   box-sizing: border-box;
+  text-align: center !important;
 }
 .wp-block-post-title :where(a) {
   display: inline-block;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: Post Cards Search
+ * Template Name: long-item-page
  * Description: Page template for listing posts as cards with search over post metadata.
  */
 get_header();

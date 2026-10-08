@@ -35,8 +35,8 @@ class Pedagogy_CF_Starter {
             return $templates;
         }
 
-        $templates['long-item-page.php'] = __( 'OER Library (short)', 'library-page' );
-        $templates['long-item-page'] = __( 'OER Library (short)', 'library-page' );
+        $templates['oer-library.php'] = __( 'OER Library (short)', 'library-page' );
+        $templates['oer-library'] = __( 'OER Library (short)', 'library-page' );
         return $templates;
     }
 
@@ -46,11 +46,11 @@ class Pedagogy_CF_Starter {
         }
 
         $post_template = get_page_template_slug( get_queried_object_id() );
-        if ( ! in_array( $post_template, array( 'long-item-page.php', 'long-item-page', 'page-post-cards.php', 'page-post-cards' ), true ) ) {
+        if ( ! in_array( $post_template, array( 'oer-library.php', 'oer-library', 'long-item-page.php', 'long-item-page', 'page-post-cards.php', 'page-post-cards' ), true ) ) {
             return $template;
         }
 
-        $plugin_template = plugin_dir_path( __FILE__ ) . 'long-item-page.php';
+        $plugin_template = plugin_dir_path( __FILE__ ) . 'oer-library.php';
         if ( file_exists( $plugin_template ) ) {
             return $plugin_template;
         }

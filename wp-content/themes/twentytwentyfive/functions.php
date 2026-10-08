@@ -381,6 +381,32 @@ endif;
 add_filter( 'theme_templates', 'twentytwentyfive_register_news_post_template', 10, 4 );
 add_filter( 'theme_post_templates', 'twentytwentyfive_register_news_post_template', 10, 4 );
 
+if ( ! function_exists( 'twentytwentyfive_register_short_item_page_template' ) ) :
+	/**
+	 * Registers the Short Item Page template for posts in template selectors.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param array       $templates Existing templates.
+	 * @param WP_Theme    $theme     Active theme object.
+	 * @param WP_Post     $post      Post object.
+	 * @param string|null $post_type Post type.
+	 * @return array
+	 */
+	function twentytwentyfive_register_short_item_page_template( $templates, $theme, $post, $post_type ) {
+		unset( $theme, $post );
+
+		if ( 'post' !== $post_type ) {
+			return $templates;
+		}
+
+		$templates['short-item-page.php'] = __( 'Short Item Page', 'twentytwentyfive' );
+		return $templates;
+	}
+endif;
+add_filter( 'theme_templates', 'twentytwentyfive_register_short_item_page_template', 10, 4 );
+add_filter( 'theme_post_templates', 'twentytwentyfive_register_short_item_page_template', 10, 4 );
+
 if ( ! function_exists( 'twentytwentyfive_load_news_post_template' ) ) :
 	/**
 	 * Loads the PHP News Template when selected for a single post.
@@ -414,6 +440,40 @@ if ( ! function_exists( 'twentytwentyfive_load_news_post_template' ) ) :
 	}
 endif;
 add_filter( 'template_include', 'twentytwentyfive_load_news_post_template', 20 );
+
+if ( ! function_exists( 'twentytwentyfive_load_short_item_page_template' ) ) :
+	/**
+	 * Loads the PHP Short Item Page template when selected for a post.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param string $template Resolved template path.
+	 * @return string
+	 */
+	function twentytwentyfive_load_short_item_page_template( $template ) {
+		if ( ! is_singular( 'post' ) ) {
+			return $template;
+		}
+
+		$post_id = get_queried_object_id();
+		if ( ! $post_id ) {
+			return $template;
+		}
+
+		$post_template = get_page_template_slug( $post_id );
+		if ( ! in_array( $post_template, array( 'short-item-page.php', 'short-item-page' ), true ) ) {
+			return $template;
+		}
+
+		$short_item_template = get_theme_file_path( 'short-item-page.php' );
+		if ( file_exists( $short_item_template ) ) {
+			return $short_item_template;
+		}
+
+		return $template;
+	}
+endif;
+add_filter( 'template_include', 'twentytwentyfive_load_short_item_page_template', 21 );
 
 if ( ! function_exists( 'twentytwentyfive_register_template_selector_metabox' ) ) :
 	/**

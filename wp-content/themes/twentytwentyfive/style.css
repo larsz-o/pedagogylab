@@ -12,6 +12,26 @@ Description: Twenty Twenty-Five emphasizes simplicity and adaptability. It offer
 iframe {
   margin-top: 5vh !important
 }
+.spin {
+   animation: spin 9s linear infinite; 
+}
+.is-style-rounded {
+  border-radius: 50%;
+  /* box-shadow: 4px 12px  #6e4478; */
+  /* border-top: .5rem solid #6e4478; */
+  /* border: .4rem solid #443326;
+   box-shadow: 4px 8px 8px  #443326; */
+}
+.featured-item {
+  padding: 1rem;
+  background-color: #fafafa;
+  text-align: center;
+  border-radius: 1rem;
+}
+.featured-news li {
+  border-bottom: 5px solid #6e4478;
+  margin: .5rem;
+}
 .pcf-post-shell {
   display: block;
 }
@@ -208,12 +228,12 @@ hr{
   margin-bottom: 2em;
 }
 .entry-item-dark {
-  background-color: rgba(40, 12, 34, .9);
+  background-color: #efe3d1;
 padding: 3em; 
   border-radius: 0.75rem;
-  color: white;
-  border: 1px solid #d26b5b;
-  border-left: 20px solid #d26b5b;
+
+  border: 1px solid #6e4478;
+  border-left: 20px solid #6e4478;
   margin-bottom: 3em;
 }
 
@@ -233,6 +253,8 @@ padding: 3em;
   padding: 0;
   text-align: left;
   cursor: pointer;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .entry-item-dark-toggle-label {
@@ -246,7 +268,7 @@ padding: 3em;
   width: 1.65rem;
   height: 1.65rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -801,6 +823,8 @@ body .wp-site-blocks > .wp-block-template-part:last-child {
   padding: 2rem 1.5rem;
   color: #efe3d1;
   margin-bottom: 0;
+  min-height: 10vh;
+  margin-top: 10rem;
 }
 
 
@@ -902,7 +926,13 @@ body:not(.home) #header .alignwide > .wp-block-group:last-child {
   justify-content: flex-end;
   transform: none;
 }
-
+.shade-1 {
+  background-color: #6e4478;
+  color: #fafafa !important;
+}
+.shade-1 a {
+  color: #36103a !important;
+}
 body:not(.home) #header .pcf-header-logo-link {
   position: absolute;
   left: 0.7rem;
@@ -949,13 +979,40 @@ body.home #header a {
   color: #fff !important;
 
 }
-
+.flex-row {
+  display: flex;
+  flex-direction: row; 
+  flex-wrap: wrap;
+}
+.flex-start {
+  align-items: flex-start;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column; 
+  flex-wrap: wrap;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 body.home #header .pcf-header-logo-link {
   display: none;
 }
 
-
-
+.block-shade-1 {
+  padding: 1rem;
+  background-color: #efe3d1;
+}
+.block-shade-2 {
+    padding: 1rem;
+  background-color: #ddc8aa;
+}
+.block-shade-3 {
+    padding: 1rem;
+  box-shadow: 0 4px 6px #36103a;
+}
 body.home #header::after {
   content: "The Pedagogy Lab";
   position: absolute;
@@ -1219,33 +1276,45 @@ body.home #header .wp-block-navigation-item__content {
 }
 
 body.page-template-long-item-page #header .alignwide > .wp-block-group:last-child,
-body.page-template-long-item-page-php #header .alignwide > .wp-block-group:last-child {
+body.page-template-long-item-page-php #header .alignwide > .wp-block-group:last-child,
+body.page-template-oer-library #header .alignwide > .wp-block-group:last-child,
+body.page-template-oer-library-php #header .alignwide > .wp-block-group:last-child {
   margin-top: 0 !important;
 }
 
 body.page-template-long-item-page > header.wp-block-template-part:first-of-type,
-body.page-template-long-item-page-php > header.wp-block-template-part:first-of-type {
+body.page-template-long-item-page-php > header.wp-block-template-part:first-of-type,
+body.page-template-oer-library > header.wp-block-template-part:first-of-type,
+body.page-template-oer-library-php > header.wp-block-template-part:first-of-type {
   display: none !important;
 }
 
 body.page-template-long-item-page #header .wp-block-navigation,
-body.page-template-long-item-page-php #header .wp-block-navigation {
+body.page-template-long-item-page-php #header .wp-block-navigation,
+body.page-template-oer-library #header .wp-block-navigation,
+body.page-template-oer-library-php #header .wp-block-navigation {
   margin-top: 0 !important;
 }
 
 body.page-template-long-item-page #header,
-body.page-template-long-item-page-php #header {
+body.page-template-long-item-page-php #header,
+body.page-template-oer-library #header,
+body.page-template-oer-library-php #header {
   --page-nav-band-height: 3.9rem;
   background-position: center top, left var(--page-nav-band-height);
 }
 
 body.page-template-long-item-page #header > .wp-block-group > .alignwide,
-body.page-template-long-item-page-php #header > .wp-block-group > .alignwide {
+body.page-template-long-item-page-php #header > .wp-block-group > .alignwide,
+body.page-template-oer-library #header > .wp-block-group > .alignwide,
+body.page-template-oer-library-php #header > .wp-block-group > .alignwide {
   padding-top: 0 !important;
 }
 
 body.page-template-long-item-page #header .alignwide > .wp-block-group:last-child,
-body.page-template-long-item-page-php #header .alignwide > .wp-block-group:last-child {
+body.page-template-long-item-page-php #header .alignwide > .wp-block-group:last-child,
+body.page-template-oer-library #header .alignwide > .wp-block-group:last-child,
+body.page-template-oer-library-php #header .alignwide > .wp-block-group:last-child {
   top: 0;
   z-index: 1012;
 }
@@ -1263,26 +1332,6 @@ a {
 	color: #6e4478;
 	font-weight: bold;
 }
-.block-shade-1 {
-background-color: #efe3d1;
-padding: 1rem;
-border-radius: 10px;
-}
-.block-shade-2 {
-  background-color: #ddc8aa;
-  padding: 1rem;
-  border-radius: 10px;
-}
-.block-shade-3 {
-    padding: 2rem;
-  border-radius: 10px;
-  border: 1px solid #443326;
-  box-shadow: 0 16px 40px #36103a;
-}
-.move-down {
-  /* transform: translateY(1rem); */
-  rotate: -10deg;
-}
 .embed-pdf-viewer-wrapper {
   margin: 0;
   padding:0
@@ -1294,31 +1343,9 @@ iframe {
   width: 100% !important;
   min-height: 400px
 }
-.featured-item {
-font-size: 1.5rem;
-text-align: center;
 
-}
-.featured-item img {
-  padding: .5rem;
-}
-.flex-column {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
 .flex-start {
   align-content: flex-start;
-}
-.flex-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.flex-between {
-  align-content: space-between;
 }
 /* Site title styling in header and footer */
 .wp-block-site-title {
@@ -1353,9 +1380,9 @@ text-align: center;
 
 .post-cards-filter-item select {
   background-color: #fafafa !important;
-  color: #0D031B !important;
-  border-color: #36103a !important;
-  accent-color: #36103a;
+  /* color: #0D031B !important;
+  border-color: #36103a !important; */
+  /* accent-color: #36103a; */
   position: relative;
   z-index: 1400;
 }
@@ -1410,7 +1437,9 @@ text-align: center;
   }
 
     body.page-template-long-item-page #header,
-    body.page-template-long-item-page-php #header {
+    body.page-template-long-item-page-php #header,
+    body.page-template-oer-library #header,
+    body.page-template-oer-library-php #header {
       --page-nav-band-height: 3.1rem;
       background-position: center top, left var(--page-nav-band-height);
     }
@@ -1800,7 +1829,7 @@ button,
 [type="submit"] {
   appearance: button;
   -webkit-appearance: button;
-  background-color: #efe3d1;
+  
 }
 
 /**
@@ -1994,7 +2023,7 @@ template {
 
 .post-card {
   background: #fff;
-  border: 1px solid #443326;
+  border: 1px solid #6e4478;
   border-radius: 1rem;
   overflow: hidden;
   transition: transform 0.24s ease, box-shadow 0.24s ease;
@@ -2028,18 +2057,6 @@ template {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 500;
-}
-.news-item li {
-  padding: 2rem;
-  border-radius: 10px;
-  border: 1px solid #443326;
-  box-shadow: 0 16px 40px #36103a;
-  margin: 1rem !important;
-}
-.news-item li:hover {
-   transform: translateY(-5px);
-   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
-   transition: transform 0.24s ease, box-shadow 0.24s ease;
 }
 .post-card-formats {
   display: flex;
@@ -2143,9 +2160,8 @@ template {
 }
 
 .post-cards-filter-item label {
-  font-size: 0.82rem;
+
   font-weight: 700;
-  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -2159,13 +2175,14 @@ template {
 
 .post-cards-summary {
   margin-bottom: 1.5rem;
-  color: #36103a;
+
 }
 
 .post-cards-search-row input[type="search"] {
   min-width: 0;
   max-width: 90vw;
   border-radius: 1em;
+  border: 1px solid #6e4478;
 }
 
 .post-cards-search-row button {
@@ -2190,44 +2207,6 @@ template {
   color: #0D031B;
   border: 1px solid #443326;
   text-decoration: none;
-}
-
-.post-cards-filters {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.post-cards-filter-item {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.post-cards-filter-item label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #d89f36;
-}
-
-.post-cards-filter-item select {
-  width: 100%;
-  padding: 0.85rem 1.1rem;
-  border-radius: 0.75rem;
-  border: 1.5px solid #d89f36;
-  color: #fff;
-  accent-color: #d89f36;
-}
-
-.post-cards-summary {
-  margin-bottom: 1.5rem;
-  color: #443326;
-}
-
-.post-cards-search-row input[type="search"] {
-  min-width: 0;
 }
 
 .post-cards-search-row button {
@@ -2260,12 +2239,13 @@ template {
   padding: 0.75rem 0.9rem;
   font-size: 0.95rem;
   margin: 0.75em;
-  border: 1px solid #36103a;
+ border: 1px solid #6e4478;
 }
 .post-cards-search-row button,
 .post-cards-clear {
   padding: 0.75rem 0.9rem;
   font-size: 0.95rem;
+
 }
 .post-cards-clear {
   display: inline-flex;
@@ -2281,7 +2261,7 @@ template {
   display: grid;
   gap: 1rem;
   margin-top: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 .post-cards-filter-item {
   display: grid;
@@ -2308,6 +2288,7 @@ template {
 .post-cards-filter-item select:focus {
   outline: none;
   border-color: #36103a;
+  accent-color: #36103a;
   box-shadow: 0 0 0 3px rgba(54, 16, 58, 0.25);
 }
 .post-cards-summary {
@@ -2398,10 +2379,12 @@ template {
 }
 
 .post-cards-filter-item {
-  background: #efe3d1;
-  border: 1.5px solid #36103a;
-  border-radius: 0.85rem;
+border-left: 5px solid #6e4478;
+margin: .5rem;
+  /* border: 1.5px solid #36103a; */
+background-color: #fafafa;
   padding: 0.9rem 1rem;
+
 }
 
 .post-cards-filter-item label {
@@ -2411,7 +2394,8 @@ template {
   text-transform: uppercase;
   margin-bottom: 0.45rem;
   display: block;
-  color: #36103a;
+
+
 }
 
 .post-cards-filter-item select {
@@ -2431,7 +2415,7 @@ input[type="submit"],
 input[type="button"],
 input[type="reset"] {
   appearance: none;
-  border: 1px solid #d7d3d0;
+
   background-color: #ede3d1;
   border-radius: 999px;
   padding: 0.72rem 1.1rem;
@@ -2584,4 +2568,12 @@ cursor: pointer !important;
   .col-lg-10 { flex: 0 0 83.333333%; max-width: 83.333333%; }
   .col-lg-11 { flex: 0 0 91.666667%; max-width: 91.666667%; }
   .col-lg-12 { flex: 0 0 100%; max-width: 100%; }
+}
+ @keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

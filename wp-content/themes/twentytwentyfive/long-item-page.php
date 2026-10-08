@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: long-item-page
+ * Template Name: OER Library (short)
  * Template Post Type: page
  * Description: Page template for listing posts as cards with search over post metadata.
  */

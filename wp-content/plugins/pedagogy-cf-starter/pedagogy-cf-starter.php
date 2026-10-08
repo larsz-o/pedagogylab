@@ -35,8 +35,8 @@ class Pedagogy_CF_Starter {
             return $templates;
         }
 
-        $templates['long-item-page.php'] = __( 'long-item-page', 'library-page' );
-        $templates['long-item-page'] = __( 'long-item-page', 'library-page' );
+        $templates['long-item-page.php'] = __( 'OER Library (short)', 'library-page' );
+        $templates['long-item-page'] = __( 'OER Library (short)', 'library-page' );
         return $templates;
     }
 

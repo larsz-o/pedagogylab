@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: long-item-page
+ * Template Name: OER Library (short)
  * Description: Page template for listing posts as cards with search over post metadata.
  */
 get_header();
@@ -321,6 +321,7 @@ if ( $search_term !== '' ) {
     $content_query = new WP_Query( array(
         'post_type'      => 'post',
         'post_status'    => 'publish',
+        'category_name'  => 'oer-library',
         'posts_per_page' => -1,
         'fields'         => 'ids',
         's'              => $search_term,
@@ -339,6 +340,7 @@ if ( $search_term !== '' ) {
     $metadata_query_args = array(
         'post_type'      => 'post',
         'post_status'    => 'publish',
+        'category_name'  => 'oer-library',
         'posts_per_page' => -1,
         'fields'         => 'ids',
         'no_found_rows'  => true,
@@ -363,6 +365,7 @@ if ( $search_term !== '' ) {
 $query_args = array(
     'post_type'      => 'post',
     'post_status'    => 'publish',
+    'category_name'  => 'oer-library',
     'posts_per_page' => 12,
     'paged'          => $paged,
     'orderby'        => 'date',

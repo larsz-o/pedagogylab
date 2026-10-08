@@ -10,6 +10,13 @@ get_header();
 if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
     twentytwentyfive_render_inline_header();
 }
+
+$pcf_news_template_mode = defined( 'PCF_NEWS_TEMPLATE_MODE' ) && PCF_NEWS_TEMPLATE_MODE;
+
+if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
+    $pcf_template_slug = get_page_template_slug( get_queried_object_id() );
+    $pcf_news_template_mode = in_array( $pcf_template_slug, array( 'news-template.php', 'news-template' ), true );
+}
 ?>
 
 <main id="site-content" role="main" class="wrapper">
@@ -560,7 +567,7 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     $media_html .= '<iframe src="' . esc_url( $safe ) . '" frameborder="0" allowfullscreen sandbox="allow-same-origin allow-scripts" class="pcf-embed-iframe"></iframe>';
                 }
                 $media_html .= '</div></div>';
-            } elseif ( has_post_thumbnail( $post_id ) ) {
+            } elseif ( ! $pcf_news_template_mode && has_post_thumbnail( $post_id ) ) {
                 $media_html .= '<div class="pcf-embed-wrap">';
                 $media_html .= '<div class="pcf-embed-inner">';
                 $media_html .= get_the_post_thumbnail( $post_id, 'large', array( 'class' => 'pcf-cover-image' ) );
@@ -743,23 +750,25 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                     }
                 }
             }
-             $description_html = '';
-            if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
-                $description_raw = Pedagogy_CF_Starter::get_value( $post_id, 'description' );
-                if ( is_array( $description_raw ) ) {
-                    $description_raw = reset( $description_raw );
+            $description_html = '';
+            if ( ! $pcf_news_template_mode ) {
+                if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
+                    $description_raw = Pedagogy_CF_Starter::get_value( $post_id, 'description' );
+                    if ( is_array( $description_raw ) ) {
+                        $description_raw = reset( $description_raw );
+                    }
+                    if ( is_string( $description_raw ) && trim( $description_raw ) !== '' ) {
+                        $description_html = wp_kses_post( wpautop( $description_raw ) );
+                    }
                 }
-                if ( is_string( $description_raw ) && trim( $description_raw ) !== '' ) {
-                    $description_html = wp_kses_post( wpautop( $description_raw ) );
-                }
-            }
-            if ( ! $description_html ) {
-                $description_fallback = get_post_meta( $post_id, 'pcf_description', true );
-                if ( is_array( $description_fallback ) ) {
-                    $description_fallback = reset( $description_fallback );
-                }
-                if ( is_string( $description_fallback ) && trim( $description_fallback ) !== '' ) {
-                    $description_html = wp_kses_post( wpautop( $description_fallback ) );
+                if ( ! $description_html ) {
+                    $description_fallback = get_post_meta( $post_id, 'pcf_description', true );
+                    if ( is_array( $description_fallback ) ) {
+                        $description_fallback = reset( $description_fallback );
+                    }
+                    if ( is_string( $description_fallback ) && trim( $description_fallback ) !== '' ) {
+                        $description_html = wp_kses_post( wpautop( $description_fallback ) );
+                    }
                 }
             }
 
@@ -793,12 +802,14 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                         </div>
                                     </div>
                                  
-                                    <section class="pcf-resource-callout entry-item-highlight" aria-label="How to use this resource">
-                                        <h2 class="pcf-description-label">How to use this resource</h2>
-                                        <p class="pcf-resource-callout-body">
-                                            This resource is or includes: <?php echo esc_html( $pcf_resource_summary ); ?>. It's intended for the following audiences and educational settings: <?php echo esc_html( $pcf_audience_summary ); ?>.
-                                        </p>
-                                    </section>
+                                    <?php if ( ! $pcf_news_template_mode ) : ?>
+                                        <section class="pcf-resource-callout entry-item-highlight" aria-label="How to use this resource">
+                                            <h2 class="pcf-description-label">How to use this resource</h2>
+                                            <p class="pcf-resource-callout-body">
+                                                This resource is or includes: <?php echo esc_html( $pcf_resource_summary ); ?>. It's intended for the following audiences and educational settings: <?php echo esc_html( $pcf_audience_summary ); ?>.
+                                            </p>
+                                        </section>
+                                    <?php endif; ?>
 
                                     <?php if ( '' !== $pcf_teaching_note_html ) : ?>
                                         <section class="entry-item-highlight" aria-label="Teaching note">
@@ -816,11 +827,15 @@ if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
                                 <?php $entry_content_html = apply_filters( 'the_content', get_the_content() ); ?>
                                 <?php remove_filter( 'pedagogy_cf_disable_content_injection', '__return_true' ); ?>
                                 <?php $entry_content_with_iframe_params = pcf_add_iframe_fragment_to_content( $entry_content_html ); ?>
-                                <?php $entry_content_with_toc = pcf_add_h2_anchors_and_toc( $entry_content_with_iframe_params ); ?>
-                                <?php if ( ! empty( $entry_content_with_toc['toc'] ) ) : ?>
-                                    <?php echo $entry_content_with_toc['toc']; ?>
+                                <?php if ( $pcf_news_template_mode ) : ?>
+                                    <?php echo $entry_content_with_iframe_params; ?>
+                                <?php else : ?>
+                                    <?php $entry_content_with_toc = pcf_add_h2_anchors_and_toc( $entry_content_with_iframe_params ); ?>
+                                    <?php if ( ! empty( $entry_content_with_toc['toc'] ) ) : ?>
+                                        <?php echo $entry_content_with_toc['toc']; ?>
+                                    <?php endif; ?>
+                                    <?php echo $entry_content_with_toc['content']; ?>
                                 <?php endif; ?>
-                                <?php echo $entry_content_with_toc['content']; ?>
                             </div>
                         <?php endif; ?>
                     </div>

@@ -356,3 +356,201 @@ if ( ! function_exists( 'twentytwentyfive_force_single_meta_bottom' ) ) :
 	}
 endif;
 add_filter( 'pcf_single_meta_layout', 'twentytwentyfive_force_single_meta_bottom', 99 );
+
+if ( ! function_exists( 'twentytwentyfive_register_news_post_template' ) ) :
+	/**
+	 * Registers the News Template for posts in the editor template dropdown.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param array       $templates Existing templates.
+	 * @param WP_Theme    $theme     Active theme object.
+	 * @param WP_Post     $post      Post object.
+	 * @param string|null $post_type Post type.
+	 * @return array
+	 */
+	function twentytwentyfive_register_news_post_template( $templates, $theme, $post, $post_type ) {
+		if ( 'post' !== $post_type ) {
+			return $templates;
+		}
+
+		$templates['news-template.php'] = __( 'News Template', 'twentytwentyfive' );
+		return $templates;
+	}
+endif;
+add_filter( 'theme_templates', 'twentytwentyfive_register_news_post_template', 10, 4 );
+add_filter( 'theme_post_templates', 'twentytwentyfive_register_news_post_template', 10, 4 );
+
+if ( ! function_exists( 'twentytwentyfive_load_news_post_template' ) ) :
+	/**
+	 * Loads the PHP News Template when selected for a single post.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param string $template Resolved template path.
+	 * @return string
+	 */
+	function twentytwentyfive_load_news_post_template( $template ) {
+		if ( ! is_singular( 'post' ) ) {
+			return $template;
+		}
+
+		$post_id = get_queried_object_id();
+		if ( ! $post_id ) {
+			return $template;
+		}
+
+		$post_template = get_page_template_slug( $post_id );
+		if ( ! in_array( $post_template, array( 'news-template.php', 'news-template' ), true ) ) {
+			return $template;
+		}
+
+		$news_template = get_theme_file_path( 'news-template.php' );
+		if ( file_exists( $news_template ) ) {
+			return $news_template;
+		}
+
+		return $template;
+	}
+endif;
+add_filter( 'template_include', 'twentytwentyfive_load_news_post_template', 20 );
+
+if ( ! function_exists( 'twentytwentyfive_register_template_selector_metabox' ) ) :
+	/**
+	 * Adds a template selector metabox for post and page editing screens.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @return void
+	 */
+	function twentytwentyfive_register_template_selector_metabox() {
+		add_meta_box(
+			'twentytwentyfive-template-selector',
+			__( 'Template Selector', 'twentytwentyfive' ),
+			'twentytwentyfive_render_template_selector_metabox',
+			array( 'post', 'page' ),
+			'side',
+			'default'
+		);
+	}
+endif;
+add_action( 'add_meta_boxes', 'twentytwentyfive_register_template_selector_metabox' );
+
+if ( ! function_exists( 'twentytwentyfive_render_template_selector_metabox' ) ) :
+	/**
+	 * Renders the template selector metabox.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param WP_Post $post Current post object.
+	 * @return void
+	 */
+	function twentytwentyfive_render_template_selector_metabox( $post ) {
+		wp_nonce_field( 'twentytwentyfive_save_template_selector', 'twentytwentyfive_template_selector_nonce' );
+
+		$current_template = get_page_template_slug( $post->ID );
+		$templates        = wp_get_theme()->get_page_templates( $post, $post->post_type );
+		?>
+		<p>
+			<label for="twentytwentyfive_template_selector"><?php esc_html_e( 'Choose template:', 'twentytwentyfive' ); ?></label>
+		</p>
+		<p>
+			<select id="twentytwentyfive_template_selector" name="twentytwentyfive_template_selector" style="width:100%;">
+				<option value="default" <?php selected( empty( $current_template ) ); ?>><?php esc_html_e( 'OER Library Template', 'twentytwentyfive' ); ?></option>
+				<?php foreach ( $templates as $template_file => $template_name ) : ?>
+					<option value="<?php echo esc_attr( $template_file ); ?>" <?php selected( $current_template, $template_file ); ?>><?php echo esc_html( $template_name ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</p>
+		<?php
+	}
+endif;
+
+if ( ! function_exists( 'twentytwentyfive_save_template_selector_metabox' ) ) :
+	/**
+	 * Saves template selection from the template selector metabox.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param int $post_id Current post ID.
+	 * @return void
+	 */
+	function twentytwentyfive_save_template_selector_metabox( $post_id ) {
+		if ( ! isset( $_POST['twentytwentyfive_template_selector_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['twentytwentyfive_template_selector_nonce'] ) ), 'twentytwentyfive_save_template_selector' ) ) {
+			return;
+		}
+
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		if ( ! isset( $_POST['twentytwentyfive_template_selector'] ) ) {
+			return;
+		}
+
+		$template = sanitize_text_field( wp_unslash( $_POST['twentytwentyfive_template_selector'] ) );
+
+		if ( 'default' === $template || '' === $template ) {
+			delete_post_meta( $post_id, '_wp_page_template' );
+			return;
+		}
+
+		update_post_meta( $post_id, '_wp_page_template', $template );
+	}
+endif;
+add_action( 'save_post', 'twentytwentyfive_save_template_selector_metabox', 20 );
+
+if ( ! function_exists( 'twentytwentyfive_auto_assign_news_template' ) ) :
+	/**
+	 * Assigns News Template to posts in the "news" category when no custom template is set.
+	 * Runs after terms are stored to ensure category checks are accurate.
+	 *
+	 * @since Twenty Twenty-Five 1.0
+	 *
+	 * @param int          $post_id     Post ID.
+	 * @param WP_Post      $post        Post object.
+	 * @param bool         $update      Whether this is an existing post update.
+	 * @param WP_Post|null $post_before Post object before the update.
+	 * @return void
+	 */
+	function twentytwentyfive_auto_assign_news_template( $post_id, $post, $update, $post_before ) {
+		unset( $update, $post_before );
+
+		if ( ! $post instanceof WP_Post || 'post' !== $post->post_type ) {
+			return;
+		}
+
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		$has_news_category = has_term( 'news', 'category', $post_id );
+		$current_template = get_post_meta( $post_id, '_wp_page_template', true );
+
+		if ( $has_news_category ) {
+			if ( ! empty( $current_template ) && ! in_array( $current_template, array( 'default', 'default.php' ), true ) ) {
+				return;
+			}
+
+			update_post_meta( $post_id, '_wp_page_template', 'news-template.php' );
+			return;
+		}
+
+		if ( in_array( $current_template, array( 'news-template.php', 'news-template' ), true ) ) {
+			delete_post_meta( $post_id, '_wp_page_template' );
+		}
+	}
+endif;
+add_action( 'wp_after_insert_post', 'twentytwentyfive_auto_assign_news_template', 30, 4 );

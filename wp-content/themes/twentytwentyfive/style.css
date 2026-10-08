@@ -15,6 +15,12 @@ iframe {
 .spin {
    animation: spin 9s linear infinite; 
 }
+.wp-block-post-title, .post-cards-page-title {
+  margin-top: 5rem;
+}
+.news-item li {
+  border-bottom: 5px solid #6e4478;
+}
 .is-style-rounded {
   border-radius: 50%;
   /* box-shadow: 4px 12px  #6e4478; */

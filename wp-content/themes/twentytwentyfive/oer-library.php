@@ -5,7 +5,11 @@
  * Description: Page template for listing posts as cards with search over post metadata.
  */
 
-echo do_blocks( '<!-- wp:template-part {"slug":"header"} /-->' );
+get_header();
+
+if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
+    twentytwentyfive_render_inline_header();
+}
 
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
@@ -211,7 +215,29 @@ function pedagogy_get_custom_field_value( $post_id, $defs, $candidates ) {
             if ( '' === $value || null === $value ) {
                 continue;
             }
-            return Pedagogy_CF_Starter::normalize_display_value( $value );
+            if ( method_exists( 'Pedagogy_CF_Starter', 'normalize_display_value' ) ) {
+                return Pedagogy_CF_Starter::normalize_display_value( $value );
+            }
+
+            if ( is_array( $value ) ) {
+                $normalized = array();
+                foreach ( $value as $item ) {
+                    if ( is_scalar( $item ) ) {
+                        $normalized[] = trim( (string) $item );
+                    }
+                }
+                return implode( ', ', array_values( array_filter( $normalized, 'strlen' ) ) );
+            }
+
+            if ( is_object( $value ) && method_exists( $value, '__toString' ) ) {
+                return trim( (string) $value );
+            }
+
+            if ( is_bool( $value ) ) {
+                return $value ? 'Yes' : 'No';
+            }
+
+            return trim( (string) $value );
         }
     }
     return '';
@@ -347,4 +373,4 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
     <?php wp_reset_postdata(); ?>
 </div>
 
-<?php echo do_blocks( '<!-- wp:template-part {"slug":"footer"} /-->' );
+<?php get_footer();

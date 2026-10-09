@@ -13,13 +13,36 @@ iframe {
   margin-top: 5vh !important
 }
 .spin {
-   animation: spin 9s linear infinite; 
+   animation: spin 20s linear infinite; 
 }
 .wp-block-post-title, .post-cards-page-title {
   margin-top: 5rem;
 }
 .news-item li {
   border-bottom: 5px solid #6e4478;
+  padding: 1rem;
+  border-left: 5px solid #6e4478;
+  margin: 1rem;
+}
+.news-item {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex-direction: center;
+}
+.wp-block-latest-posts__post-excerpt {
+  /* background-color: #fafafa; */
+  padding: .5rem;
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+}
+.bottom-border-thick {
+  border-bottom: 10px solid #6e4478;
+}
+.left-border-thick {
+  border-left: 10px solid #6e4478;
+  padding-left: 2rem;
 }
 .is-style-rounded {
   border-radius: 50%;

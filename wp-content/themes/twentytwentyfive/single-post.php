@@ -842,7 +842,7 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
 
                     <?php if ( ! empty( $combined_meta_items ) ) : ?>
                         <div class="row-center">
-                            <img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/planet.png' ) ); ?>" alt="" class="pcf-meta-divider-image" />
+                            <img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/planet.png' ) ); ?>" alt="" class="pcf-meta-divider-image spin" />
                         </div>
                         <aside class="pcf-single-column pcf-single-column-meta pcf-single-column-meta-sticky">
                             <div class="pcf-metadata-card pcf-metadata-card-sidebar">

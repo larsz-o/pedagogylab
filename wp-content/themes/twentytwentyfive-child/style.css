@@ -39,6 +39,8 @@ iframe {
 }
 .bottom-border-thick {
   border-bottom: 10px solid #6e4478;
+  background-color: #ddc8aa;
+  padding-top: 3rem;
 }
 .left-border-thick {
   border-left: 10px solid #6e4478;

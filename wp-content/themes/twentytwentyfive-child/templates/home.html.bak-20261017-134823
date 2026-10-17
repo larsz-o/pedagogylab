@@ -1,0 +1,19 @@
+<!-- wp:template-part {"slug":"header"} /-->
+
+<!-- wp:group {"tagName":"main","style":{"spacing":{"margin":{"top":"var:preset|spacing|60"}}},"layout":{"type":"constrained"}} -->
+<main class="wp-block-group">
+	<!-- wp:heading {"level":1} -->
+	<h1 class="wp-block-heading">Welcome</h1>
+	<!-- /wp:heading -->
+	
+	<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} -->
+	<figure class="wp-block-image size-large"><img alt="" /></figure>
+	<!-- /wp:image -->
+	
+	<!-- wp:paragraph -->
+	<p></p>
+	<!-- /wp:paragraph -->
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer"} /-->

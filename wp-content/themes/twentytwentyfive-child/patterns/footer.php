@@ -1,0 +1,62 @@
+<?php
+/**
+ * Title: Footer
+ * Slug: twentytwentyfive/footer
+ * Categories: footer
+ * Block Types: core/template-part/footer
+ * Description: Footer columns with logo, title, tagline and links.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
+
+?>
+<!-- wp:group -->
+<div id="footer">
+	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
+	<div class="wp-block-group alignwide">
+		<!-- wp:site-logo /-->
+
+		<!-- wp:group {"align":"full","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between","verticalAlignment":"top"}} -->
+		<div class="wp-block-group alignfull">
+			<!-- wp:columns -->
+			<div class="wp-block-columns">
+				<!-- wp:column {"width":"100%"} -->
+				<div class="wp-block-column" style="flex-basis:100%"><!-- wp:site-title {"level":2} /-->
+
+				<!-- wp:site-tagline /-->
+				</div>
+				<!-- /wp:column -->
+
+				<!-- wp:column {"width":""} -->
+				<div class="wp-block-column">
+					<!-- wp:spacer {"height":"var:preset|spacing|40","width":"0px"} -->
+					<div style="height:var(--wp--preset--spacing--40);width:0px" aria-hidden="true" class="wp-block-spacer"></div>
+					<!-- /wp:spacer -->
+				</div>
+				<!-- /wp:column -->
+			</div>
+			<!-- /wp:columns -->
+
+			<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|80"}},"layout":{"type":"flex","flexWrap":"wrap","verticalAlignment":"top","justifyContent":"space-between"}} -->
+			
+				<!-- /wp:group -->
+		</div>
+		<!-- /wp:group -->
+
+		<!-- wp:spacer {"height":"var:preset|spacing|70"} -->
+		<div style="height:var(--wp--preset--spacing--70)" aria-hidden="true" class="wp-block-spacer"></div>
+		<!-- /wp:spacer -->
+
+		<!-- wp:group {"align":"full","style":{"spacing":{"blockGap":"var:preset|spacing|20"}},"layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between"}} -->
+		<div class="wp-block-group alignfull">
+			<!-- wp:social-links {"iconColor":"contrast","iconColorValue":"#111111","openInNewTab":true,"size":"has-normal-icon-size","className":"is-style-logos-only","layout":{"type":"flex","justifyContent":"right"}} -->
+			<div class="wp-block-social-links has-normal-icon-size has-icon-color is-style-logos-only"><!-- wp:social-link {"url":"https://www.instagram.com/thepedagogylab/","service":"instagram","label":"Instagram"} /--></div>
+			<!-- /wp:social-links -->
+		</div>
+		<!-- /wp:group -->
+	</div>
+	<!-- /wp:group -->
+</div>
+<!-- /wp:group -->

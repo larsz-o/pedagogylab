@@ -4,9 +4,6 @@
  * Description: Page template for listing posts as cards with search over post metadata.
  */
 get_header();
-if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
-    twentytwentyfive_render_inline_header();
-}
 
 if ( ! function_exists( 'pedagogy_build_search_stems' ) ) {
     function pedagogy_build_search_stems( $token ) {

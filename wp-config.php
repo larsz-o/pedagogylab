@@ -33,10 +33,10 @@ define( 'DB_PASSWORD', 'root' );
 define( 'DB_HOST', 'localhost' );
 
 /** Database charset to use in creating database tables. */
-define( 'DB_CHARSET', 'utf8' );
+define( 'DB_CHARSET', 'utf8mb4' );
 
 /** The database collate type. Don't change this if in doubt. */
-define( 'DB_COLLATE', '' );
+define( 'DB_COLLATE', 'utf8mb4_unicode_520_ci' );
 
 /**#@+
  * Authentication unique keys and salts.
@@ -92,7 +92,7 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 }
 
 define( 'WP_ENVIRONMENT_TYPE', 'local' );
-define( 'DUPLICATOR_AUTH_KEY', 'Jgu Rd.?qwfD W6xf?|3y:Wa##m-CK-38f2Omii7J=w gx[CAPGq-vY|p@DMz kT' );
+
 /* That's all, stop editing! Happy publishing. */
 
 /** Absolute path to the WordPress directory. */

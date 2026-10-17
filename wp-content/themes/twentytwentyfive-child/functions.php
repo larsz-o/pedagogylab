@@ -13,11 +13,18 @@ add_action( 'wp_enqueue_scripts', 'twentytwentyfive_child_parent_theme_enqueue_s
  * Enqueue scripts and styles.
  */
 function twentytwentyfive_child_parent_theme_enqueue_styles() {
+	wp_enqueue_style(
+		'twentytwentyfive-child-fonts',
+		'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;800&family=Lora:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;800&family=Noto+Serif:wght@400;500;700;800&family=Noto+Sans+Symbols+2&display=swap',
+		array(),
+		null
+	);
+
 	wp_enqueue_style( 'twentytwentyfive-style', get_template_directory_uri() . '/style.css', array(), '0.1.0' );
 	wp_enqueue_style(
 		'twentytwentyfive-child-style',
 		get_stylesheet_directory_uri() . '/style.css',
-		array( 'twentytwentyfive-style' ),
+		array( 'twentytwentyfive-style', 'twentytwentyfive-child-fonts' ),
 		'0.1.0'
 	);
 }
@@ -330,3 +337,33 @@ function twentytwentyfive_child_render_news_tag_filter_ui( $block_content, $bloc
 	return $control . $block_content;
 }
 add_filter( 'render_block', 'twentytwentyfive_child_render_news_tag_filter_ui', 20, 2 );
+
+/**
+ * Add copyright sign and current year inside the footer title h2.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @return string
+ */
+function twentytwentyfive_child_footer_title_with_year( $block_content ) {
+	if ( ! is_string( $block_content ) || false === strpos( $block_content, 'footer-title' ) ) {
+		return $block_content;
+	}
+
+	$current_year = wp_date( 'Y' );
+
+	return preg_replace_callback(
+		'/(<div[^>]*class="[^"]*footer-title[^"]*"[^>]*>\s*<h2[^>]*>)(.*?)(<\/h2>)/is',
+		static function ( $matches ) use ( $current_year ) {
+			$title = isset( $matches[2] ) ? trim( wp_strip_all_tags( $matches[2] ) ) : '';
+			$title = preg_replace( '/\s*(?:©|&copy;)\s*\d{4}\s*$/iu', '', $title );
+			if ( '' === $title ) {
+				$title = 'The Pedagogy Lab';
+			}
+
+			return $matches[1] . esc_html( $title . ' © ' . $current_year ) . $matches[3];
+		},
+		$block_content,
+		1
+	);
+}
+add_filter( 'render_block', 'twentytwentyfive_child_footer_title_with_year', 40 );

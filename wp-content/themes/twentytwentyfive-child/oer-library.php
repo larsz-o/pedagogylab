@@ -7,10 +7,6 @@
 
 get_header();
 
-if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
-    twentytwentyfive_render_inline_header();
-}
-
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
 $defs = array();

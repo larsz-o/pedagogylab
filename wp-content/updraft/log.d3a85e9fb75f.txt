@@ -1,0 +1,325 @@
+0000.000 (0) Opened log file at time: Sat, 17 Oct 2026 21:16:35 +0000 on http://pedagogy-lab.local
+0000.001 (0) UpdraftPlus WordPress backup plugin (https://updraftplus.com): 2.26.11 WP: 7.1.3 PHP: 8.2.29 (fpm-fcgi, Darwin Larss-Air 23.5.0 Darwin Kernel Version 23.5.0: Wed May  1 20:14:59 PDT 2024; root:xnu-10063.121.3~5/RELEASE_ARM64_T8122 arm64) MySQL: 8.4.0 (max packet size=1073741824) WPLANG: en_US Server: nginx/1.26.1 safe_mode: 0 max_execution_time: 900 memory_limit: 256M (used: 4.4M | 6M) multisite: N openssl: OpenSSL 3.5.1 1 Jul 2025 mcrypt: N LANG:  WP Proxy: disabled ZipArchive::addFile: Y
+0000.001 (0) Free space on disk containing Updraft's temporary directory: 119114.8 MB
+0000.005 (0) Tasks: Backup files: 1 (schedule: weekly) Backup DB: 1 (schedule: weekly)
+0000.006 (0) Requesting semaphore lock (fd) (apparently not via scheduler)
+0000.007 (0) Set semaphore last lock (fd) time to 2026-10-17 21:16:35
+0000.007 (0) Semaphore lock (fd) complete
+0000.009 (0) Backup run: resumption=0, nonce=d3a85e9fb75f, file_nonce=d3a85e9fb75f begun at=1792271795 (0s ago), job type=backup, label=Backup of: pedagogy-lab.local
+0000.009 (0) Scheduling a resumption (1) after 300 seconds (1792272095) in case this run gets aborted
+0000.010 (0) Checking if we have a zip executable available
+0000.010 (0) Testing: /usr/bin/zip
+0000.018 (0) Output: zip warning: binziptest/test.zip not found or empty
+0000.018 (0) Output: adding: binziptest/subdir1/	(in=0) (out=0) (stored 0%)
+0000.018 (0) Output: adding: binziptest/subdir1/subdir2/	(in=0) (out=0) (stored 0%)
+0000.019 (0) Output: adding: binziptest/subdir1/subdir2/test.html	(in=131) (out=107) (deflated 18%)
+0000.019 (0) Output: total bytes=131, compressed=107 -> 18% savings
+0000.025 (0) Output: adding: binziptest/subdir1/subdir2/test2.html	(in=138) (out=113) (deflated 18%)
+0000.025 (0) Output: total bytes=269, compressed=220 -> 18% savings
+0000.026 (0) Working binary zip found: /usr/bin/zip
+0000.027 (0) Zip engine: found/will use a binary zip: /usr/bin/zip
+0000.027 (0) Creation of backups of directories: beginning
+0000.028 (0) Beginning creation of dump of plugins (split every: 100 MB)
+0000.095 (0) Total entities for the zip file: 739 directories, 3563 files (0 skipped as non-modified), 36.9 MB
+0000.096 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 100 files added (on-disk size: 0 KB)
+0000.098 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 200 files added (on-disk size: 0 KB)
+0000.099 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 300 files added (on-disk size: 0 KB)
+0000.100 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 400 files added (on-disk size: 0 KB)
+0000.101 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 500 files added (on-disk size: 0 KB)
+0000.102 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 600 files added (on-disk size: 0 KB)
+0000.103 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 700 files added (on-disk size: 0 KB)
+0000.105 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 800 files added (on-disk size: 0 KB)
+0000.106 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 900 files added (on-disk size: 0 KB)
+0000.107 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1000 files added (on-disk size: 0 KB)
+0000.107 (0) Adding batch to zip file (UpdraftPlus_BinZip): over 1000 files added on this batch (13 MB, 3563 files batched, 1001 (1001) added so far); re-opening (prior size: 0 KB)
+0000.437 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: size is now: 4.30 MB
+0000.438 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1100 files added (on-disk size: 4429.1 KB)
+0000.440 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1200 files added (on-disk size: 4429.1 KB)
+0000.441 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1300 files added (on-disk size: 4429.1 KB)
+0000.442 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1400 files added (on-disk size: 4429.1 KB)
+0000.443 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1500 files added (on-disk size: 4429.1 KB)
+0000.444 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1600 files added (on-disk size: 4429.1 KB)
+0000.445 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1700 files added (on-disk size: 4429.1 KB)
+0000.446 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1800 files added (on-disk size: 4429.1 KB)
+0000.447 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 1900 files added (on-disk size: 4429.1 KB)
+0000.448 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2000 files added (on-disk size: 4429.1 KB)
+0000.449 (0) Adding batch to zip file (UpdraftPlus_BinZip): over 1000 files added on this batch (6.4 MB, 3563 files batched, 1001 (2002) added so far); re-opening (prior size: 4429.1 KB)
+0000.671 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: size is now: 7.30 MB
+0000.675 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2100 files added (on-disk size: 7460.6 KB)
+0000.676 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2200 files added (on-disk size: 7460.6 KB)
+0000.677 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2300 files added (on-disk size: 7460.6 KB)
+0000.678 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2400 files added (on-disk size: 7460.6 KB)
+0000.679 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2500 files added (on-disk size: 7460.6 KB)
+0000.680 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2600 files added (on-disk size: 7460.6 KB)
+0000.681 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2700 files added (on-disk size: 7460.6 KB)
+0000.682 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2800 files added (on-disk size: 7460.6 KB)
+0000.683 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 2900 files added (on-disk size: 7460.6 KB)
+0000.684 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 3000 files added (on-disk size: 7460.6 KB)
+0000.684 (0) Adding batch to zip file (UpdraftPlus_BinZip): over 1000 files added on this batch (6.3 MB, 3563 files batched, 1001 (3003) added so far); re-opening (prior size: 7460.6 KB)
+0000.911 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: size is now: 9.50 MB
+0000.913 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 3100 files added (on-disk size: 9700.3 KB)
+0000.914 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 3200 files added (on-disk size: 9700.3 KB)
+0000.916 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 3300 files added (on-disk size: 9700.3 KB)
+0000.917 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 3400 files added (on-disk size: 9700.3 KB)
+0000.918 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: 3500 files added (on-disk size: 9700.3 KB)
+0001.212 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.tmp: size is now: 13.10 MB
+0001.226 (0) Creating zip file manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.list-temp.tmp)
+0001.231 (0) Successfully created zip file manifest (size: 336056)
+0001.312 (0) Created plugins zip (0) - 13426.2 KB in 1.3 s (10467.8 KB/s) (sha1: fcd6c598d561020143b03024354a5c87ee468663, sha256: 33070d6fcf63ca363e784521ad20d8c3468f0c8eac1976746d3af117db4ffa86)
+0001.314 (0) Cloud backup selection (2/1): remotesend with instance (1/1) (last)
+0001.314 (0) Beginning dispatch of backup to remote (remotesend)
+0001.314 (0) remotesend: upload : attempt: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip
+0001.915 (0) remotesend: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip: existing size: 0
+0001.915 (0) Remote send upload: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip (chunks: 7, of size: 2097152) -> remotesend://https://pedagogylab70.wpcomstaging.com/backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip (0)
+0003.655 (0) Remotesend chunked upload: 15.3 % uploaded (1)
+0005.293 (0) Remotesend chunked upload: 30.5 % uploaded (2)
+0007.032 (0) Remotesend chunked upload: 45.8 % uploaded (3)
+0009.188 (0) Remotesend chunked upload: 61 % uploaded (4)
+0010.816 (0) Remotesend chunked upload: 76.3 % uploaded (5)
+0012.872 (0) Remotesend chunked upload: 91.5 % uploaded (6)
+0014.306 (0) Remotesend chunked upload: 100 % uploaded (7)
+0014.307 (0) Remote send upload: success
+0014.307 (0) Recording as successfully uploaded: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip
+0014.308 (0) Deleting local file: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip: OK
+0014.310 (0) Beginning creation of dump of themes (split every: 100 MB)
+0014.323 (0) Total entities for the zip file: 71 directories, 676 files (0 skipped as non-modified), 37.1 MB
+0014.324 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: 100 files added (on-disk size: 0 KB)
+0014.325 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: 200 files added (on-disk size: 0 KB)
+0014.326 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: 300 files added (on-disk size: 0 KB)
+0014.327 (0) Adding batch to zip file (UpdraftPlus_BinZip): over 25 MB added on this batch (25.2 MB, 676 files batched, 361 (361) added so far); re-opening (prior size: 0 KB)
+0014.587 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: size is now: 24.50 MB
+0014.588 (0) A useful amount of data was added after this amount of zip processing: 0.9 s (normalised: 0.9 s, rate: 27433.7 KB/s)
+0014.590 (0) Performance is good - will increase the amount of data we attempt to batch (time=0.93965291976929, normalised_time=0.93316005600376, max_time=14.58833694458, data points known=1, old_max_bytes=26214400, new_max_bytes=104857600)
+0014.591 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: 400 files added (on-disk size: 25119 KB)
+0014.592 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: 500 files added (on-disk size: 25119 KB)
+0014.593 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: 600 files added (on-disk size: 25119 KB)
+0014.841 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.tmp: size is now: 35.50 MB
+0014.843 (0) Creating zip file manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.list-temp.tmp)
+0014.845 (0) Successfully created zip file manifest (size: 49862)
+0015.063 (0) Created themes zip (0) - 36328.9 KB in 0.8 s (48334.6 KB/s) (sha1: 13a21c3a77bebbe60cc7de2421a4bd526a43afda, sha256: 7dae3251a02b43b24fc44c0d37157da77fcfdc0142804a99c4cd81d900ce3254)
+0015.064 (0) Cloud backup selection (2/1): remotesend with instance (1/1) (last)
+0015.065 (0) Beginning dispatch of backup to remote (remotesend)
+0015.065 (0) remotesend: upload : attempt: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip
+0015.786 (0) remotesend: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip: existing size: 0
+0015.787 (0) Remote send upload: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip (chunks: 18, of size: 2097152) -> remotesend://https://pedagogylab70.wpcomstaging.com/backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip (0)
+0017.891 (0) Remotesend chunked upload: 5.6 % uploaded (1)
+0019.734 (0) Remotesend chunked upload: 11.3 % uploaded (2)
+0021.382 (0) Remotesend chunked upload: 16.9 % uploaded (3)
+0024.141 (0) Remotesend chunked upload: 22.5 % uploaded (4)
+0025.679 (0) Remotesend chunked upload: 28.2 % uploaded (5)
+0028.234 (0) Remotesend chunked upload: 33.8 % uploaded (6)
+0029.806 (0) Remotesend chunked upload: 39.5 % uploaded (7)
+0032.310 (0) Remotesend chunked upload: 45.1 % uploaded (8)
+0033.965 (0) Remotesend chunked upload: 50.7 % uploaded (9)
+0035.603 (0) Remotesend chunked upload: 56.4 % uploaded (10)
+0037.550 (0) Remotesend chunked upload: 62 % uploaded (11)
+0039.188 (0) Remotesend chunked upload: 67.6 % uploaded (12)
+0040.719 (0) Remotesend chunked upload: 73.3 % uploaded (13)
+0043.594 (0) Remotesend chunked upload: 78.9 % uploaded (14)
+0045.878 (0) Remotesend chunked upload: 84.6 % uploaded (15)
+0047.303 (0) Remotesend chunked upload: 90.2 % uploaded (16)
+0049.224 (0) Remotesend chunked upload: 95.8 % uploaded (17)
+0051.564 (0) Remotesend chunked upload: 100 % uploaded (18)
+0051.565 (0) Remote send upload: success
+0051.565 (0) Recording as successfully uploaded: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip
+0051.569 (0) Deleting local file: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip: OK
+0051.572 (0) Exclusion option setting (uploads): backup*,*backups,backwpup*,wp-clone,snapshots,wp-staging
+0051.572 (0) Looking for candidates to backup in: /Users/larsmackenzie/Local Sites/pedagogy-lab/app/public/wp-content/uploads
+0051.573 (0) finding files: 2026: adding to list (1)
+0051.573 (0) Beginning creation of dump of uploads (split every: 100 MB)
+0051.582 (0) Total entities for the zip file: 6 directories, 396 files (0 skipped as non-modified), 68.2 MB
+0051.583 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip.tmp: 100 files added (on-disk size: 0 KB)
+0051.584 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip.tmp: 200 files added (on-disk size: 0 KB)
+0051.585 (0) Zip: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip.tmp: 300 files added (on-disk size: 0 KB)
+0052.111 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip.tmp: size is now: 68.00 MB
+0052.112 (0) Creating zip file manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip.list-temp.tmp)
+0052.114 (0) Successfully created zip file manifest (size: 26199)
+0052.528 (0) Created uploads zip (0) - 69616.5 KB in 1 s (72985.8 KB/s) (sha1: c4da31e594da93443946d56477117c3973c62c34, sha256: 23a46181ae69dda906b6121e5651f74e17788e67ec29341a30463437be91b3ae)
+0052.529 (0) Cloud backup selection (2/1): remotesend with instance (1/1) (last)
+0052.529 (0) Beginning dispatch of backup to remote (remotesend)
+0052.529 (0) remotesend: upload : attempt: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip
+0053.113 (0) remotesend: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip: existing size: 0
+0053.113 (0) Remote send upload: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip (chunks: 34, of size: 2097152) -> remotesend://https://pedagogylab70.wpcomstaging.com/backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip (0)
+0055.572 (0) Remotesend chunked upload: 2.9 % uploaded (1)
+0057.009 (0) Remotesend chunked upload: 5.9 % uploaded (2)
+0058.458 (0) Remotesend chunked upload: 8.8 % uploaded (3)
+0059.981 (0) Remotesend chunked upload: 11.8 % uploaded (4)
+0061.612 (0) Remotesend chunked upload: 14.7 % uploaded (5)
+0063.303 (0) Remotesend chunked upload: 17.7 % uploaded (6)
+0064.789 (0) Remotesend chunked upload: 20.6 % uploaded (7)
+0067.143 (0) Remotesend chunked upload: 23.5 % uploaded (8)
+0068.635 (0) Remotesend chunked upload: 26.5 % uploaded (9)
+0070.825 (0) Remotesend chunked upload: 29.4 % uploaded (10)
+0072.432 (0) Remotesend chunked upload: 32.4 % uploaded (11)
+0074.006 (0) Remotesend chunked upload: 35.3 % uploaded (12)
+0075.438 (0) Remotesend chunked upload: 38.2 % uploaded (13)
+0078.100 (0) Remotesend chunked upload: 41.2 % uploaded (14)
+0079.840 (0) Remotesend chunked upload: 44.1 % uploaded (15)
+0081.682 (0) Remotesend chunked upload: 47.1 % uploaded (16)
+0083.215 (0) Remotesend chunked upload: 50 % uploaded (17)
+0084.755 (0) Remotesend chunked upload: 53 % uploaded (18)
+0086.292 (0) Remotesend chunked upload: 55.9 % uploaded (19)
+0088.639 (0) Remotesend chunked upload: 58.8 % uploaded (20)
+0090.960 (0) Remotesend chunked upload: 61.8 % uploaded (21)
+0093.767 (0) Remotesend chunked upload: 64.7 % uploaded (22)
+0096.507 (0) Remotesend chunked upload: 67.7 % uploaded (23)
+0098.267 (0) Remotesend chunked upload: 70.6 % uploaded (24)
+0100.601 (0) Remotesend chunked upload: 73.5 % uploaded (25)
+0102.166 (0) Remotesend chunked upload: 76.5 % uploaded (26)
+0103.802 (0) Remotesend chunked upload: 79.4 % uploaded (27)
+0105.438 (0) Remotesend chunked upload: 82.4 % uploaded (28)
+0107.696 (0) Remotesend chunked upload: 85.3 % uploaded (29)
+0109.328 (0) Remotesend chunked upload: 88.3 % uploaded (30)
+0110.793 (0) Remotesend chunked upload: 91.2 % uploaded (31)
+0112.057 (0) Remotesend chunked upload: 94.1 % uploaded (32)
+0114.750 (0) Remotesend chunked upload: 97.1 % uploaded (33)
+0117.011 (0) Remotesend chunked upload: 100 % uploaded (34)
+0117.012 (0) Remote send upload: success
+0117.012 (0) Recording as successfully uploaded: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip
+0117.017 (0) Deleting local file: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip: OK
+0117.019 (0) Beginning creation of dump of mu-plugins (split every: 100 MB)
+0117.019 (0) Does not exist: /Users/larsmackenzie/Local Sites/pedagogy-lab/app/public/wp-content/mu-plugins
+0117.019 (0) There are no mu-plugins to backup. Will not raise an error.
+0117.020 (0) mu-plugins: create_zip returned an error
+0117.020 (0) No backup of wpcore: excluded by user's options
+0117.020 (0) Beginning backup of other directories found in the content directory (index: 0)
+0117.021 (0) Exclusion option setting (others): upgrade,cache,updraft,backup*,*backups,mysql.sql,debug.log
+0117.021 (0) Looking for candidates to backup in: /Users/larsmackenzie/Local Sites/pedagogy-lab/app/public/wp-content
+0117.021 (0) finding files: upgrade: skipping: excluded by options
+0117.021 (0) finding files: index.php: adding to list (1)
+0117.021 (0) finding files: plugins: skipping: this is the plugins directory
+0117.021 (0) finding files: uploads: skipping: this is the uploads directory
+0117.022 (0) finding files: updraft: skipping: this is the updraft directory
+0117.022 (0) finding files: duplicator-backups: skipping: excluded by options (glob)
+0117.022 (0) finding files: themes: skipping: this is the themes directory
+0117.023 (0) Total entities for the zip file: 0 directories, 1 files (0 skipped as non-modified), 0 MB
+0117.035 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip.tmp: size is now: 0.00 MB
+0117.036 (0) Creating zip file manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip.list-temp.tmp)
+0117.036 (0) Successfully created zip file manifest (size: 43)
+0117.037 (0) Created others zip (0) - 0.2 KB in 0 s (13.1 KB/s) (sha1: 033264afba9d8b4893ec49213958b823988020a3, sha256: 7419d5d0e3e6c66e07a7a4d9f66d841581ff6981364e645d8101e82368d0acab)
+0117.038 (0) Cloud backup selection (2/1): remotesend with instance (1/1) (last)
+0117.038 (0) Beginning dispatch of backup to remote (remotesend)
+0117.039 (0) remotesend: upload : attempt: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip
+0117.627 (0) remotesend: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip: existing size: 0
+0117.627 (0) Remote send upload: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip (chunks: 1, of size: 2097152) -> remotesend://https://pedagogylab70.wpcomstaging.com/backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip (0)
+0118.343 (0) Remotesend chunked upload: 100 % uploaded (1)
+0118.344 (0) Remote send upload: success
+0118.344 (0) Recording as successfully uploaded: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip
+0118.345 (0) Deleting local file: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip: OK
+0118.345 (0) No backup of more: excluded by user's options
+0118.347 (0) Saving backup status to database (elements: 8)
+0118.348 (0) Beginning creation of database dump (WordPress DB)
+0118.348 (0) SQL compatibility mode is now: NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+0118.355 (0) Table wp_options: Total expected rows (via COUNT): 311
+0118.355 (0) Table is relatively small; fetch_rows will thus be: 500 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.417 (0) Table wp_options: Rows added in this batch (next record: 1969): 298 (uncompressed bytes in this segment=5689739) in 0.07 seconds
+0118.421 (0) Table wp_options: finishing file(s) (2, 745.1 KB)
+0118.423 (0) Table wp_users: Total expected rows (via COUNT): 2
+0118.423 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.424 (0) Table wp_users: Rows added in this batch (next record: 2): 2 (uncompressed bytes in this segment=1817) in 0.00 seconds
+0118.425 (0) Table wp_users: finishing file(s) (2, 0.8 KB)
+0118.427 (0) Table wp_usermeta: Total expected rows (via COUNT): 41
+0118.427 (0) Table is relatively small; fetch_rows will thus be: 50 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.428 (0) Table wp_usermeta: Rows added in this batch (next record: 41): 41 (uncompressed bytes in this segment=4073) in 0.00 seconds
+0118.429 (0) Table wp_usermeta: finishing file(s) (2, 1.7 KB)
+0118.431 (0) Table wp_commentmeta: Total expected rows (via COUNT): 0
+0118.432 (0) Table wp_commentmeta: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=721) in 0.00 seconds
+0118.433 (0) Table wp_commentmeta: finishing file(s) (2, 0.4 KB)
+0118.435 (0) Table wp_comments: Total expected rows (via COUNT): 0
+0118.436 (0) Table wp_comments: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=1878) in 0.00 seconds
+0118.437 (0) Table wp_comments: finishing file(s) (2, 0.5 KB)
+0118.439 (0) Table wp_links: Total expected rows (via COUNT): 0
+0118.439 (0) Table wp_links: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=1496) in 0.00 seconds
+0118.440 (0) Table wp_links: finishing file(s) (2, 0.5 KB)
+0118.442 (0) Table wp_postmeta: Total expected rows (via COUNT): 378
+0118.442 (0) Table is relatively small; fetch_rows will thus be: 500 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.444 (0) Table wp_postmeta: Rows added in this batch (next record: 1806): 378 (uncompressed bytes in this segment=115423) in 0.00 seconds
+0118.447 (0) Table wp_postmeta: finishing file(s) (2, 15.5 KB)
+0118.457 (0) Table wp_posts: Total expected rows (approximate): 1139
+0118.519 (0) Table wp_posts: Rows added in this batch (next record: 1425): 1195 (uncompressed bytes in this segment=8651804) in 0.07 seconds
+0118.521 (0) Table wp_posts: finishing file(s) (2, 403.8 KB)
+0118.523 (0) Table wp_term_relationships: Total expected rows (approximate): 45
+0118.524 (0) Table wp_term_relationships: Rows added in this batch (next record: 100000): 176 (uncompressed bytes in this segment=3441) in 0.00 seconds
+0118.525 (0) Table wp_term_relationships: finishing file(s) (2, 0.8 KB)
+0118.526 (0) Table wp_term_taxonomy: Total expected rows (via COUNT): 16
+0118.527 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.527 (0) Table wp_term_taxonomy: Rows added in this batch (next record: 16): 16 (uncompressed bytes in this segment=1463) in 0.00 seconds
+0118.529 (0) Table wp_term_taxonomy: finishing file(s) (2, 0.6 KB)
+0118.531 (0) Table wp_termmeta: Total expected rows (via COUNT): 0
+0118.531 (0) Table wp_termmeta: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=694) in 0.00 seconds
+0118.533 (0) Table wp_termmeta: finishing file(s) (2, 0.4 KB)
+0118.536 (0) Table wp_terms: Total expected rows (via COUNT): 16
+0118.536 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.537 (0) Table wp_terms: Rows added in this batch (next record: 16): 16 (uncompressed bytes in this segment=1410) in 0.00 seconds
+0118.538 (0) Table wp_terms: finishing file(s) (2, 0.7 KB)
+0118.540 (0) Table wp_duplicator_activity_logs: Total expected rows (via COUNT): 14
+0118.541 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.541 (0) Table wp_duplicator_activity_logs: Rows added in this batch (next record: 14): 14 (uncompressed bytes in this segment=33043) in 0.00 seconds
+0118.543 (0) Table wp_duplicator_activity_logs: finishing file(s) (2, 2.3 KB)
+0118.545 (0) Table wp_duplicator_backups: Total expected rows (via COUNT): 2
+0118.545 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.546 (0) Table wp_duplicator_backups: Rows added in this batch (next record: 4): 2 (uncompressed bytes in this segment=40477) in 0.00 seconds
+0118.548 (0) Table wp_duplicator_backups: finishing file(s) (2, 5.2 KB)
+0118.550 (0) Table wp_duplicator_entities: Total expected rows (via COUNT): 9
+0118.550 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0118.550 (0) Table wp_duplicator_entities: Rows added in this batch (next record: 9): 9 (uncompressed bytes in this segment=12115) in 0.00 seconds
+0118.552 (0) Table wp_duplicator_entities: finishing file(s) (2, 3.1 KB)
+0118.552 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_options.table.tmpr1970.gz (1/15/fopen): adding to final database dump
+0118.557 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_options.table.gz (2/15/fopen): adding to final database dump
+0118.557 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_users.table.tmpr3.gz (3/15/fopen): adding to final database dump
+0118.557 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_users.table.gz (4/15/fopen): adding to final database dump
+0118.557 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_usermeta.table.tmpr42.gz (5/15/fopen): adding to final database dump
+0118.557 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_usermeta.table.gz (6/15/fopen): adding to final database dump
+0118.557 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_commentmeta.table.tmpr0.gz (7/15/fopen): adding to final database dump
+0118.558 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_commentmeta.table.gz (8/15/fopen): adding to final database dump
+0118.558 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_comments.table.tmpr0.gz (9/15/fopen): adding to final database dump
+0118.558 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_comments.table.gz (10/15/fopen): adding to final database dump
+0118.558 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_links.table.tmpr0.gz (11/15/fopen): adding to final database dump
+0118.558 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_links.table.gz (12/15/fopen): adding to final database dump
+0118.558 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_postmeta.table.tmpr1807.gz (13/15/fopen): adding to final database dump
+0118.559 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_postmeta.table.gz (14/15/fopen): adding to final database dump
+0118.559 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_posts.table.tmpr1426.gz (15/15/fopen): adding to final database dump
+0118.561 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_posts.table.gz (16/15/fopen): adding to final database dump
+0118.561 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_term_relationships.table.tmpr100001.gz (17/15/fopen): adding to final database dump
+0118.562 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_term_relationships.table.gz (18/15/fopen): adding to final database dump
+0118.562 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_term_taxonomy.table.tmpr17.gz (19/15/fopen): adding to final database dump
+0118.562 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_term_taxonomy.table.gz (20/15/fopen): adding to final database dump
+0118.562 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_termmeta.table.tmpr0.gz (21/15/fopen): adding to final database dump
+0118.562 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_termmeta.table.gz (22/15/fopen): adding to final database dump
+0118.563 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_terms.table.tmpr17.gz (23/15/fopen): adding to final database dump
+0118.563 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_terms.table.gz (24/15/fopen): adding to final database dump
+0118.563 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_duplicator_activity_logs.table.tmpr15.gz (25/15/fopen): adding to final database dump
+0118.563 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_duplicator_activity_logs.table.gz (26/15/fopen): adding to final database dump
+0118.563 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_duplicator_backups.table.tmpr5.gz (27/15/fopen): adding to final database dump
+0118.564 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_duplicator_backups.table.gz (28/15/fopen): adding to final database dump
+0118.564 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_duplicator_entities.table.tmpr10.gz (29/15/fopen): adding to final database dump
+0118.564 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db-table-wp_duplicator_entities.table.gz (30/15/fopen): adding to final database dump
+0118.566 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz: finished writing out complete database file (1181.6 KB)
+0118.576 (0) Total database tables backed up: 15 (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz, size: 1210057, sha1: 2919692915afee5f6bcc9a9b72e64969c087a0f5, sha256: 93f9c826bb050f12a88f1329a949bacd7cdf549e2a3a37a2157a1ad952b18aa8)
+0118.577 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip: plugins: This file has already been successfully uploaded
+0118.578 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip: themes: This file has already been successfully uploaded
+0118.578 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip: uploads: This file has already been successfully uploaded
+0118.578 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip: others: This file has already been successfully uploaded
+0118.578 (0) backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz: db: This file has not yet been successfully uploaded: will queue
+0118.578 (0) Saving backup history. Total backup size: 117.7 MB
+0118.579 (0) Requesting upload of the files that have not yet been successfully uploaded (1)
+0118.580 (0) Cloud backup selection (2/1): remotesend with instance (1/1) (last)
+0118.580 (0) Beginning dispatch of backup to remote (remotesend)
+0118.580 (0) remotesend: upload : attempt: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz
+0119.185 (0) remotesend: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz: existing size: 0
+0119.186 (0) Remote send upload: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz (chunks: 1, of size: 2097152) -> remotesend://https://pedagogylab70.wpcomstaging.com/backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz (0)
+0121.317 (0) Remotesend chunked upload: 100 % uploaded (1)
+0121.318 (0) Remote send upload: success
+0121.318 (0) Recording as successfully uploaded: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz
+0121.319 (0) Deleting local file: backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-db.gz: OK
+0122.027 (0) Prune old backups from local store: skipping, as this was a remote send operation
+0122.028 (0) Resume backup (d3a85e9fb75f, 0): finish run
+0122.029 (0) Decremented the semaphore (fd) by 1
+0122.029 (0) Semaphore (fd) unlocked
+0122.029 (0) There were no errors in the uploads, so the 'resume' event (1) is being unscheduled
+0122.030 (0) Deleting zip manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-plugins.zip.list.tmp)
+0122.031 (0) Deleting zip manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-themes.zip.list.tmp)
+0122.032 (0) Deleting zip manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-uploads.zip.list.tmp)
+0122.032 (0) Deleting zip manifest (backup_2026-10-17-2116_The_Pedagogy_Lab_d3a85e9fb75f-others.zip.list.tmp)
+0122.033 (0) No email will/can be sent - the user has not configured an email address.
+0122.033 (0) The backup succeeded and is now complete. To complete your migration/clone, you should now log in to the remote site and restore the backup set.

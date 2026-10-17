@@ -154,7 +154,7 @@
 				{
 					"name": "Manrope",
 					"slug": "manrope",
-					"fontFamily": "Manrope, sans-serif",
+					"fontFamily": "Manrope, \"Noto Sans\", \"Noto Sans Symbols 2\", \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", sans-serif",
 					"fontFace": [
 						{
 							"src": [

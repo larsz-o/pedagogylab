@@ -7,10 +7,6 @@
 
 get_header();
 
-if ( function_exists( 'twentytwentyfive_render_inline_header' ) ) {
-    twentytwentyfive_render_inline_header();
-}
-
 $pcf_news_template_mode = defined( 'PCF_NEWS_TEMPLATE_MODE' ) && PCF_NEWS_TEMPLATE_MODE;
 
 if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {

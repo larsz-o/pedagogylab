@@ -23,6 +23,8 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
 
     <?php
     $pcf_oer_library_link = trailingslashit( home_url( '/oer-library/' ) );
+    $pcf_news_events_page = get_page_by_path( 'news-events' );
+    $pcf_news_events_link = $pcf_news_events_page ? get_permalink( $pcf_news_events_page ) : trailingslashit( home_url( '/news-events/' ) );
     ?>
 
   
@@ -746,7 +748,9 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
                     }
 
                     if ( ! empty( $tag_values ) ) {
-                        $post_meta_items['Tags'] = pcf_format_search_links( $tag_values, $pcf_oer_library_link );
+                        $tags_base_url = $pcf_news_template_mode ? $pcf_news_events_link : $pcf_oer_library_link;
+                        $tags_query_arg = $pcf_news_template_mode ? 'pcf_tag' : 'pcf_search';
+                        $post_meta_items['Tags'] = pcf_format_search_links( $tag_values, $tags_base_url, $tags_query_arg );
                     }
                 }
             }

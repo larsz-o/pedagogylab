@@ -1,616 +1,332 @@
 <?php
 /**
- * Twenty Twenty-Five functions and definitions.
+ * Twenty Twenty-Five Child Theme functions and definitions.
  *
  * @link https://developer.wordpress.org/themes/basics/theme-functions/
  *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
+ * @package twentytwentyfive-child
  */
 
-if ( ! function_exists( 'twentytwentyfive_post_format_setup' ) ) :
-	/**
-	 * Adds theme support for post formats.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_post_format_setup() {
-		add_theme_support( 'post-formats', array( 'aside', 'audio', 'chat', 'gallery', 'image', 'link', 'quote', 'status', 'video' ) );
+add_action( 'wp_enqueue_scripts', 'twentytwentyfive_child_parent_theme_enqueue_styles' );
+
+/**
+ * Enqueue scripts and styles.
+ */
+function twentytwentyfive_child_parent_theme_enqueue_styles() {
+	wp_enqueue_style( 'twentytwentyfive-style', get_template_directory_uri() . '/style.css', array(), '0.1.0' );
+	wp_enqueue_style(
+		'twentytwentyfive-child-style',
+		get_stylesheet_directory_uri() . '/style.css',
+		array( 'twentytwentyfive-style' ),
+		'0.1.0'
+	);
+}
+
+/**
+ * Remove stray XML declaration text injected by DOMDocument during block rendering.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @return string
+ */
+function twentytwentyfive_child_strip_xml_declaration( $block_content ) {
+	if ( ! is_string( $block_content ) || '' === $block_content ) {
+		return $block_content;
 	}
-endif;
-add_action( 'after_setup_theme', 'twentytwentyfive_post_format_setup' );
 
-if ( ! function_exists( 'twentytwentyfive_editor_style' ) ) :
-	/**
-	 * Enqueues editor-style.css in the editors.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_editor_style() {
-		add_editor_style( 'assets/css/editor-style.css' );
+	return preg_replace( '/^\s*<\?xml[^>]*>\s*/i', '', $block_content );
+}
+add_filter( 'render_block', 'twentytwentyfive_child_strip_xml_declaration', 99 );
+
+/**
+ * Filter Latest Posts block on News & Events page by tag query parameter.
+ *
+ * Uses `?pcf_tag=tag-slug` and preserves existing category constraints in the block.
+ *
+ * @param array $query_args Latest Posts block query args.
+ * @return array
+ */
+function twentytwentyfive_child_filter_news_latest_posts_by_tag( $query_args ) {
+	if ( is_admin() || ! is_page() ) {
+		return $query_args;
 	}
-endif;
-add_action( 'after_setup_theme', 'twentytwentyfive_editor_style' );
 
-if ( ! function_exists( 'twentytwentyfive_enqueue_styles' ) ) :
-	/**
-	 * Enqueues the theme stylesheet on the front.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_enqueue_styles() {
-		$src = 'style.css';
-		$google_fonts_url = 'https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap';
-
-		wp_enqueue_style(
-			'twentytwentyfive-google-fonts',
-			$google_fonts_url,
-			array(),
-			null
-		);
-
-		wp_enqueue_style(
-			'twentytwentyfive-style',
-			get_parent_theme_file_uri( $src ),
-			array( 'twentytwentyfive-google-fonts' ),
-			wp_get_theme()->get( 'Version' )
-		);
-		wp_style_add_data(
-			'twentytwentyfive-style',
-			'path',
-			get_parent_theme_file_path( $src )
-		);
+	if ( empty( $_GET['pcf_tag'] ) ) {
+		return $query_args;
 	}
-endif;
-add_action( 'wp_enqueue_scripts', 'twentytwentyfive_enqueue_styles' );
 
-if ( ! function_exists( 'twentytwentyfive_render_inline_header' ) ) :
-	/**
-	 * Renders an inline header with site title and right-aligned navigation,
-	 * excluding the home page from the navigation list.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_render_inline_header() {
-		if ( ! function_exists( 'do_blocks' ) ) {
-			return;
-		}
+	$news_page = get_page_by_path( 'news-events' );
+	if ( ! $news_page || (int) get_queried_object_id() !== (int) $news_page->ID ) {
+		return $query_args;
+	}
 
-		$header_markup = '<!-- wp:group --><div id="header" class="pcf-inline-header"><!-- wp:group {"layout":{"type":"constrained"}} --><div class="wp-block-group"><!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"var:preset|spacing|30","bottom":"var:preset|spacing|30"}}},"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between"}} --><div class="wp-block-group alignwide"><!-- wp:site-title {"level":0} /--><!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"right"}} --><div class="wp-block-group"><!-- wp:navigation {"overlayBackgroundColor":"contrast","overlayTextColor":"base","layout":{"type":"flex","justifyContent":"right","flexWrap":"wrap"}} /--></div><!-- /wp:group --></div><!-- /wp:group --></div><!-- /wp:group --></div><!-- /wp:group -->';
-		$header_html   = do_blocks( $header_markup );
+	$raw_tag_value = sanitize_text_field( wp_unslash( $_GET['pcf_tag'] ) );
+	if ( '' === $raw_tag_value ) {
+		return $query_args;
+	}
 
-		if ( class_exists( 'DOMDocument' ) && class_exists( 'DOMXPath' ) ) {
-			$previous = libxml_use_internal_errors( true );
+	$tag_parts = preg_split( '/\s*,\s*/', $raw_tag_value );
+	if ( ! is_array( $tag_parts ) ) {
+		$tag_parts = array( $raw_tag_value );
+	}
 
-			$dom = new DOMDocument();
-			$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $header_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
-			$xpath = new DOMXPath( $dom );
+	$tag_slugs = array_values(
+		array_filter(
+			array_map(
+				'sanitize_title',
+				array_map( 'trim', $tag_parts )
+			),
+			'strlen'
+		)
+	);
 
-			$home_url_parts = wp_parse_url( home_url( '/' ) );
-			$home_host      = strtolower( $home_url_parts['host'] ?? '' );
-			$home_path      = '/' . ltrim( (string) ( $home_url_parts['path'] ?? '/' ), '/' );
-			$home_path      = '/' === $home_path ? '/' : untrailingslashit( $home_path );
-			$header_logo_src = get_theme_file_uri( 'assets/images/lightpurpleicon.png' );
-			$header_logo_alt = get_bloginfo( 'name' );
+	if ( empty( $tag_slugs ) ) {
+		return $query_args;
+	}
 
-			foreach ( $xpath->query( '//li[contains(@class, "wp-block-navigation-item")]' ) as $item ) {
-				$link = $xpath->query( './/a[@href]', $item )->item( 0 );
-				if ( ! $link ) {
-					continue;
-				}
+	$query_args['suppress_filters'] = false;
+	$query_args['tag_slug__in'] = $tag_slugs;
 
-				$href       = html_entity_decode( $link->getAttribute( 'href' ) );
-				$href_parts = wp_parse_url( $href );
-				$href_host  = strtolower( $href_parts['host'] ?? '' );
-				$href_path  = '/' . ltrim( (string) ( $href_parts['path'] ?? '/' ), '/' );
-				$href_path  = '/' === $href_path ? '/' : untrailingslashit( $href_path );
+	return $query_args;
+}
+add_filter( 'block_core_latest_posts_query_args', 'twentytwentyfive_child_filter_news_latest_posts_by_tag', 10 );
 
-				$is_home_link = false;
+/**
+ * Apply News & Events tag filtering to post queries rendered on that page.
+ *
+ * This is used as a compatibility path for WordPress builds where the
+ * Latest Posts block does not expose query-args hooks.
+ *
+ * @param WP_Query $query Query instance.
+ * @return void
+ */
+function twentytwentyfive_child_filter_news_posts_pre_get_posts( $query ) {
+	if ( is_admin() || ! ( $query instanceof WP_Query ) ) {
+		return;
+	}
 
-				if ( '' === $href_host ) {
-					$is_home_link = '/' === $href_path || $href_path === $home_path;
-				} else {
-					$is_home_link = $href_host === $home_host && $href_path === $home_path;
-				}
+	if ( empty( $_GET['pcf_tag'] ) ) {
+		return;
+	}
 
-				if ( $is_home_link && $item->parentNode ) {
-					$item->parentNode->removeChild( $item );
-				}
+	$news_page = get_page_by_path( 'news-events' );
+	if ( ! $news_page || ! is_page( (int) $news_page->ID ) ) {
+		return;
+	}
+
+	if ( $query->is_main_query() ) {
+		return;
+	}
+
+	$post_type = $query->get( 'post_type' );
+	$is_post_query = false;
+	if ( is_string( $post_type ) ) {
+		$is_post_query = ( 'post' === $post_type );
+	} elseif ( is_array( $post_type ) ) {
+		$is_post_query = in_array( 'post', $post_type, true );
+	} elseif ( empty( $post_type ) ) {
+		$is_post_query = true;
+	}
+
+	if ( ! $is_post_query ) {
+		return;
+	}
+
+	$raw_tag_value = sanitize_text_field( wp_unslash( $_GET['pcf_tag'] ) );
+	if ( '' === $raw_tag_value ) {
+		return;
+	}
+
+	$tag_parts = preg_split( '/\s*,\s*/', $raw_tag_value );
+	if ( ! is_array( $tag_parts ) ) {
+		$tag_parts = array( $raw_tag_value );
+	}
+
+	$tag_slugs = array_values(
+		array_filter(
+			array_map(
+				'sanitize_title',
+				array_map( 'trim', $tag_parts )
+			),
+			'strlen'
+		)
+	);
+
+	if ( empty( $tag_slugs ) ) {
+		return;
+	}
+
+	$tax_query = (array) $query->get( 'tax_query' );
+	$tax_query[] = array(
+		'taxonomy' => 'post_tag',
+		'field'    => 'slug',
+		'terms'    => $tag_slugs,
+		'operator' => 'IN',
+	);
+
+	$query->set( 'tax_query', $tax_query );
+}
+add_action( 'pre_get_posts', 'twentytwentyfive_child_filter_news_posts_pre_get_posts', 20 );
+
+/**
+ * Render-time fallback: filter Latest Posts block output by selected tag(s).
+ *
+ * Some WordPress builds do not expose query hooks for this block. This keeps
+ * filtering behavior consistent by pruning rendered list items.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Full block data.
+ * @return string
+ */
+function twentytwentyfive_child_filter_news_latest_posts_rendered_html( $block_content, $block ) {
+	if ( is_admin() || ! is_page() ) {
+		return $block_content;
+	}
+
+	if ( empty( $_GET['pcf_tag'] ) ) {
+		return $block_content;
+	}
+
+	if ( ! isset( $block['blockName'] ) || 'core/latest-posts' !== $block['blockName'] ) {
+		return $block_content;
+	}
+
+	$news_page = get_page_by_path( 'news-events' );
+	if ( ! $news_page || (int) get_queried_object_id() !== (int) $news_page->ID ) {
+		return $block_content;
+	}
+
+	$raw_tag_value = sanitize_text_field( wp_unslash( $_GET['pcf_tag'] ) );
+	if ( '' === $raw_tag_value ) {
+		return $block_content;
+	}
+
+	$tag_parts = preg_split( '/\s*,\s*/', $raw_tag_value );
+	if ( ! is_array( $tag_parts ) ) {
+		$tag_parts = array( $raw_tag_value );
+	}
+
+	$tag_slugs = array_values(
+		array_filter(
+			array_map(
+				'sanitize_title',
+				array_map( 'trim', $tag_parts )
+			),
+			'strlen'
+		)
+	);
+
+	if ( empty( $tag_slugs ) ) {
+		return $block_content;
+	}
+
+	if ( false === strpos( $block_content, '<li' ) ) {
+		return $block_content;
+	}
+
+	$filtered_html = preg_replace_callback(
+		'/<li\b[^>]*>.*?<\/li>/is',
+		static function ( $matches ) use ( $tag_slugs ) {
+			$item_html = $matches[0];
+
+			if ( ! preg_match( '/href=("|\')([^"\']+)\1/i', $item_html, $link_match ) ) {
+				return '';
 			}
 
-			$site_title_nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " wp-block-site-title ")]' );
-			if ( $site_title_nodes instanceof DOMNodeList && $site_title_nodes->length > 0 ) {
-				foreach ( $site_title_nodes as $site_title_node ) {
-					$logo_link = $dom->createElement( 'a' );
-					$logo_link->setAttribute( 'href', home_url( '/' ) );
-					$logo_link->setAttribute( 'class', 'pcf-header-logo-link' );
-					$logo_link->setAttribute( 'aria-label', $header_logo_alt );
-
-					$logo_img = $dom->createElement( 'img' );
-					$logo_img->setAttribute( 'src', $header_logo_src );
-					$logo_img->setAttribute( 'alt', $header_logo_alt );
-					$logo_img->setAttribute( 'class', 'pcf-header-logo-image' );
-
-					$logo_link->appendChild( $logo_img );
-					$site_title_node->parentNode->replaceChild( $logo_link, $site_title_node );
-				}
+			$post_id = url_to_postid( $link_match[2] );
+			if ( ! $post_id ) {
+				return '';
 			}
 
-			$header_html = $dom->saveHTML();
-			libxml_clear_errors();
-			libxml_use_internal_errors( $previous );
-		}
-
-		echo $header_html;
-	}
-endif;
-
-if ( ! function_exists( 'twentytwentyfive_replace_header_site_title_with_logo' ) ) :
-	/**
-	 * Replaces rendered site-title blocks with the Brand Mark logo inside header template parts.
-	 *
-	 * This runs as a runtime fallback so existing Site Editor-saved headers also get the logo.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param string $block_content Rendered block HTML.
-	 * @param array  $block         Parsed block data.
-	 * @return string
-	 */
-	function twentytwentyfive_replace_header_site_title_with_logo( $block_content, $block ) {
-		if ( ! is_array( $block ) || ( $block['blockName'] ?? '' ) !== 'core/template-part' ) {
-			return $block_content;
-		}
-
-		$slug = (string) ( $block['attrs']['slug'] ?? '' );
-		$area = (string) ( $block['attrs']['area'] ?? '' );
-
-		if ( ! str_contains( $slug, 'header' ) && 'header' !== $area ) {
-			return $block_content;
-		}
-
-		if ( ! class_exists( 'DOMDocument' ) || ! class_exists( 'DOMXPath' ) ) {
-			return $block_content;
-		}
-
-		$previous = libxml_use_internal_errors( true );
-
-		$dom = new DOMDocument();
-		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $block_content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
-		$xpath = new DOMXPath( $dom );
-
-		$site_title_nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " wp-block-site-title ")]' );
-		if ( $site_title_nodes instanceof DOMNodeList && $site_title_nodes->length > 0 ) {
-			$header_logo_src = get_theme_file_uri( 'assets/images/lightpurpleicon.png' );
-			$header_logo_alt = get_bloginfo( 'name' );
-
-			foreach ( $site_title_nodes as $site_title_node ) {
-				$logo_link = $dom->createElement( 'a' );
-				$logo_link->setAttribute( 'href', home_url( '/' ) );
-				$logo_link->setAttribute( 'class', 'pcf-header-logo-link' );
-				$logo_link->setAttribute( 'aria-label', $header_logo_alt );
-
-				$logo_img = $dom->createElement( 'img' );
-				$logo_img->setAttribute( 'src', $header_logo_src );
-				$logo_img->setAttribute( 'alt', $header_logo_alt );
-				$logo_img->setAttribute( 'class', 'pcf-header-logo-image' );
-
-				$logo_link->appendChild( $logo_img );
-
-				if ( $site_title_node->parentNode ) {
-					$site_title_node->parentNode->replaceChild( $logo_link, $site_title_node );
-				}
-			}
-		}
-
-		$updated_html = $dom->saveHTML();
-
-		libxml_clear_errors();
-		libxml_use_internal_errors( $previous );
-
-		return is_string( $updated_html ) ? $updated_html : $block_content;
-	}
-endif;
-add_filter( 'render_block', 'twentytwentyfive_replace_header_site_title_with_logo', 20, 2 );
-
-if ( ! function_exists( 'twentytwentyfive_google_fonts_resource_hints' ) ) :
-	/**
-	 * Adds preconnect hints for Google Fonts.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param array  $urls          URLs to print for resource hints.
-	 * @param string $relation_type The relation type the URLs are printed for.
-	 * @return array
-	 */
-	function twentytwentyfive_google_fonts_resource_hints( $urls, $relation_type ) {
-		if ( 'preconnect' !== $relation_type ) {
-			return $urls;
-		}
-
-		$urls[] = 'https://fonts.googleapis.com';
-		$urls[] = array(
-			'href'        => 'https://fonts.gstatic.com',
-			'crossorigin' => 'anonymous',
-		);
-
-		return $urls;
-	}
-endif;
-add_filter( 'wp_resource_hints', 'twentytwentyfive_google_fonts_resource_hints', 10, 2 );
-
-if ( ! function_exists( 'twentytwentyfive_block_styles' ) ) :
-	/**
-	 * Registers custom block styles.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_block_styles() {
-		register_block_style(
-			'core/list',
-			array(
-				'name'         => 'checkmark-list',
-				'label'        => __( 'Checkmark', 'twentytwentyfive' ),
-				'inline_style' => '
-				ul.is-style-checkmark-list {
-					list-style-type: "\2713";
-				}
-
-				ul.is-style-checkmark-list li {
-					padding-inline-start: 1ch;
-				}',
-			)
-		);
-	}
-endif;
-add_action( 'init', 'twentytwentyfive_block_styles' );
-
-if ( ! function_exists( 'twentytwentyfive_pattern_categories' ) ) :
-	/**
-	 * Registers pattern categories.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_pattern_categories() {
-
-		register_block_pattern_category(
-			'twentytwentyfive_page',
-			array(
-				'label'       => __( 'Pages', 'twentytwentyfive' ),
-				'description' => __( 'A collection of full page layouts.', 'twentytwentyfive' ),
-			)
-		);
-
-		register_block_pattern_category(
-			'twentytwentyfive_post-format',
-			array(
-				'label'       => __( 'Post formats', 'twentytwentyfive' ),
-				'description' => __( 'A collection of post format patterns.', 'twentytwentyfive' ),
-			)
-		);
-	}
-endif;
-add_action( 'init', 'twentytwentyfive_pattern_categories' );
-
-if ( ! function_exists( 'twentytwentyfive_register_block_bindings' ) ) :
-	/**
-	 * Registers the post format block binding source.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_register_block_bindings() {
-		register_block_bindings_source(
-			'twentytwentyfive/format',
-			array(
-				'label'              => _x( 'Post format name', 'Label for the block binding placeholder in the editor', 'twentytwentyfive' ),
-				'get_value_callback' => 'twentytwentyfive_format_binding',
-			)
-		);
-	}
-endif;
-add_action( 'init', 'twentytwentyfive_register_block_bindings' );
-
-if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
-	/**
-	 * Callback function for the post format name block binding source.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return string|void Post format name, or nothing if the format is 'standard'.
-	 */
-	function twentytwentyfive_format_binding() {
-		$post_format_slug = get_post_format();
-
-		if ( $post_format_slug && 'standard' !== $post_format_slug ) {
-			return get_post_format_string( $post_format_slug );
-		}
-	}
-endif;
-
-if ( ! function_exists( 'twentytwentyfive_force_single_meta_bottom' ) ) :
-	/**
-	 * Forces Pedagogy single-post metadata layout to bottom.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param string $layout Current metadata layout.
-	 * @return string
-	 */
-	function twentytwentyfive_force_single_meta_bottom( $layout ) {
-		return 'bottom';
-	}
-endif;
-add_filter( 'pcf_single_meta_layout', 'twentytwentyfive_force_single_meta_bottom', 99 );
-
-if ( ! function_exists( 'twentytwentyfive_register_news_post_template' ) ) :
-	/**
-	 * Registers the News Template for posts in the editor template dropdown.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param array       $templates Existing templates.
-	 * @param WP_Theme    $theme     Active theme object.
-	 * @param WP_Post     $post      Post object.
-	 * @param string|null $post_type Post type.
-	 * @return array
-	 */
-	function twentytwentyfive_register_news_post_template( $templates, $theme, $post, $post_type ) {
-		if ( 'post' !== $post_type ) {
-			return $templates;
-		}
-
-		$templates['news-template.php'] = __( 'News Template', 'twentytwentyfive' );
-		return $templates;
-	}
-endif;
-add_filter( 'theme_templates', 'twentytwentyfive_register_news_post_template', 10, 4 );
-add_filter( 'theme_post_templates', 'twentytwentyfive_register_news_post_template', 10, 4 );
-
-if ( ! function_exists( 'twentytwentyfive_register_short_item_page_template' ) ) :
-	/**
-	 * Registers the Short Item Page template for posts in template selectors.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param array       $templates Existing templates.
-	 * @param WP_Theme    $theme     Active theme object.
-	 * @param WP_Post     $post      Post object.
-	 * @param string|null $post_type Post type.
-	 * @return array
-	 */
-	function twentytwentyfive_register_short_item_page_template( $templates, $theme, $post, $post_type ) {
-		unset( $theme, $post );
-
-		if ( 'post' !== $post_type ) {
-			return $templates;
-		}
-
-		$templates['short-item-page.php'] = __( 'Short Item Page', 'twentytwentyfive' );
-		return $templates;
-	}
-endif;
-add_filter( 'theme_templates', 'twentytwentyfive_register_short_item_page_template', 10, 4 );
-add_filter( 'theme_post_templates', 'twentytwentyfive_register_short_item_page_template', 10, 4 );
-
-if ( ! function_exists( 'twentytwentyfive_load_news_post_template' ) ) :
-	/**
-	 * Loads the PHP News Template when selected for a single post.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param string $template Resolved template path.
-	 * @return string
-	 */
-	function twentytwentyfive_load_news_post_template( $template ) {
-		if ( ! is_singular( 'post' ) ) {
-			return $template;
-		}
-
-		$post_id = get_queried_object_id();
-		if ( ! $post_id ) {
-			return $template;
-		}
-
-		$post_template = get_page_template_slug( $post_id );
-		if ( ! in_array( $post_template, array( 'news-template.php', 'news-template' ), true ) ) {
-			return $template;
-		}
-
-		$news_template = get_theme_file_path( 'news-template.php' );
-		if ( file_exists( $news_template ) ) {
-			return $news_template;
-		}
-
-		return $template;
-	}
-endif;
-add_filter( 'template_include', 'twentytwentyfive_load_news_post_template', 20 );
-
-if ( ! function_exists( 'twentytwentyfive_load_short_item_page_template' ) ) :
-	/**
-	 * Loads the PHP Short Item Page template when selected for a post.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param string $template Resolved template path.
-	 * @return string
-	 */
-	function twentytwentyfive_load_short_item_page_template( $template ) {
-		if ( ! is_singular( 'post' ) ) {
-			return $template;
-		}
-
-		$post_id = get_queried_object_id();
-		if ( ! $post_id ) {
-			return $template;
-		}
-
-		$post_template = get_page_template_slug( $post_id );
-		if ( ! in_array( $post_template, array( 'short-item-page.php', 'short-item-page' ), true ) ) {
-			return $template;
-		}
-
-		$short_item_template = get_theme_file_path( 'short-item-page.php' );
-		if ( file_exists( $short_item_template ) ) {
-			return $short_item_template;
-		}
-
-		return $template;
-	}
-endif;
-add_filter( 'template_include', 'twentytwentyfive_load_short_item_page_template', 21 );
-
-if ( ! function_exists( 'twentytwentyfive_register_template_selector_metabox' ) ) :
-	/**
-	 * Adds a template selector metabox for post and page editing screens.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @return void
-	 */
-	function twentytwentyfive_register_template_selector_metabox() {
-		add_meta_box(
-			'twentytwentyfive-template-selector',
-			__( 'Template Selector', 'twentytwentyfive' ),
-			'twentytwentyfive_render_template_selector_metabox',
-			array( 'post', 'page' ),
-			'side',
-			'default'
-		);
-	}
-endif;
-add_action( 'add_meta_boxes', 'twentytwentyfive_register_template_selector_metabox' );
-
-if ( ! function_exists( 'twentytwentyfive_render_template_selector_metabox' ) ) :
-	/**
-	 * Renders the template selector metabox.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param WP_Post $post Current post object.
-	 * @return void
-	 */
-	function twentytwentyfive_render_template_selector_metabox( $post ) {
-		wp_nonce_field( 'twentytwentyfive_save_template_selector', 'twentytwentyfive_template_selector_nonce' );
-
-		$current_template = get_page_template_slug( $post->ID );
-		$templates        = wp_get_theme()->get_page_templates( $post, $post->post_type );
-		?>
-		<p>
-			<label for="twentytwentyfive_template_selector"><?php esc_html_e( 'Choose template:', 'twentytwentyfive' ); ?></label>
-		</p>
-		<p>
-			<select id="twentytwentyfive_template_selector" name="twentytwentyfive_template_selector" style="width:100%;">
-				<option value="default" <?php selected( empty( $current_template ) ); ?>><?php esc_html_e( 'OER Library Template', 'twentytwentyfive' ); ?></option>
-				<?php foreach ( $templates as $template_file => $template_name ) : ?>
-					<option value="<?php echo esc_attr( $template_file ); ?>" <?php selected( $current_template, $template_file ); ?>><?php echo esc_html( $template_name ); ?></option>
-				<?php endforeach; ?>
-			</select>
-		</p>
-		<?php
-	}
-endif;
-
-if ( ! function_exists( 'twentytwentyfive_save_template_selector_metabox' ) ) :
-	/**
-	 * Saves template selection from the template selector metabox.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param int $post_id Current post ID.
-	 * @return void
-	 */
-	function twentytwentyfive_save_template_selector_metabox( $post_id ) {
-		if ( ! isset( $_POST['twentytwentyfive_template_selector_nonce'] ) ) {
-			return;
-		}
-
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['twentytwentyfive_template_selector_nonce'] ) ), 'twentytwentyfive_save_template_selector' ) ) {
-			return;
-		}
-
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
-			return;
-		}
-
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return;
-		}
-
-		if ( ! isset( $_POST['twentytwentyfive_template_selector'] ) ) {
-			return;
-		}
-
-		$template = sanitize_text_field( wp_unslash( $_POST['twentytwentyfive_template_selector'] ) );
-
-		if ( 'default' === $template || '' === $template ) {
-			delete_post_meta( $post_id, '_wp_page_template' );
-			return;
-		}
-
-		update_post_meta( $post_id, '_wp_page_template', $template );
-	}
-endif;
-add_action( 'save_post', 'twentytwentyfive_save_template_selector_metabox', 20 );
-
-if ( ! function_exists( 'twentytwentyfive_auto_assign_news_template' ) ) :
-	/**
-	 * Assigns News Template to posts in the "news" category when no custom template is set.
-	 * Runs after terms are stored to ensure category checks are accurate.
-	 *
-	 * @since Twenty Twenty-Five 1.0
-	 *
-	 * @param int          $post_id     Post ID.
-	 * @param WP_Post      $post        Post object.
-	 * @param bool         $update      Whether this is an existing post update.
-	 * @param WP_Post|null $post_before Post object before the update.
-	 * @return void
-	 */
-	function twentytwentyfive_auto_assign_news_template( $post_id, $post, $update, $post_before ) {
-		unset( $update, $post_before );
-
-		if ( ! $post instanceof WP_Post || 'post' !== $post->post_type ) {
-			return;
-		}
-
-		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
-			return;
-		}
-
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return;
-		}
-
-		$has_news_category = has_term( 'news', 'category', $post_id );
-		$current_template = get_post_meta( $post_id, '_wp_page_template', true );
-
-		if ( $has_news_category ) {
-			if ( ! empty( $current_template ) && ! in_array( $current_template, array( 'default', 'default.php' ), true ) ) {
-				return;
+			if ( has_term( $tag_slugs, 'post_tag', $post_id ) ) {
+				return $item_html;
 			}
 
-			update_post_meta( $post_id, '_wp_page_template', 'news-template.php' );
-			return;
+			return '';
+		},
+		$block_content
+	);
+
+	if ( ! is_string( $filtered_html ) ) {
+		return $block_content;
+	}
+
+	if ( false === strpos( $filtered_html, '<li' ) ) {
+		$filtered_html .= '<p class="post-cards-empty">' . esc_html__( 'No posts found for this tag.', 'twentytwentyfive' ) . '</p>';
+	}
+
+	return $filtered_html;
+}
+add_filter( 'render_block', 'twentytwentyfive_child_filter_news_latest_posts_rendered_html', 30, 2 );
+
+/**
+ * Prepend a tag filter form above the first Latest Posts block on News & Events.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Full block data.
+ * @return string
+ */
+function twentytwentyfive_child_render_news_tag_filter_ui( $block_content, $block ) {
+	if ( is_admin() || ! is_page() ) {
+		return $block_content;
+	}
+
+	$news_page = get_page_by_path( 'news-events' );
+	if ( ! $news_page || (int) get_queried_object_id() !== (int) $news_page->ID ) {
+		return $block_content;
+	}
+
+	if ( ! isset( $block['blockName'] ) || 'core/latest-posts' !== $block['blockName'] ) {
+		return $block_content;
+	}
+
+	static $rendered = false;
+	if ( $rendered ) {
+		return $block_content;
+	}
+	$rendered = true;
+
+	$selected_raw = isset( $_GET['pcf_tag'] ) ? sanitize_text_field( wp_unslash( $_GET['pcf_tag'] ) ) : '';
+	$selected_slug = sanitize_title( $selected_raw );
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'post_tag',
+			'hide_empty' => true,
+		)
+	);
+
+	if ( is_wp_error( $terms ) ) {
+		$terms = array();
+	}
+
+	$news_url = get_permalink( $news_page );
+	$control  = '<form class="post-cards-filter-drawer news-tag-filter" method="get" action="' . esc_url( $news_url ) . '">';
+	$control .= '<div class="post-cards-filters news-tag-filter-controls">';
+	$control .= '<div class="post-cards-filter-item news-tag-filter-item">';
+	$control .= '<label for="pcf-tag-filter">' . esc_html__( 'Filter', 'twentytwentyfive' ) . '</label>';
+	$control .= '<select id="pcf-tag-filter" name="pcf_tag">';
+	$control .= '<option value="">' . esc_html__( 'All tags', 'twentytwentyfive' ) . '</option>';
+
+	foreach ( $terms as $term ) {
+		if ( ! isset( $term->slug, $term->name ) ) {
+			continue;
 		}
 
-		if ( in_array( $current_template, array( 'news-template.php', 'news-template' ), true ) ) {
-			delete_post_meta( $post_id, '_wp_page_template' );
-		}
+		$selected_attr = selected( $selected_slug, $term->slug, false );
+		$control      .= '<option value="' . esc_attr( $term->slug ) . '" ' . $selected_attr . '>' . esc_html( $term->name ) . '</option>';
 	}
-endif;
-add_action( 'wp_after_insert_post', 'twentytwentyfive_auto_assign_news_template', 30, 4 );
+
+	$control .= '</select>';
+	$control .= '</div>';
+	$control .= '<div class="post-cards-search-row news-tag-filter-actions">';
+	$control .= '<button type="submit">' . esc_html__( 'Apply Filter', 'twentytwentyfive' ) . '</button>';
+	if ( '' !== $selected_slug ) {
+		$control .= '<a class="post-cards-clear" href="' . esc_url( $news_url ) . '">' . esc_html__( 'Clear', 'twentytwentyfive' ) . '</a>';
+	}
+	$control .= '</div>';
+	$control .= '</div>';
+	$control .= '</form>';
+
+	return $control . $block_content;
+}
+add_filter( 'render_block', 'twentytwentyfive_child_render_news_tag_filter_ui', 20, 2 );

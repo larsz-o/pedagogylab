@@ -1302,6 +1302,10 @@ body.home #header .wp-block-navigation-item__content {
 }
 
 @media (min-width: 981px) {
+  body.home #header {
+    background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.png');
+  }
+
   body.home #header .alignwide > .wp-block-group:last-child {
     transform: none;
   }

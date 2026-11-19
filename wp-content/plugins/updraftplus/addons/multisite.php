@@ -309,8 +309,8 @@ if (is_multisite()) {
 		
 			global $updraftplus, $pagenow;
 			$updraftplus->plugin_title .= " - ".__('Multisite Install', 'updraftplus');
-
-			if ((!defined('UPDRAFTPLUS_DISABLE_TOP_LEVEL_MENU_ENTRY') || !UPDRAFTPLUS_DISABLE_TOP_LEVEL_MENU_ENTRY) && 'settings.php' == $pagenow && isset($_REQUEST['page']) && 'updraftplus' == substr($_REQUEST['page'], 0, 11)) {
+			$page = UpdraftPlus_Manipulation_Functions::fetch_superglobal('request', 'page', '');
+			if ((!defined('UPDRAFTPLUS_DISABLE_TOP_LEVEL_MENU_ENTRY') || !UPDRAFTPLUS_DISABLE_TOP_LEVEL_MENU_ENTRY) && 'settings.php' == $pagenow && 'updraftplus' == substr($page, 0, 11)) {
 				add_filter('parent_file', array('UpdraftPlus', 'parent_file'), 99);
 			}
 		}

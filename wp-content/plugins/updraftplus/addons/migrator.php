@@ -166,7 +166,11 @@ class UpdraftPlus_Addons_Migrator extends UpdraftPlus_Migrator_Lite {
 		global $updraftplus, $updraftplus_admin;// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Its used on line 187 but for some reason its flagged assuming becuase of the closed and open php tags ?>
 		<div id="updraft_migrate_tab_main">
 
-			<?php $updraftplus_admin->include_template('wp-admin/settings/temporary-clone.php'); ?>
+			<?php
+				$updraftplus_admin->include_template('wp-admin/settings/temporary-clone.php', false, array(
+					'checkout_clone_token_attributes' => 'href="'.esc_url($updraftplus->get_url('buy_clone_tokens')).'" target="_blank"'
+				));
+			?>
 
 			<h2><?php esc_html_e('Migrate (create a copy of a site on hosting you control)', 'updraftplus');?></h2>
 
@@ -186,7 +190,7 @@ class UpdraftPlus_Addons_Migrator extends UpdraftPlus_Migrator_Lite {
 			</div>
 
 			<?php
-				if (file_exists(UPDRAFTPLUS_DIR . '/includes/updraftplus-migration.php')) {
+				if (class_exists('UpdraftPlus_Migration', false)) {
 					$is_extendify_migration_active = isset($_GET['source']) && 'extendify' === $_GET['source'] ? true : false;
 					$updraftplus_module_widget_class = ($is_extendify_migration_active) ? 'updraft_simple_migrate_widget_module_content opened' : 'updraft_simple_migrate_widget_module_content';
 					$context = ($is_extendify_migration_active) ? 'extendify' : 'premium';

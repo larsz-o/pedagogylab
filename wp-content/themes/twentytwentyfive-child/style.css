@@ -765,6 +765,10 @@ align-items: center;
   font-family: "Lexend", "Noto Sans", "Noto Sans Symbols 2", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
+.pcf-single-column-description .pcf-description-label.pcf-contributor-label {
+  margin-top: 0.9rem;
+}
+
 .pcf-description-meta-line {
   text-align:center;
   line-height: 1.3;
@@ -1033,7 +1037,7 @@ body.home #header {
   background-color: #36103a;
   position: relative;
   overflow: visible;
-  background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive/assets/images/Homepage\ Hero\ Image\ \(No\ Logo\).png');
+  background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.webp');
   background-repeat: no-repeat;
   background-size: auto, cover;
   background-position: center top, left var(--home-nav-band-height);
@@ -1093,7 +1097,7 @@ body.home #header .pcf-header-logo-link {
     padding: 1rem;
 }
 body.home #header::after {
-  content: "The Pedagogy Lab";
+  content: "The\A Pedagogy\A Lab";
   position: absolute;
   left: clamp(0.9rem, 5vw, 3.25rem);
   right: clamp(0.9rem, 5vw, 3.25rem);
@@ -1111,6 +1115,7 @@ body.home #header::after {
   font-family: "Lora", "Noto Serif", Georgia, "Times New Roman", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", serif;
   font-size: clamp(2.1rem, 5.2vw, 4.25rem);
   line-height: 1.05;
+  white-space: pre-line;
   letter-spacing: 0.01em;
   text-wrap: balance;
   pointer-events: none;
@@ -1155,6 +1160,12 @@ body.home #header .wp-block-navigation-item__content {
 }
 
 @media (max-width: 980px) {
+  body.home #header {
+    background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.png') !important;
+    background-size: auto, cover !important;
+    background-position: center top, center var(--home-nav-band-height) !important;
+  }
+
   body.home #header::before {
     left: clamp(0.8rem, 4vw, 2.2rem);
     right: clamp(0.8rem, 4vw, 2.2rem);
@@ -1256,12 +1267,14 @@ body.home #header .wp-block-navigation-item__content {
     min-height: 5rem;
     color: #fff;
     background-color: transparent !important;
-    background-image: url('/wp-content/themes/twentytwentyfive/assets/images/lightplanet.png');
+    background-image: url('/wp-content/themes/twentytwentyfive-child/assets/images/lightplanet.png');
     background-repeat: no-repeat;
     background-position: center;
     background-size: 4.6rem;
     border-color: transparent !important;
     box-shadow: none !important;
+    position: relative;
+    z-index: 1308;
   }
   #header .wp-block-navigation > button.wp-block-navigation__responsive-container-open:hover,
   #header .wp-block-navigation button.wp-block-navigation__responsive-container-open:hover {
@@ -1303,7 +1316,25 @@ body.home #header .wp-block-navigation-item__content {
 
 @media (min-width: 981px) {
   body.home #header {
-    background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.png');
+    background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.png') !important;
+    background-size: auto, cover !important;
+    background-position: center top, left var(--home-nav-band-height) !important;
+  }
+
+  body.home #header::after {
+    left: clamp(1.2rem, 5vw, 4rem);
+    right: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: clamp(0.35rem, 1.2vw, 1.1rem);
+    padding-left: clamp(0.2rem, 0.8vw, 0.8rem);
+    text-align: left;
+  }
+}
+
+@media (min-width: 1200px) {
+  body.home #header {
+    background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.webp');
   }
 
   body.home #header .alignwide > .wp-block-group:last-child {
@@ -1331,7 +1362,7 @@ body.home #header .wp-block-navigation-item__content {
     height: 2rem;
     margin-right: 1rem;
     vertical-align: -0.08em;
-    background-image: url('/wp-content/themes/twentytwentyfive/assets/images/lightplanet.png');
+    background-image: url('/wp-content/themes/twentytwentyfive-child/assets/images/lightplanet.png');
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -1478,6 +1509,15 @@ iframe {
 
 
 @media (max-width: 760px) {
+  body.home #header {
+    background-image: linear-gradient(rgba(20, 10, 22, 0.34), rgba(20, 10, 22, 0.34)), url('/wp-content/themes/twentytwentyfive-child/assets/images/desktophero.png') !important;
+    background-size: auto, cover !important;
+    background-position: center top, center center !important;
+    height: calc(32vh + var(--home-nav-band-height));
+    min-height: calc(32vh + var(--home-nav-band-height));
+    max-height: calc(32vh + var(--home-nav-band-height));
+  }
+
   body.home #header::before {
     left: clamp(0.7rem, 3.6vw, 1.25rem);
     right: clamp(0.7rem, 3.6vw, 1.25rem);
@@ -1487,21 +1527,19 @@ iframe {
   }
 
   body.home #header::after {
+    content: "The\A Pedagogy\A Lab";
+    white-space: pre-line;
     left: clamp(0.7rem, 3.6vw, 1.25rem);
     right: clamp(0.7rem, 3.6vw, 1.25rem);
-    top: 27%;
+    top: auto;
+    bottom: clamp(5rem, 5vh, 2rem);
+    transform: none;
     width: auto;
-    max-width: 14ch;
-    font-size: clamp(1.65rem, 8.5vw, 2.35rem);
-    line-height: 1.1;
+    max-width: 12ch;
+    font-size: clamp(2.1rem, 10.5vw, 3.1rem);
+    line-height: 1.03;
   }
 
-  body.home #header {
-    --home-nav-band-height: 2.55rem;
-    min-height: 220px;
-    background-position: center top, left var(--home-nav-band-height);
-    background-size: auto, 100% auto;
-  }
 
   body:not(.home) #header {
     --page-nav-band-height: 2.55rem;

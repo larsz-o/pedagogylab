@@ -1168,7 +1168,8 @@ class UpdraftPlus_Addons_RemoteStorage_webdav extends UpdraftPlus_RemoteStorage_
 				} else {
 					$msg = UpdraftPlus_HTTP_Error_Descriptions::get_http_status_code_description($result->getStatus());
 					$this->log(sprintf("Unexpected HTTP response code (%s): %s", $result->getStatus(), $msg));
-					if (self::CREDENTIALS_TEST_DATA === $buffer) throw new Exception(sprintf(__("Unexpected HTTP response code (%s): %s", "updraftplus"), $result->getStatus(), $msg));// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
+					/* translators: 1: HTTP response code, 2: HTTP status description */
+					if (self::CREDENTIALS_TEST_DATA === $buffer) throw new Exception(sprintf(__("Unexpected HTTP response code (%1\$s): %2\$s", "updraftplus"), $result->getStatus(), $msg));// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
 					return false;
 				}
 				break;
@@ -1180,7 +1181,8 @@ class UpdraftPlus_Addons_RemoteStorage_webdav extends UpdraftPlus_RemoteStorage_
 			default:
 				$msg = UpdraftPlus_HTTP_Error_Descriptions::get_http_status_code_description($result->getStatus());
 				$this->log(sprintf("Unexpected HTTP response code (%s): %s", $result->getStatus(), $msg));
-				if (self::CREDENTIALS_TEST_DATA === $buffer) throw new Exception(sprintf(__("Unexpected HTTP response code (%s): %s", "updraftplus"), $result->getStatus(), $msg));// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
+				/* translators: 1: HTTP response code, 2: HTTP status description */
+				if (self::CREDENTIALS_TEST_DATA === $buffer) throw new Exception(sprintf(__("Unexpected HTTP response code (%1\$s): %2\$s", "updraftplus"), $result->getStatus(), $msg));// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
 				return false;
 		}
 

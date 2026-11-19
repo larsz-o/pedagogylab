@@ -15,8 +15,6 @@ class UpdraftPlusAddOns_Options2 {
 
 	public $mother;
 
-	private $connected = false;
-
 	// Object with at least get_option(), update_option() and addons_admin_url() methods
 	private $options;
 
@@ -35,7 +33,8 @@ class UpdraftPlusAddOns_Options2 {
 	private $update_js;
 
 	public function __construct($slug, $title, $mother) {
-
+		global $updraftplus_addons2;
+		$this->options = $updraftplus_addons2;
 		$this->slug = $slug;
 		$this->title = $title;
 		$this->mother = $mother;
@@ -44,19 +43,13 @@ class UpdraftPlusAddOns_Options2 {
 		// $this->options_menu();
 
 		// New actions to output the tab title and content
-// add_action('updraftplus_settings_afternavtabs', array($this, 'settings_afternavtabs'));
 		add_filter('updraftplus_addonstab_content', array($this, 'updraftplus_addonstab_content'));
 		add_filter('updraftplus_com_login_options', array($this, 'updraftplus_com_login_options'));
 
 		add_action('admin_init', array($this, 'show_admin_notices'));
-		add_action('admin_init', array($this, 'options_init'));
-		register_activation_hook(UDADDONS2_SLUG, array($this, 'options_setdefaults'));
 
 		add_filter((is_multisite() ? 'network_admin_' : '').'plugin_action_links', array($this, 'action_links'), 10, 2);
-
-		global $updraftplus_addons2;
-		$this->options = $updraftplus_addons2;
-
+		add_action('updraftplus_display_connection_status_notice', array($this, 'print_connection_status_html_wrapper'));
 	}
 
 	/**
@@ -77,15 +70,6 @@ class UpdraftPlusAddOns_Options2 {
 	 */
 	public function show_admin_notices() {
 		global $pagenow, $plugin_page;
-
-		if (apply_filters('updraftplus_settings_page_render', true)) {
-
-			$options = $this->options->get_option(UDADDONS2_SLUG.'_options');
-			if (empty($options['email']) && UpdraftPlus_Options::user_can_manage() && 'updraftplus' == $plugin_page) {
-				add_action('all_admin_notices', array($this, 'show_admin_warning_notconnected'));
-			}
-
-		}
 
 		if ((is_multisite() && 'settings.php' == $pagenow) || (!is_multisite() && 'options-general.php' == $pagenow) && (UDADDONS2_PAGESLUG == $plugin_page || $this->slug == $plugin_page)) {
 			$updates_available = get_site_transient('update_plugins');
@@ -113,102 +97,12 @@ class UpdraftPlusAddOns_Options2 {
 	 */
 	public function show_admin_warning_update() {
 		global $updraftplus_addons2;
-		if ($updraftplus_addons2->connection_status()) {
+		if ($updraftplus_addons2->connected) {
 			$msg = '<a id="updraftaddons_updatewarning" href="'.$this->plugin_update_url.'">'.esc_html__('An update is available for UpdraftPlus - please follow this link to get it.', 'updraftplus').'</a>';
 		} else {
 			$msg = '<a id="updraftaddons_updatewarning" href="'.esc_url(admin_url($this->options->addons_admin_url())).'">'.esc_html__('An update is available for UpdraftPlus - please connect here to gain access to it.', 'updraftplus').'</a>';
 		}
 		$this->show_admin_warning($msg);
-	}
-
-	public function show_admin_warning_notconnected() {
-		$this->show_admin_warning(esc_html(__('You have not yet connected the UpdraftPlus plugin to your UpdraftPlus licence.', 'updraftplus')).' <a href="'.esc_url(network_admin_url($this->options->addons_admin_url())).'">'.esc_html__('Connect to your account.', 'updraftplus').'</a>');
-	}
-
-	public function show_admin_warning_noupdraftplus() {
-		if (is_file(WP_PLUGIN_DIR.'/updraftplus/updraftplus.php')) {
-			global $pagenow;
-			$msg = esc_html__('UpdraftPlus is not yet activated.', 'updraftplus');
-			if ('plugins.php' != $pagenow) $msg .= ' <a href="plugins.php">'.esc_html__('Go here to activate it.', 'updraftplus').'</a>';
-			$this->show_admin_warning($msg);
-		} else {
-			$warning = esc_html__('UpdraftPlus is not yet installed.', 'updraftplus').' <a href="'.$this->mother.'/download/">'.esc_html__('Go here to begin installing it.', 'updraftplus').'</a>';
-			if (file_exists(WP_PLUGIN_DIR.'/updraft')) $warning .= ' '.esc_html__('You do seem to have the obsolete Updraft plugin installed - perhaps you got them confused?', 'updraftplus');
-			$this->show_admin_warning($warning);
-		}
-	}
-
-	/**
-	 * Output a notice suitable for the dashboard warning that PHP is too old.
-	 */
-	public function show_admin_warning_php() {
-		/* translators: 1: Current PHP version number, 2: Minimum required PHP version number */
-		$message = sprintf(__("Your web server's version of PHP is too old (%1\$s) - UpdraftPlus expects at least %2\$s.", 'updraftplus'), PHP_VERSION, '5.2.4');
-		$message .= ' '.__('You can try it, but don\'t be surprised if it does not work.', 'updraftplus');
-		$message .= ' '.__('To fix this problem, contact your web hosting company.', 'updraftplus');
-		$this->show_admin_warning(esc_html($message), 'error');
-	}
-
-	/**
-	 * Registered under admin_init
-	 */
-	public function options_init() {
-
-		// Register a new set of options, named $slug_options, stored in the database entry $slug_options
-		// We register and use the printing facilities for multisite too
-
-		register_setting(UDADDONS2_SLUG.'_options', UDADDONS2_SLUG.'_options', array($this, 'options_validate'));
-
-		if (is_multisite() && (isset($_POST['action']) && 'update' == $_POST['action']) && !empty($_POST['updraftplus-addons_options'])) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verification not required here.
-			$this->update_wpmu_options();
-		}
-
-	}
-
-	public function options_setdefaults() {
-		$tmp = $this->options->get_option(UDADDONS2_SLUG.'_options');
-		if (!is_array($tmp)) {
-			$arr = array(
-				"email" => "",
-				"password" => ""
-			);
-			$this->options->update_option(UDADDONS2_SLUG.'_options', $arr);
-		}
-	}
-
-	/**
-	 * This function is registered via register_setting. It is intended to return sanitised output, and can optionally call add_settings_error to whinge about anything faulty
-	 *
-	 * @param  array $input
-	 * @return array
-	 */
-	public function options_validate($input) {
-		// When the options are re-saved, clear any previous cache of the connection status
-		$ehash = substr(md5($input['email']), 0, 23);
-		delete_site_transient('udaddons_connect_'.$ehash);
-
-		return $input;
-	}
-
-	/**
-	 * Return an array of errors (if any);
-	 *
-	 * @return array
-	 */
-	public function update_wpmu_options() {
-		if (!UpdraftPlus_Options::user_can_manage()) return;
-		$options = $this->options->get_option(UDADDONS2_SLUG.'_options');
-		if (!is_array($options)) $options = array();
-
-		$post_udp_addons_options = UpdraftPlus_Manipulation_Functions::fetch_superglobal('post', 'updraftplus-addons_options');
-		if (is_array($post_udp_addons_options) && isset($post_udp_addons_options['email']) && isset($post_udp_addons_options['password'])) {
-			$options['email'] = $post_udp_addons_options['email'];
-			$options['password'] = $post_udp_addons_options['password'];
-		}
-
-		$options = $this->options_validate($options);
-
-		$this->options->update_option(UDADDONS2_SLUG.'_options', $options);
 	}
 
 	/**
@@ -229,25 +123,9 @@ class UpdraftPlusAddOns_Options2 {
 	public function options_printpage() {
 		if (!UpdraftPlus_Options::user_can_manage()) wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'updraftplus'));
 
-		$options = $this->options->get_option(UDADDONS2_SLUG.'_options');
-
 		echo "\t<div class=\"wrap updraft-account-connection\">\n";
 
 		global $updraftplus_addons2, $updraftplus_admin, $updraftplus;
-
-		$this->connected = !empty($options['email']) ? $updraftplus_addons2->connection_status() : false;
-
-		if (true !== $this->connected) {
-			if (is_wp_error($this->connected)) {
-				$connection_errors = array();
-				foreach ($this->connected->get_error_messages() as $key => $msg) {
-					$connection_errors[] = $msg;
-				}
-			} else {
-				if (!empty($options['email']) && !empty($options['password'])) $connection_errors = array(esc_html__('An unknown error occurred when trying to connect to UpdraftPlus.Com', 'updraftplus'));
-			}
-			$this->connected = false;
-		}
 
 		if ('updraftplus' != basename(dirname(dirname(__FILE__)))) {
 			echo '<div class="error below-h2" style="font-size: 120%;"><p><strong>'.esc_html__('Error', 'updraftplus').':</strong> ';
@@ -269,84 +147,29 @@ class UpdraftPlusAddOns_Options2 {
 			echo sprintf(esc_html__('This ensures %s can connect and update.', 'updraftplus'), 'UpdraftPlus').'</p></div>';
 		}
 
-		if ($this->connected) {
-			/* translators: %s: Plugin's connection status (it's either connected or not connected) */
-			echo '<div class="udp-notice below-h2"><h3>'.sprintf(esc_html__('You are presently %s to a TeamUpdraft account.', 'updraftplus'), '<strong class="success">'.
-			esc_html__('connected', 'updraftplus').'</strong>').'</h3>';
-
-			echo '<p>';
-
-			// Not translated; it's only seen in development
-			if (false === strpos($this->mother, '//updraftplus.com')) echo ' <strong>(Updates URL: '.esc_url($this->mother).')</strong>.';
-			
-			echo ' <a href="'.esc_url(UpdraftPlus::get_current_clean_url()).'" onclick="jQuery(\'#updraft-navtab-addons-content .ud_connectsubmit\').click(); return false;">'.esc_html__('If you bought new add-ons, then follow this link to refresh your connection', 'updraftplus').'</a>.';
-			if (!empty($options['password'])) echo ' '.esc_html__("Note that after you have claimed your add-ons, you can remove your password (but not the email address) from the settings below, without affecting this site's access to updates.", 'updraftplus');
-
-			echo '</p>';
-
-			echo '</div>';
-		} else {
-			/* translators: %s: Plugin's connection status (it's either connected or not connected) */
-			echo "<div class=\"udp-notice below-h2\"><p>".sprintf(esc_html__('You are presently %s to a TeamUpdraft account.', 'updraftplus'), '<strong>'.
-			esc_html__('not connected', 'updraftplus').'</strong>').'</p></div>';
-
-		}
-
-		if (isset($connection_errors)) {
-			echo '<div class="error"><p><strong>'.esc_html__('Errors occurred when trying to connect to your TeamUpdraft account:', 'updraftplus').'</strong></p><ul>';
-			foreach ($connection_errors as $err) {
-				echo '<li style="list-style:disc inside;">'.wp_kses_post($err).'</li>';
-			}
-			echo '</ul></div>';
-		}
+		do_action('updraftplus_display_connection_status_notice');
 
 		if (UpdraftPlus_Options::get_updraft_option('updraftplus_com_and_udc_connection_success', false)) {
 			UpdraftPlus_Options::delete_updraft_option('updraftplus_com_and_udc_connection_success');
 			echo '<div class="updated below-h2">';
 			echo '<p>';
 			echo esc_html__('You successfully logged in to UpdraftPlus and connected this site to UpdraftCentral Cloud.', 'updraftplus');
-			echo '<br> <a href="'.esc_url($updraftplus->get_url('mothership')).'/?udm_action=updraftcentral_cloud_redirect'.'" target="_blank">'.esc_html__('Go to your UpdraftCentral Cloud dashboard', 'updraftplus').'</a>';
+			echo '<br> <a href="https://teamupdraft.com/my-account/updraftcentral/" target="_blank">'.esc_html__('Go to your UpdraftCentral Cloud dashboard', 'updraftplus').'</a>';
 			echo '</p>';
 			echo '</div>';
 		}
 
-		$sid = $updraftplus_addons2->siteid();
-
-		$home_url = home_url();
-
-		// Enumerate possible unclaimed/re-claimable purchases, and what should be active on this site
-		$unclaimed_available = array();
-		$assigned = array();
-		$have_all = false;
-		if ($this->connected && isset($updraftplus_addons2->user_addons) && is_array($updraftplus_addons2->user_addons)) {
-			foreach ($updraftplus_addons2->user_addons as $akey => $addon) {
-				// Keys: site, sitedescription, key, status
-				if (isset($addon['status']) && 'active' == $addon['status'] && isset($addon['site']) && ('unclaimed' == $addon['site'] || 'unlimited' == $addon['site'])) {
-					$key = $addon['key'];
-					$unclaimed_available[$key] = array('eid' => $akey, 'status' => 'available');
-				} elseif (isset($addon['status']) && 'active' == $addon['status'] && isset($addon['site']) && $addon['site'] == $sid) {
-					$key = $addon['key'];
-					$assigned[$key] = $akey;
-					if ('all' == $key) $have_all = true;
-				} elseif (isset($addon['sitedescription']) && ($this->normalise_url($home_url) === $this->normalise_url($addon['sitedescription']) || 0 === strpos($addon['sitedescription'], $home_url.' - '))) {
-					// Is assigned to a site with the same URL as this one - allow a reclaim
-					$key = $addon['key'];
-					$unclaimed_available[$key] = array('eid' => $akey, 'status' => 'reclaimable');
-				}
-			}
-		}
-
-		if (!$this->connected) $updraftplus_admin->build_credentials_form(UDADDONS2_SLUG, true);
+		if (!$updraftplus_addons2->connected) $updraftplus_admin->build_credentials_form(UDADDONS2_SLUG, true, false);
 
 		$ourpageslug = UDADDONS2_PAGESLUG;
 
 		$href = UpdraftPlus_Options::admin_page_url();
 
-		if (count($unclaimed_available) > 0) {
+		if ($updraftplus_addons2->connected && count($updraftplus_addons2->unclaimed_available) > 0) {
 			$nonce = wp_create_nonce('udmanager-nonce');
 			$pleasewait = __('Please wait whilst we make the claim...', 'updraftplus');
-			$notgranted = __('Claim not granted - perhaps you have already used this purchase somewhere else, or your paid period for downloading from updraftplus.com has expired?', 'updraftplus');
-			$notgrantedlogin = __('Claim not granted - your account login details were wrong', 'updraftplus');
+			$notgranted = __('Claim not granted - perhaps you have already used this purchase somewhere else, or your paid period for downloading from teamupdraft.com has expired?', 'updraftplus');
+			$notgrantedlogin = __('Claim not granted - your account login details are incorrect.', 'updraftplus').' '.__('Please reconnect by re-entering your email address and password, then try claiming again.', 'updraftplus');
 			$ukresponse = __('An unknown response was received.', 'updraftplus').' '.__('Response was:', 'updraftplus');
 			$addon_installed = __('The claim and installation was successful.', 'updraftplus').' '.__('You can now use your purchase!', 'updraftplus');
 			?>
@@ -367,6 +190,8 @@ class UpdraftPlusAddOns_Options2 {
 				
 					var response_code;
 					var addons_written = false;
+
+					jQuery('#addon-'+key).find('div.addon-activation-notice').hide();
 				
 					try {
 						response = ud_parse_json(resp);
@@ -391,6 +216,7 @@ class UpdraftPlusAddOns_Options2 {
 						window.location.href = new_location;
 					} else if ('BADAUTH' == response_code) {
 						alert("<?php echo esc_js($notgrantedlogin); ?>");
+						jQuery('html, body').animate({scrollTop: jQuery('#updraftplus-addons_options_email').offset().top-100}, 500);
 					} else {
 						alert("<?php echo esc_js($ukresponse);?> "+response);
 					}
@@ -402,7 +228,7 @@ class UpdraftPlusAddOns_Options2 {
 			<?php
 		}
 
-		$addons = $updraftplus_addons2->get_available_addons();
+		$addons = $updraftplus_addons2->available_addons;
 
 		$this->plugin_update_url = 'update-core.php';
 		// Can we get a direct update URL?
@@ -445,9 +271,9 @@ class UpdraftPlusAddOns_Options2 {
 				$latestversion = empty($addon['latestversion']) ? false : $addon['latestversion'];
 				$installedversion = empty($addon['installedversion']) ? false : $addon['installedversion'];
 				$installed = (empty($addon['installed']) && false == $installedversion) ? false : $addon['installed'];
-				$unclaimed = (isset($unclaimed_available[$key])) ? $unclaimed_available[$key] : false;
-				$is_assigned = (isset($assigned[$key])) ? $assigned[$key] : false;
-				$box = $this->addonbox($key, $addon['name'], $addon['shopurl'], $addon['description'], trim($installedversion), trim($latestversion), $installed, $unclaimed, $is_assigned, $have_all);
+				$unclaimed = (isset($updraftplus_addons2->unclaimed_available[$key])) ? $updraftplus_addons2->unclaimed_available[$key] : false;
+				$is_assigned = (isset($updraftplus_addons2->assigned_addons[$key])) ? $updraftplus_addons2->assigned_addons[$key] : false;
+				$box = $this->addonbox($key, $addon['name'], $addon['shopurl'], $addon['description'], trim($installedversion), trim($latestversion), $installed, $unclaimed, $is_assigned, $updraftplus_addons2->have_all_addons);
 				if ($is_assigned) {
 					$first .= $box;
 				} elseif (!empty($unclaimed)) {
@@ -489,36 +315,17 @@ class UpdraftPlusAddOns_Options2 {
 <li style="list-style:disc inside;">'.esc_html__('Need to get support?', 'updraftplus').' <a aria-label="'.esc_html__('Need to get support?', 'updraftplus').esc_html__('Go here', 'updraftplus').'" target="_blank" href="https://teamupdraft.com/support/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=go-here&utm_creative_format=text">'.esc_html__('Go here', 'updraftplus')."</a>.</li>
 </ul>";
 
-		if ($this->connected) {
+		if ($updraftplus_addons2->connected) {
 			echo "<hr>";
-			$updraftplus_admin->build_credentials_form(UDADDONS2_SLUG, true);
+			$updraftplus_admin->build_credentials_form(UDADDONS2_SLUG, true, false);
 		}
 
 		echo '</div>';
 
 	}
 
-	/**
-	 * This may produce a URL that does not actually reference the same location; its purpose is to use in comparisons of two URLs that *both* go through this function, only
-	 *
-	 * @param  string $url
-	 * @return string
-	 */
-	private function normalise_url($url) {
-		if (preg_match('/^(\S+) - /', ltrim($url), $matches)) $url = $matches[1];
-		$parsed_descrip_url = parse_url($url);
-		if (is_array($parsed_descrip_url) && isset($parsed_descrip_url['host'])) {
-			if (preg_match('/^www\./i', $parsed_descrip_url['host'], $matches)) $parsed_descrip_url['host'] = substr($parsed_descrip_url['host'], 4);
-			$normalised_descrip_url = 'http://'.strtolower($parsed_descrip_url['host']);
-			if (!empty($parsed_descrip_url['port'])) $normalised_descrip_url .= ':'.$parsed_descrip_url['port'];
-			if (!empty($parsed_descrip_url['path'])) $normalised_descrip_url .= untrailingslashit($parsed_descrip_url['path']);
-		} else {
-			$normalised_descrip_url = untrailingslashit($url);
-		}
-		return $normalised_descrip_url;
-	}
-
 	private function addonbox($key, $name, $shopurl, $description, $installedversion, $latestversion = false, $installed = false, $unclaimed = false, $is_assigned = false, $have_all = false) {
+		global $updraftplus_addons2;
 		$urlbase = UPDRAFTPLUS_URL.'/images/addons-images';
 		$mother = $this->mother;
 		$extra_description = '';
@@ -551,10 +358,10 @@ class UpdraftPlusAddOns_Options2 {
 		} else {
 			if ('all' == $key && $is_assigned && false === $unclaimed) return;
 			if ($have_all && 'all' != $key) {
-				$blurb = '<p><strong>'.esc_html__('Available for this site (via your all-addons purchase)', 'updraftplus').' - <a href="'.$this->plugin_update_url.'">'.esc_html__('please follow this link to update the plugin in order to get it', 'updraftplus').'</a></strong></p>';
+				$blurb = '<p><strong>'.esc_html__('Available for this site (via your all-addons purchase)', 'updraftplus').' - <a class="updraftplus-addon-assigned-not-installed" href="'.$this->plugin_update_url.'">'.esc_html__('please follow this link to update the plugin in order to get it', 'updraftplus').'</a></strong></p>';
 				$preblurb = "<div style=\"border: 2px solid #189c5f;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #1a9c5e0f;\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\"></div>";
 			} elseif ($is_assigned) {
-				$blurb = '<p><strong>'.esc_html__('Assigned to this site', 'updraftplus').' - <a href="'.$this->plugin_update_url.'">'.esc_html__('please follow this link to update the plugin in order to activate it', 'updraftplus').'</a></strong></p>';
+				$blurb = '<p><strong>'.esc_html__('Assigned to this site', 'updraftplus').' - <a class="updraftplus-addon-assigned-not-installed" href="'.$this->plugin_update_url.'">'.esc_html__('please follow this link to update the plugin in order to activate it', 'updraftplus').'</a></strong></p>';
 				$preblurb = "<div style=\"border: 2px solid #189c5f;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #1a9c5e0f;\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\"></div>";
 			} elseif (is_array($unclaimed)) {
 				// Keys: eid = unique ID, status = available|reclaimable
@@ -563,21 +370,21 @@ class UpdraftPlusAddOns_Options2 {
 					$blurb ='<p><strong>'.esc_html__('Available to claim on this site', 'updraftplus').' - <a aria-label="'.
 						/* translators: %s: Add-on name. */
 						sprintf(esc_html__('%s available to claim on this site.', 'updraftplus').' '.
-						esc_html__('Follow this link to activate this licence', 'updraftplus'), $name).'" href="#" onclick="return udm_claim(\''.esc_js($key).'\');">'.esc_html__('activate it on this site', 'updraftplus').'</a></strong></p>';
+						esc_html__('Follow this link to activate this licence', 'updraftplus'), $name).'" class="updraftplus-unclaimed-addon" href="#" onclick="return udm_claim(\''.esc_js($key).'\');">'.esc_html__('reclaim it for use on this site', 'updraftplus').'</a></strong></p>';
 				} else {
-					$blurb ='<p><strong>'.esc_html__('You have an inactive purchase', 'updraftplus').' - <a href="#" onclick="return udm_claim(\''.esc_js($key).'\');">'.esc_html__('activate it on this site', 'updraftplus').'</a></strong></p>';
+					$blurb ='<p><strong>'.esc_html__('You have an inactive purchase', 'updraftplus').' - <a class= "updraftplus-unclaimed-addon" href="#" onclick="return udm_claim(\''.esc_js($key).'\');">'.esc_html__('claim it for use on this site', 'updraftplus').'</a></strong></p>';
 				}
 				$preblurb = "<div style=\"border: 2px solid #189c5f;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #1a9c5e0f;\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\"></div>";
 			} else {
 				/* translators: %s: Add-on name */
 				$blurb = '<p><a aria-label="'.sprintf(esc_html__('Get %s from teamupdraft.com', 'updraftplus'), $name).
-						(($this->connected) ? '' : ' '.esc_html__('(or connect using the form on this page if you have already purchased it)', 'updraftplus')).'" target="_blank" href="'.$mother.$shopurl.'">'.esc_html__('Get it from teamupdraft.com', 'updraftplus').'</a>'.(($this->connected) ? '' : ' '.esc_html__('(or connect using the login form on this page if you have already bought it)', 'updraftplus')).'</p>';
+						(($updraftplus_addons2->connected) ? '' : ' '.esc_html__('(or connect using the form on this page if you have already purchased it)', 'updraftplus')).'" target="_blank" href="'.$mother.$shopurl.'">'.esc_html__('Get it from teamupdraft.com', 'updraftplus').'</a>'.(($updraftplus_addons2->connected) ? '' : ' '.esc_html__('(or connect using the login form on this page if you have already bought it)', 'updraftplus')).'</p>';
 						/* translators: %s: Add-on name. */
 				$preblurb = "<div style=\"border: 2px solid #8c8c8c;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #8c8c8c0f;\"><a href=\"".$mother.$shopurl."\" title=\"".sprintf(esc_html__('Buy %s', 'updraftplus'), $name)."\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\" alt=\"".esc_html__('Buy It', 'updraftplus')."\"></a></div>";
 			}
 		}
 		if ($extra_description) $extra_description = '<p>'.$extra_description.'</p>';
-		return "<div id=\"addon-$key\" style=\"border: 1px solid #d0d0d0;border-radius: 5px;padding: 12px;max-width: 680px;margin-bottom: 22px;background-color:#fff;box-shadow: 0 0 20px 5px rgb(0 0 0 / 7%);display: flex;justify-content: space-between;align-items: center;\">
+		return "<div id=\"addon-$key\" class=\"updraftplus-addon-box\" style=\"border: 1px solid #d0d0d0;border-radius: 5px;padding: 12px;max-width: 680px;margin-bottom: 22px;background-color:#fff;box-shadow: 0 0 20px 5px rgb(0 0 0 / 7%);display: flex;justify-content: space-between;align-items: center;\">
 					<div style=\"max-width: 80%;\"><h2>$name</h2><p>$description</p>$extra_description$blurb</div>
 					$preblurb
 				</div>";
@@ -594,5 +401,16 @@ class UpdraftPlusAddOns_Options2 {
 			array_unshift($links, '<a href="'.$this->options->addons_admin_url().'">'.esc_html__('Manage Addons', 'updraftplus').'</a>');
 		}
 		return $links;
+	}
+
+	/**
+	 * Print the HTML wrapper for the UpdraftPlus connection status.
+	 *
+	 * Output an empty container that can be populated with connection status content dynamically.
+	 *
+	 * @return void
+	 */
+	public function print_connection_status_html_wrapper() {
+		echo '<div class="updraftplus-udaddons-connection-status-wrapper"></div>';
 	}
 }

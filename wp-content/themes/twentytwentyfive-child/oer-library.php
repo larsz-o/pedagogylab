@@ -8,6 +8,7 @@
 get_header();
 
 $search_term = sanitize_text_field( wp_unslash( $_GET['pcf_search'] ?? '' ) );
+$license_filter = sanitize_text_field( wp_unslash( $_GET['pcf_license'] ?? '' ) );
 $paged = max( 1, get_query_var( 'paged', 1 ) );
 $defs = array();
 if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
@@ -42,6 +43,87 @@ $db_meta_keys = $wpdb->get_col(
 if ( is_array( $db_meta_keys ) && ! empty( $db_meta_keys ) ) {
     $meta_keys = array_values( array_unique( array_merge( $meta_keys, $db_meta_keys ) ) );
 }
+
+$license_candidates = array( 'license', 'licence', 'license_type', 'licence_type', 'copyright_license' );
+$license_field_name = '';
+$license_meta_keys = array();
+$license_options = array();
+
+foreach ( $defs as $name => $def ) {
+    $key = strtolower( str_replace( array( '-', ' ' ), '_', (string) $name ) );
+    $title = strtolower( str_replace( array( '-', ' ' ), '_', (string) ( $def['title'] ?? '' ) ) );
+    $matches_license = in_array( $key, $license_candidates, true )
+        || in_array( $title, $license_candidates, true )
+        || false !== strpos( $key, 'license' )
+        || false !== strpos( $key, 'licence' )
+        || false !== strpos( $title, 'license' )
+        || false !== strpos( $title, 'licence' );
+
+    if ( ! $matches_license ) {
+        continue;
+    }
+
+    $license_field_name = $name;
+    $license_meta_keys[] = 'pcf_' . $name;
+
+    if ( isset( $def['options'] ) && is_array( $def['options'] ) ) {
+        foreach ( $def['options'] as $opt ) {
+            if ( is_array( $opt ) && isset( $opt['title'] ) ) {
+                $title_value = trim( (string) $opt['title'] );
+            } elseif ( is_scalar( $opt ) ) {
+                $title_value = trim( (string) $opt );
+            } else {
+                $title_value = '';
+            }
+
+            if ( '' !== $title_value ) {
+                $license_options[] = $title_value;
+            }
+        }
+    }
+
+    break;
+}
+
+if ( empty( $license_meta_keys ) ) {
+    foreach ( $license_candidates as $candidate ) {
+        $license_meta_keys[] = 'pcf_' . $candidate;
+    }
+}
+
+$license_meta_keys = array_values( array_unique( array_filter( $license_meta_keys, 'strlen' ) ) );
+
+if ( ! empty( $license_meta_keys ) ) {
+    $placeholders = implode( ',', array_fill( 0, count( $license_meta_keys ), '%s' ) );
+    $sql = "
+        SELECT DISTINCT pm.meta_value
+        FROM {$wpdb->postmeta} pm
+        INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+        WHERE pm.meta_key IN ($placeholders)
+            AND p.post_type = %s
+            AND p.post_status = %s
+            AND pm.meta_value <> ''
+        ORDER BY pm.meta_value ASC
+    ";
+    $sql_args = array_merge( $license_meta_keys, array( 'post', 'publish' ) );
+    $db_license_values = $wpdb->get_col( $wpdb->prepare( $sql, $sql_args ) );
+
+    if ( is_array( $db_license_values ) ) {
+        foreach ( $db_license_values as $db_license_value ) {
+            if ( is_serialized( $db_license_value ) ) {
+                continue;
+            }
+            $clean_value = trim( sanitize_text_field( (string) $db_license_value ) );
+            if ( '' !== $clean_value ) {
+                $license_options[] = $clean_value;
+            }
+        }
+    }
+}
+
+$license_options = array_values( array_unique( array_filter( array_map( 'trim', $license_options ), 'strlen' ) ) );
+natcasesort( $license_options );
+$license_options = array_values( $license_options );
 
 $search_ids = null;
 $force_no_results = false;
@@ -103,6 +185,21 @@ if ( is_array( $search_ids ) ) {
 
 if ( $force_no_results ) {
     $query_args['post__in'] = array( 0 );
+}
+
+if ( '' !== $license_filter ) {
+    $license_meta_query = array( 'relation' => 'OR' );
+    foreach ( $license_meta_keys as $license_meta_key ) {
+        $license_meta_query[] = array(
+            'key'     => $license_meta_key,
+            'value'   => $license_filter,
+            'compare' => '=',
+        );
+    }
+
+    if ( count( $license_meta_query ) > 1 ) {
+        $query_args['meta_query'] = $license_meta_query;
+    }
 }
 
 $post_query = new WP_Query( $query_args );
@@ -293,6 +390,17 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
         <form class="post-cards-search" method="get" action="<?php echo esc_url( get_permalink() . '#' . $results_anchor ); ?>">
             <label for="pcf_search" class="screen-reader-text"><?php esc_html_e( 'Search posts and metadata', 'twentytwentyfive' ); ?></label>
             <input id="pcf_search" name="pcf_search" type="search" value="<?php echo esc_attr( $search_term ); ?>" placeholder="Search titles, descriptions, formats, tags...">
+            <div class="post-cards-filters">
+                <div class="post-cards-filter-item">
+                    <label for="pcf_license"><?php esc_html_e( 'License', 'twentytwentyfive' ); ?></label>
+                    <select id="pcf_license" name="pcf_license">
+                        <option value=""><?php esc_html_e( 'All licenses', 'twentytwentyfive' ); ?></option>
+                        <?php foreach ( $license_options as $license_option ) : ?>
+                            <option value="<?php echo esc_attr( $license_option ); ?>" <?php selected( $license_filter, $license_option ); ?>><?php echo esc_html( $license_option ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
             <button type="submit"><?php esc_html_e( 'Search', 'twentytwentyfive' ); ?></button>
         </form>
     </div>
@@ -353,6 +461,10 @@ function pedagogy_post_embed_html( $post_id, $defs ) {
                 'mid_size' => 1,
                 'prev_text' => '&laquo; ' . esc_html__( 'Previous', 'twentytwentyfive' ),
                 'next_text' => esc_html__( 'Next', 'twentytwentyfive' ) . ' &raquo;',
+                'add_args' => array_filter( array(
+                    'pcf_search'  => $search_term,
+                    'pcf_license' => $license_filter,
+                ), 'strlen' ),
             ) );
             ?>
         </div>

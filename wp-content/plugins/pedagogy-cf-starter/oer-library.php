@@ -148,6 +148,17 @@ $is_file_format_field = static function ( $field_name, $field_def ) {
         || false !== strpos( $title_key, 'file format' );
 };
 
+    $is_license_field = static function ( $field_name, $field_def ) {
+        $name_key = strtolower( trim( str_replace( '-', '_', (string) $field_name ) ) );
+        $title_key = strtolower( trim( str_replace( array( '-', '_' ), ' ', (string) ( $field_def['title'] ?? '' ) ) ) );
+
+        return in_array( $name_key, array( 'license', 'licence', 'license_type', 'licence_type', 'copyright_license' ), true )
+        || false !== strpos( $name_key, 'license' )
+        || false !== strpos( $name_key, 'licence' )
+        || false !== strpos( $title_key, 'license' )
+        || false !== strpos( $title_key, 'licence' );
+    };
+
 foreach ( $defs as $name => $def ) {
     if ( ! in_array( $name, $people_source_fields, true ) ) {
         continue;
@@ -205,10 +216,14 @@ foreach ( $defs as $name => $def ) {
         continue;
     }
 
-    if ( isset( $def['type'] ) && in_array( $def['type'], array( 'select', 'linked' ), true ) ) {
+    if ( isset( $def['type'] ) && in_array( $def['type'], array( 'select', 'linked', 'option_links' ), true ) ) {
+        if ( 'option_links' === $def['type'] && ! $is_license_field( $name, $def ) ) {
+            continue;
+        }
+
         $options = array();
 
-        if ( 'select' === $def['type'] ) {
+        if ( in_array( $def['type'], array( 'select', 'option_links' ), true ) ) {
             $options = isset( $def['options'] ) && is_array( $def['options'] ) ? pedagogy_option_titles( $def['options'] ) : array();
         } elseif ( 'linked' === $def['type'] && isset( $def['source_field'] ) ) {
             $source_name = $def['source_field'];
@@ -237,6 +252,9 @@ foreach ( $defs as $name => $def ) {
 // Show key taxonomy-like filters first in the sidebar when they exist.
 $preferred_filter_order = array(
     'material_type',
+    'license',
+    'license_type',
+    'copyright_license',
     'audience_types',
     'subjects_topics',
     'disciplinary_areas',

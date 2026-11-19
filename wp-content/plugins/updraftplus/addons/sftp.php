@@ -75,6 +75,13 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 	private $scp;
 
 	/**
+	 * Whether phpseclib3's native SCP class is in use (set in connect()).
+	 *
+	 * @var Boolean
+	 */
+	private $use_native_scp = false;
+
+	/**
 	 * SSH2 or SFTP class object
 	 *
 	 * @var Net_SSH2|Net_SFTP
@@ -162,7 +169,7 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 	/**
 	 * Set up the connection, change directory to the configured directory, and return a connection object
 	 *
-	 * @return WP_Error|Net_SSH2|Net_SCP
+	 * @return WP_Error|Net_SSH2|Net_SCP|phpseclib3\Net\SCP
 	 */
 	private function do_connect_and_chdir() {
 
@@ -189,6 +196,20 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 		$sftp = $this->connect($host, $port, $fingerprint, $user, $pass, $key, $scp);
 		if (is_wp_error($sftp)) return $sftp;
 
+		// Validate the fingerprint (reconnecting if needed) before changing directory, so the chdir happens on the connection that is returned
+		if (!empty($fingerprint)) {
+			$match_fingerprint = $this->validate_fingerprint($fingerprint);
+			if (!$match_fingerprint) {
+				// phpseclib 3 prioritises and forces new host key algorithms like Ed25519 to be used when logging in to a server (if supported by the server)
+				// post phpseclib upgrade from version 2 to 3, there could be an existing configuration that uses an older host key algorithm
+				// if an existing fingerprint was made using the older algorithm whereas a connection made to a server uses a new algorithm then the fingerprint will fail to be validated
+				// so we get the phpseclib2 supported hostkey algorithms and let these algorithms as the preferred ones
+				$sftp = $this->connect($host, $port, $fingerprint, $user, $pass, $key, $scp, false, $updraftplus->phpseclib2_supported_hostkey_algorithms);
+				if (is_wp_error($sftp)) return $sftp;
+				if (!$this->validate_fingerprint($fingerprint)) return new WP_Error('invalid_fingerprint', __("Fingerprints don't match.", 'updraftplus'));
+			}
+		}
+
 		// So far, so good
 		if ($path) {
 			if ($scp) {
@@ -201,18 +222,6 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 					@$sftp->disconnect();// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Silenced to suppress errors that may arise because of the method.
 					return new WP_Error('nochdir', __("Check your file permissions: Could not successfully create and enter directory:", 'updraftplus')." $path");
 				}
-			}
-		}
-		if (!empty($fingerprint)) {
-			$match_fingerprint = $this->validate_fingerprint($fingerprint);
-			if (!$match_fingerprint && isset($updraftplus->phpseclib2_supported_hostkey_algorithms)) {
-				// phpseclib 3 prioritises and forces new host key algorithms like Ed25519 to be used when logging in to a server (if supported by the server)
-				// post phpseclib upgrade from version 2 to 3, there could be an existing configuration that uses an older host key algorithm
-				// if an existing fingerprint was made using the older algorithm whereas a connection made to a server uses a new algorithm then the fingerprint will fail to be validated
-				// so we get the phpseclib2 supported hostkey algorithms and let these algorithms as the preferred ones
-				$sftp = $this->connect($host, $port, $fingerprint, $user, $pass, $key, $scp, false, $updraftplus->phpseclib2_supported_hostkey_algorithms);
-				if (is_wp_error($sftp)) return $sftp;
-				if (!$this->validate_fingerprint($fingerprint)) return new WP_Error('invalid_fingerprint', __("Fingerprints don't match.", 'updraftplus'));
 			}
 		}
 
@@ -301,7 +310,9 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 				// SCP
 			
 				$rfile = empty($this->path) ? $file : trailingslashit($this->path).$file;
-				if ($sftp->put($rfile, $updraft_dir.'/'.$file, phpseclib_Net_SCP::SOURCE_LOCAL_FILE, array($this, 'sftp_progress_callback'))) {
+				// Use the SOURCE_LOCAL_FILE constant from the SCP class chosen in connect().
+				$source_local_file = $this->use_native_scp ? phpseclib3_Net_SCP::SOURCE_LOCAL_FILE : phpseclib_Net_SCP::SOURCE_LOCAL_FILE;
+				if ($sftp->put($rfile, $updraft_dir.'/'.$file, $source_local_file, array($this, 'sftp_progress_callback'))) {
 					$updraftplus->uploaded_file($file);
 				} else {
 					$any_failures = true;
@@ -400,7 +411,8 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 			}
 
 		} else {
-			$dirlist = $sftp->rawlist();
+			// phpseclib2_compat's rawlist() causes a fatal error on PHP 8+, so list files with phpseclib3's own SFTP object when available
+			$dirlist = method_exists($sftp, 'getSFTPObject') ? $sftp->getSFTPObject()->rawlist() : $sftp->rawlist();
 			if (!is_array($dirlist)) return array();
 
 			foreach ($dirlist as $path => $stat) {
@@ -450,7 +462,7 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 	 * @param boolean $debug                        - debugging mode: will ask phpseclib to log (which, being controlled by constants, may not be possible if they are already set)
 	 * @param array   $preferred_hostkey_algorithms - List of preferred host key algorithms
 	 *
-	 * @return WP_Error|Net_SSH2|Net_SCP
+	 * @return WP_Error|Net_SSH2|Net_SCP|phpseclib3\Net\SCP
 	 */
 	private function connect($host, $port = 22, $fingerprint = '', $user = '', $pass = '', $key = '', $scp = false, $debug = false, $preferred_hostkey_algorithms = array()) {// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Unused parameters are for future use.
 
@@ -474,19 +486,26 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 			}
 		}
 		
-		$connection_class = $scp ? 'phpseclib_Net_SSH2' : 'phpseclib_Net_SFTP';
+		// phpseclib2_compat has no SCP class, so use phpseclib3's native SCP when available
+		$this->use_native_scp = class_exists('phpseclib3_Net_SCP');
+		$connection_class = $scp ? ($this->use_native_scp ? 'phpseclib3_Net_SCP' : 'phpseclib_Net_SSH2') : 'phpseclib_Net_SFTP';
 		
 		$this->ssh = new $connection_class($host, $port, $timeout);
 
 		if (!empty($preferred_hostkey_algorithms)) $this->ssh->setPreferredAlgorithms(array('hostkey' => $preferred_hostkey_algorithms));
 
-		$this->server_public_hostkey = $this->ssh->getServerPublicHostKey();
+		// phpseclib3's native SCP throws on connection failures instead of returning false
+		try {
+			$this->server_public_hostkey = $this->ssh->getServerPublicHostKey();
+		} catch (Exception $e) {
+			return new WP_Error('ssh2_nologin', 'SSH 2 login failed ('.$e->getMessage().')');
+		}
 		if ($this->server_public_hostkey) $this->server_public_hostkey = $this->maybe_convert_key_to_phpseclib_format($this->server_public_hostkey);
 
 		if (!empty($key)) {
 			$failed_to_load_private_key = false;
-			if ($this->is_elliptic_curve_host_key_algorithm($this->server_public_hostkey) && class_exists('phpseclib3_Crypt_PublicKeyLoader')) {
-				// handle server hostkey elliptic curve algorithm like Ed25519, ECDH, and ECDSA but we stick with the old phpseclib2 for RSA
+			if (class_exists('phpseclib3_Crypt_PublicKeyLoader')) {
+				// phpseclib3's PublicKeyLoader reads every key type; the phpseclib2-style RSA class crashes on Ed25519 keys
 				try {
 					$key = $pass = call_user_func_array(array('phpseclib3_Crypt_PublicKeyLoader', 'load'), array($key)); // yes it's public key loader but it can also be used to load private key (@see https://github.com/phpseclib/phpseclib/blob/109ec382a957fd17251782c70cc1eb053c2877cc/phpseclib/Crypt/PublicKeyLoader.php#L30)
 				} catch (Exception $e) {
@@ -512,7 +531,14 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 		// See: https://github.com/phpseclib/phpseclib/issues/1271#issuecomment-390417276 . Default is 10s.
 		$this->ssh->setTimeout(35);
 
-		if (!$this->ssh->login($user, $pass)) {
+		// phpseclib3's native SCP can also throw here, e.g. if the server closes the connection
+		try {
+			$logged_in = $this->ssh->login($user, $pass);
+		} catch (Exception $e) {
+			return new WP_Error('ssh2_nologin', 'SSH 2 login failed ('.$e->getMessage().')');
+		}
+
+		if (!$logged_in) {
 			$error_data = null;
 			$message = 'SSH 2 login failed';
 			if ($debug) {
@@ -544,7 +570,9 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 		// return new WP_Error('debug', "Remove fingerprint: $remote_finger");
 		// }
 
-		return $scp ? new phpseclib_Net_SCP($this->ssh) : $this->ssh;
+		// phpseclib3's native SCP is itself the logged-in connection; phpseclib2's SCP wraps the SSH2 connection
+		if ($scp && !$this->use_native_scp) return new phpseclib_Net_SCP($this->ssh);
+		return $this->ssh;
 
 	}
 
@@ -921,7 +949,7 @@ class UpdraftPlus_Addons_RemoteStorage_sftp extends UpdraftPlus_RemoteStorage_Ad
 	 * @return boolean True if the given public host key is an instance of phpseclib3 elliptic_curve algorithms, false otherwise
 	 */
 	private function is_elliptic_curve_host_key_algorithm($public_host_key) {
-		return is_a($public_host_key, 'phpseclib3_Crypt_EC');
+		return class_exists('phpseclib3_Crypt_EC') && is_a($public_host_key, 'phpseclib3_Crypt_EC');
 	}
 	
 	/**

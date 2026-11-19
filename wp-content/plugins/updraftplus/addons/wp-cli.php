@@ -23,6 +23,8 @@ updraft_try_include_file('udaddons/updraftplus-cli-command-base.php', 'require_o
  * Implements Updraftplus CLI all commands
  */
 class UpdraftPlus_CLI_Command extends UpdraftPlus_CLI_Command_Base {
+
+	private $commands = null;
 	
 	/**
 	 * Constructor
@@ -748,7 +750,19 @@ class UpdraftPlus_CLI_Command extends UpdraftPlus_CLI_Command_Base {
 		}
 
 		if (empty($components_arr)) WP_CLI::error(__("No valid components found, please select different components or a backup set with components that can be restored.", 'updraftplus'));
-		
+
+		// Block all restore operations when DISALLOW_FILE_MODS is active. Checked before any job or filesystem setup so we fail fast without creating a restore job or log file.
+		if (defined('DISALLOW_FILE_MODS') && DISALLOW_FILE_MODS) {
+			WP_CLI::error(
+				sprintf(
+					/* translators: %s: Constant name (DISALLOW_FILE_MODS) */
+					__('Restore operations are disabled: The %s constant is active on this site.', 'updraftplus'),
+					'DISALLOW_FILE_MODS'
+				).' '.__('All restore operations (including database) are blocked.', 'updraftplus').' '.__('To restore, temporarily remove this constant from wp-config.php or set it to false.', 'updraftplus'),
+				true
+			);
+		}
+
 		// Setup wp file system
 		$this->init_wp_filesystem();
 		
@@ -903,7 +917,13 @@ class UpdraftPlus_CLI_Command extends UpdraftPlus_CLI_Command_Base {
 	 */
 	private function addon_not_exist_error($option, $addon_title, $addon_buy_url) {
 		$filtered_addon_buy_url = apply_filters('updraftplus_com_link', $addon_buy_url);
-		WP_CLI::error(sprintf(__('You have given the %s option.', 'updraftplus'), $option).' '.sprintf(__('The %s is working with "%s" addon.', 'updraftplus'), $option, $addon_title).' '.sprintf(__('Get the "%s" addon: %s', 'updraftplus'), $addon_title, $filtered_addon_buy_url), true);
+		/* translators: %s: Option name */
+		$given_option = sprintf(__('You have given the %s option.', 'updraftplus'), $option);
+		/* translators: 1: Option name, 2: Addon title */
+		$works_with_addon = sprintf(__('The %1$s is working with "%2$s" addon.', 'updraftplus'), $option, $addon_title);
+		/* translators: 1: Addon title, 2: Addon purchase URL */
+		$get_addon = sprintf(__('Get the "%1$s" addon: %2$s', 'updraftplus'), $addon_title, $filtered_addon_buy_url);
+		WP_CLI::error($given_option.' '.$works_with_addon.' '.$get_addon, true);
 	}
 	
 	/**
@@ -1021,7 +1041,7 @@ class UpdraftPlus_CLI_Command extends UpdraftPlus_CLI_Command_Base {
 					$restorepoint += $offset * 3600;
 					$timezone = get_option('timezone_string');
 					if (empty($timezone)) $timezone = $offset > 0 ? "UTC+$offset" : "UTC$offset";
-					$items[] = array('incremental_backups' => date($date_format, $restorepoint).' ('.$timezone.') '.__('Timestamp', 'updraftplus').':'.$restorepoint);
+					$items[] = array('incremental_backups' => gmdate($date_format, $restorepoint).' ('.$timezone.') '.__('Timestamp', 'updraftplus').':'.$restorepoint);
 				}
 			}
 
@@ -1074,16 +1094,16 @@ class UpdraftPlus_CLI_Command extends UpdraftPlus_CLI_Command_Base {
 			WP_CLI::error(__("The attempt to open and read contents from the password file failed; please make sure the file is readable and is not being exclusively locked by another process", 'updraftplus'));
 		}
 		$password = '' != $assoc_args['password'] ? $assoc_args['password'] : $password_from_file;
-		$updraftplus_addons2->update_option(UDADDONS2_SLUG.'_options', array('email' => $assoc_args['email'], 'password' => $password));
 
 		WP_CLI::log(__('Please wait while connecting to teamupdraft.com ...', 'updraftplus'));
 		$_GET['udm_refresh'] = 1; // don't use cache, we always refresh when connecting even if already connected
-		$result = $updraftplus_addons2->connection_status();
+		$updraftplus_addons2->set_authentication_data(array('email' => $assoc_args['email'], 'password' => $password));
+		$updraftplus_addons2->connection_status();
 		unset($_GET['udm_refresh']);
 		
-		if (true !== $result) {
-			if (is_wp_error($result)) {
-				foreach ($result->get_error_messages() as $msg) {
+		if (true !== $updraftplus_addons2->connected) {
+			if (count($updraftplus_addons2->connection_errors) > 0) {
+				foreach ($updraftplus_addons2->connection_errors as $msg) {
 					if (empty($msg)) continue;
 					WP_CLI::error($msg);
 				}

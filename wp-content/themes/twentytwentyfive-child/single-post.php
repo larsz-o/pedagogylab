@@ -275,6 +275,9 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
                                 if ( is_array( $item ) && ! empty( $item['url'] ) ) {
                                     $link_text = ! empty( $item['title'] ) ? $item['title'] : ( ! empty( $item['text'] ) ? $item['text'] : ( ! empty( $item['label'] ) ? $item['label'] : $item['url'] ) );
                                     $links[] = '<a href="' . esc_url( $item['url'] ) . '">' . esc_html( $link_text ) . '</a>';
+                                } elseif ( is_array( $item ) && ! empty( $item['href'] ) ) {
+                                    $link_text = ! empty( $item['title'] ) ? $item['title'] : ( ! empty( $item['text'] ) ? $item['text'] : ( ! empty( $item['label'] ) ? $item['label'] : $item['href'] ) );
+                                    $links[] = '<a href="' . esc_url( $item['href'] ) . '">' . esc_html( $link_text ) . '</a>';
                                 } elseif ( is_string( $item ) && filter_var( trim( $item ), FILTER_VALIDATE_URL ) ) {
                                     $links[] = '<a href="' . esc_url( trim( $item ) ) . '">' . esc_html( trim( $item ) ) . '</a>';
                                 }
@@ -578,10 +581,13 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
            
 
             $creator_display = '';
+            $contributor_display = '';
             $date_display = '';
 
             $creator_raw_values = array();
-            $creator_field_candidates = array( 'people', 'creators', 'creator', 'contributors', 'contributor' );
+            $contributor_raw_values = array();
+            $creator_field_candidates = array( 'people', 'creators', 'creator' );
+            $contributor_field_candidates = array( 'contributors', 'contributor' );
 
             if ( class_exists( 'Pedagogy_CF_Starter' ) ) {
                 foreach ( $creator_field_candidates as $creator_field ) {
@@ -596,13 +602,37 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
                     if ( is_array( $defs ) ) {
                         foreach ( $defs as $field_name => $field_def ) {
                             $field_title = isset( $field_def['title'] ) ? strtolower( trim( $field_def['title'] ) ) : '';
-                            if ( false === strpos( $field_title, 'creator' ) && false === strpos( $field_title, 'people' ) && false === strpos( $field_title, 'contributor' ) ) {
+                            if ( false === strpos( $field_title, 'creator' ) && false === strpos( $field_title, 'people' ) ) {
                                 continue;
                             }
 
                             $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
                             if ( '' !== $candidate_value && null !== $candidate_value ) {
                                 $creator_raw_values = array_merge( $creator_raw_values, pcf_value_to_list( $candidate_value ) );
+                            }
+                        }
+                    }
+                }
+
+                foreach ( $contributor_field_candidates as $contributor_field ) {
+                    $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $contributor_field );
+                    if ( '' !== $candidate_value && null !== $candidate_value ) {
+                        $contributor_raw_values = array_merge( $contributor_raw_values, pcf_value_to_list( $candidate_value ) );
+                    }
+                }
+
+                if ( empty( $contributor_raw_values ) ) {
+                    $defs = get_option( Pedagogy_CF_Starter::OPTION_KEY, array() );
+                    if ( is_array( $defs ) ) {
+                        foreach ( $defs as $field_name => $field_def ) {
+                            $field_title = isset( $field_def['title'] ) ? strtolower( trim( $field_def['title'] ) ) : '';
+                            if ( false === strpos( $field_title, 'contributor' ) ) {
+                                continue;
+                            }
+
+                            $candidate_value = Pedagogy_CF_Starter::get_value( $post_id, $field_name );
+                            if ( '' !== $candidate_value && null !== $candidate_value ) {
+                                $contributor_raw_values = array_merge( $contributor_raw_values, pcf_value_to_list( $candidate_value ) );
                             }
                         }
                     }
@@ -622,8 +652,23 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
                 }
             }
 
+            if ( empty( $contributor_raw_values ) ) {
+                foreach ( $contributor_field_candidates as $contributor_field ) {
+                    $candidate_value = get_post_meta( $post_id, 'pcf_' . $contributor_field, true );
+                    if ( '' === $candidate_value || null === $candidate_value ) {
+                        $candidate_value = get_post_meta( $post_id, $contributor_field, true );
+                    }
+
+                    if ( '' !== $candidate_value && null !== $candidate_value ) {
+                        $contributor_raw_values = array_merge( $contributor_raw_values, pcf_value_to_list( $candidate_value ) );
+                    }
+                }
+            }
+
             $creator_raw_values = array_values( array_unique( array_filter( $creator_raw_values, 'strlen' ) ) );
+            $contributor_raw_values = array_values( array_unique( array_filter( $contributor_raw_values, 'strlen' ) ) );
             $creator_raw = implode( ', ', $creator_raw_values );
+            $contributor_raw = implode( ', ', $contributor_raw_values );
 
             $date_created_raw = class_exists( 'Pedagogy_CF_Starter' ) ? Pedagogy_CF_Starter::get_value( $post_id, 'date_created' ) : '';
             if ( '' === $date_created_raw || null === $date_created_raw ) {
@@ -642,6 +687,9 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
             }
 
             $creator_display = pcf_normalize_value( $creator_raw );
+            $contributor_display = pcf_normalize_value( $contributor_raw );
+            $creator_label = ( 1 === count( $creator_raw_values ) ) ? esc_html__( 'Creator', 'twentytwentyfive' ) : esc_html__( 'Creators', 'twentytwentyfive' );
+            $contributor_label = ( 1 === count( $contributor_raw_values ) ) ? esc_html__( 'Contributor', 'twentytwentyfive' ) : esc_html__( 'Contributors', 'twentytwentyfive' );
             $date_created_display = pcf_normalize_value( $date_created_raw );
             $year_display = pcf_normalize_value( $year_raw );
 
@@ -690,7 +738,7 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
                         if ( in_array( $label_key, array( 'media embed', 'people', 'creator', 'creators', 'contributor', 'contributors', 'description', 'date created', 'year', 'teaching note' ), true ) ) {
                             continue;
                         }
-                        $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link' ), true ) );
+                        $is_link = ( isset( $def['type'] ) && in_array( $def['type'], array( 'linked', 'url', 'link', 'option_links' ), true ) );
                         $is_top_meta_item = in_array( $name, array( 'material_type' ), true )
                             || false !== strpos( $label_key, 'material type' )
                             ;
@@ -713,7 +761,11 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
 
             $identity_meta_items = array();
             if ( '' !== $creator_display ) {
-                $identity_meta_items['Creator(s)'] = esc_html( $creator_display );
+                $identity_meta_items[ $creator_label ] = esc_html( $creator_display );
+            }
+
+            if ( '' !== $contributor_display ) {
+                $identity_meta_items[ $contributor_label ] = esc_html( $contributor_display );
             }
 
             if ( '' !== $date_display ) {
@@ -792,8 +844,12 @@ if ( ! $pcf_news_template_mode && is_singular( 'post' ) ) {
                                            <div class="pcf-single-column pcf-single-column-description">
                                        <div class="author-meta">
                                         <?php if ( '' !== $creator_display ) : ?>
-                                            <div class="pcf-description-label"><?php esc_html_e( 'Creator(s)', 'twentytwentyfive' ); ?></div>
+                                            <div class="pcf-description-label"><?php echo esc_html( $creator_label ); ?></div>
                                             <div class="pcf-description-value"><?php echo esc_html( $creator_display ); ?></div>
+                                        <?php endif; ?>
+                                        <?php if ( '' !== $contributor_display ) : ?>
+                                            <div class="pcf-description-label pcf-contributor-label"><?php echo esc_html( $contributor_label ); ?></div>
+                                            <div class="pcf-description-value"><?php echo esc_html( $contributor_display ); ?></div>
                                         <?php endif; ?>
                                     </div>
                                         <div class="pcf-description-label ">Description</div>

@@ -11,7 +11,7 @@ RequiresPHP: 5.6
 Latest Change: 1.13.12
 */
 // @codingStandardsIgnoreEnd
-// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch, WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
 if (!defined('UPDRAFTPLUS_DIR')) die('No direct access allowed');
 
 if (!class_exists('UpdraftPlus_RemoteStorage_Addons_Base_v2')) updraft_try_include_file('methods/addon-base-v2.php', 'require_once');
@@ -855,9 +855,15 @@ class UpdraftPlus_Addons_RemoteStorage_azure extends UpdraftPlus_RemoteStorage_A
 	 */
 	public function get_template_properties() {
 		global $updraftplus_admin;
+		/* translators: 1: Service name, 2: Required PHP module name */
+		$module_warning = sprintf(__("Your web server's PHP installation does not included a <strong>required</strong> (for %1\$s) module (%2\$s).", 'updraftplus'), 'Azure', 'php-xml - SimpleXMLElement');
+		$warning_label = __('Warning', 'updraftplus');
+		$contact_host = __("Please contact your web hosting provider's support and ask for them to enable it.", 'updraftplus');
+		$simplexmlelement_missing_message = '<strong>'.$warning_label.':</strong> '.$module_warning.' '.$contact_host;
+
 		$properties = array(
 			'storage_image_url' => UPDRAFTPLUS_URL.'/images/azure.png',
-			'simplexmlelement_existence_label' => !apply_filters('updraftplus_azure_simplexmlelement_exists', class_exists('SimpleXMLElement')) ? wp_kses($updraftplus_admin->show_double_warning('<strong>'.__('Warning', 'updraftplus').':</strong> '.sprintf(__("Your web server's PHP installation does not included a <strong>required</strong> (for %s) module (%s).", 'updraftplus'), 'Azure', 'php-xml - SimpleXMLElement').' '.__("Please contact your web hosting provider's support and ask for them to enable it.", 'updraftplus'), 'azure', false), $this->allowed_html_for_content_sanitisation()) : '',
+			'simplexmlelement_existence_label' => !apply_filters('updraftplus_azure_simplexmlelement_exists', class_exists('SimpleXMLElement')) ? wp_kses($updraftplus_admin->show_double_warning($simplexmlelement_missing_message, 'azure', false), $this->allowed_html_for_content_sanitisation()) : '',
 			'credentials_creation_link_text' => __('Create Azure credentials in your Azure developer console.', 'updraftplus'),
 			'configuration_helper_link_text' => __('For more detailed instructions, follow this link.', 'updraftplus'),
 			'input_account_name_label' => sprintf(__('%s Account Name', 'updraftplus'), __('Azure', 'updraftplus')),
@@ -867,7 +873,15 @@ class UpdraftPlus_Addons_RemoteStorage_azure extends UpdraftPlus_RemoteStorage_A
 			'input_key_type' => apply_filters('updraftplus_admin_secret_field_type', 'password'),
 			'input_key_placeholder' => __('Enter your account key', 'updraftplus'),
 			'input_container_label' => sprintf(__('%s Container', 'updraftplus'), __('Azure', 'updraftplus')),
-			'input_container_title' => sprintf(__('Enter the path of the %s you wish to use here.', 'updraftplus'), 'container').' '.sprintf(__('If the %s does not already exist, then it will be created.'), 'container'),
+			'input_container_title' => sprintf(
+				/* translators: %s: Untranslated string "container". */
+				__('Enter the path of the %s you wish to use here.', 'updraftplus'),
+				'container'
+			).' '.sprintf(
+				/* translators: %s: Untranslated string "container". */
+				__('If the %s does not already exist, then it will be created.', 'updraftplus'),
+				'container'
+			),
 			'input_container_link_text' => __("See Microsoft's guidelines on container naming by following this link.", 'updraftplus'),
 			'input_container_placeholder' => __('Enter your container name', 'updraftplus'),
 			'input_prefix_label' => wp_kses(sprintf(__('%s Prefix', 'updraftplus'), __('Azure', 'updraftplus')).' <em>('.__('optional', 'updraftplus').')</em>', $this->allowed_html_for_content_sanitisation()),

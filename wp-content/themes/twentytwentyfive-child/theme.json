@@ -9,44 +9,49 @@
 			"defaultPalette": false,
 			"palette": [
 				{
-					"color": "#FFFFFF",
-					"name": "Base",
-					"slug": "base"
+					"color": "#36103a",
+					"name": "Deep Void",
+					"slug": "deep-void"
 				},
 				{
-					"color": "#111111",
-					"name": "Contrast",
-					"slug": "contrast"
+					"color": "#6e4478",
+					"name": "Galaxy Purple",
+					"slug": "galaxy-purple"
 				},
 				{
-					"color": "#FFEE58",
-					"name": "Accent 1",
-					"slug": "accent-1"
+					"color": "#d89f36",
+					"name": "Sun Beam",
+					"slug": "sun-beam"
 				},
 				{
-					"color": "#F6CFF4",
-					"name": "Accent 2",
-					"slug": "accent-2"
+					"color": "#d26b5b",
+					"name": "Solar Coral",
+					"slug": "solar-coral"
 				},
 				{
-					"color": "#503AA8",
-					"name": "Accent 3",
-					"slug": "accent-3"
+					"color": "#443326",
+					"name": "Moon Gravel",
+					"slug": "moon-gravel"
 				},
 				{
-					"color": "#686868",
-					"name": "Accent 4",
-					"slug": "accent-4"
+					"color": "#84684f",
+					"name": "Bronze Orbit",
+					"slug": "bronze-orbit"
 				},
 				{
-					"color": "#FBFAF3",
-					"name": "Accent 5",
-					"slug": "accent-5"
+					"color": "#bfa47f",
+					"name": "Solar Sand",
+					"slug": "solar-sand"
 				},
 				{
-					"color": "color-mix(in srgb, currentColor 20%, transparent)",
-					"name": "Accent 6",
-					"slug": "accent-6"
+					"color": "#ddc8aa",
+					"name": "Moonlit Sand",
+					"slug": "moonlit-sand"
+				},
+				{
+					"color": "#efe3d1",
+					"name": "Cosmic Canvas",
+					"slug": "cosmic-canvas"
 				}
 			]
 		},
@@ -152,34 +157,14 @@
 			],
 			"fontFamilies": [
 				{
-					"name": "Manrope",
-					"slug": "manrope",
-					"fontFamily": "Manrope, \"Noto Sans\", \"Noto Sans Symbols 2\", \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", sans-serif",
-					"fontFace": [
-						{
-							"src": [
-								"file:./assets/fonts/manrope/Manrope-VariableFont_wght.woff2"
-							],
-							"fontWeight": "200 800",
-							"fontStyle": "normal",
-							"fontFamily": "Manrope"
-						}
-					]
+					"name": "Lexend",
+					"slug": "lexend",
+					"fontFamily": "\"Lexend\", \"Noto Sans\", \"Noto Sans Symbols 2\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", sans-serif"
 				},
 				{
-					"name": "Fira Code",
-					"slug": "fira-code",
-					"fontFamily": "\"Fira Code\", monospace",
-					"fontFace": [
-						{
-							"src": [
-								"file:./assets/fonts/fira-code/FiraCode-VariableFont_wght.woff2"
-							],
-							"fontWeight": "300 700",
-							"fontStyle": "normal",
-							"fontFamily": "\"Fira Code\""
-						}
-					]
+					"name": "Lora",
+					"slug": "lora",
+					"fontFamily": "\"Lora\", \"Noto Serif\", Georgia, \"Times New Roman\", \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", serif"
 				}
 			]
 		},
@@ -187,8 +172,8 @@
 	},
 	"styles": {
 		"color": {
-			"background": "var:preset|color|base",
-			"text": "var:preset|color|contrast"
+			"background": "var:preset|color|cosmic-canvas",
+			"text": "var:preset|color|deep-void"
 		},
 		"spacing": {
 			"blockGap": "1.2rem",
@@ -198,7 +183,7 @@
 			}
 		},
 		"typography": {
-			"fontFamily": "var:preset|font-family|manrope",
+			"fontFamily": "var:preset|font-family|lexend",
 			"fontSize": "var:preset|font-size|large",
 			"fontWeight": "300",
 			"letterSpacing": "-0.1px",
@@ -217,7 +202,7 @@
 							"color": "currentColor",
 							"width": "1px"
 						},
-						"css": ".wp-block-button__link:not(.has-background):hover {background-color:color-mix(in srgb, var(--wp--preset--color--contrast) 5%, transparent);}",
+						"css": ".wp-block-button__link:not(.has-background):hover {background-color:color-mix(in srgb, var(--wp--preset--color--deep-void) 5%, transparent);}",
 						"spacing": {
 							"padding": {
 								"bottom": "calc(1rem - 1px)",
@@ -241,13 +226,13 @@
 			},
 			"core/code": {
 				"typography": {
-					"fontFamily": "var:preset|font-family|fira-code",
+					"fontFamily": "var:preset|font-family|lexend",
 					"fontSize": "var:preset|font-size|medium",
 					"fontWeight": "300"
 				},
 				"color": {
-					"background": "var:preset|color|accent-5",
-					"text": "var:preset|color|contrast"
+					"background": "var:preset|color|moonlit-sand",
+					"text": "var:preset|color|deep-void"
 				},
 				"spacing": {
 					"padding": {
@@ -260,12 +245,12 @@
 			},
 			"core/comment-author-name": {
 				"color": {
-					"text": "var:preset|color|accent-4"
+					"text": "var:preset|color|moon-gravel"
 				},
 				"elements": {
 					"link": {
 						"color": {
-							"text": "var:preset|color|accent-4"
+							"text": "var:preset|color|moon-gravel"
 						},
 						"typography": {
 							"textDecoration": "none"
@@ -303,12 +288,12 @@
 					"fontSize": "var:preset|font-size|small"
 				},
 				"color": {
-					"text": "var:preset|color|contrast"
+					"text": "var:preset|color|deep-void"
 				},
 				"elements": {
 					"link": {
 						"color": {
-							"text": "var:preset|color|contrast"
+							"text": "var:preset|color|deep-void"
 						}
 					}
 				}
@@ -317,7 +302,7 @@
 				"elements": {
 					"link": {
 						"color": {
-							"text": "var:preset|color|contrast"
+							"text": "var:preset|color|deep-void"
 						}
 					}
 				},
@@ -329,7 +314,7 @@
 				"elements": {
 					"link": {
 						"color": {
-							"text": "var:preset|color|contrast"
+							"text": "var:preset|color|deep-void"
 						}
 					}
 				},
@@ -338,7 +323,7 @@
 				}
 			},
 			"core/post-comments-form": {
-				"css": "& textarea, input:not([type=submit]){border-radius:.25rem; border-color: var(--wp--preset--color--accent-6) !important;} & input[type=checkbox]{margin:0 .2rem 0 0 !important;} & label {font-size: var(--wp--preset--font-size--small); }",
+				"css": "& textarea, input:not([type=submit]){border-radius:.25rem; border-color: var(--wp--preset--color--solar-sand) !important;} & input[type=checkbox]{margin:0 .2rem 0 0 !important;} & label {font-size: var(--wp--preset--font-size--small); }",
 				"typography": {
 					"fontSize": "var:preset|font-size|medium"
 				},
@@ -377,12 +362,12 @@
 			},
 			"core/post-date": {
 				"color":{
-					"text": "var:preset|color|accent-4"
+					"text": "var:preset|color|moon-gravel"
 				},
 				"elements": {
 					"link": {
 						"color" : {
-							"text": "var:preset|color|accent-4"
+							"text": "var:preset|color|moon-gravel"
 						},
 						":hover": {
 							"typography": {
@@ -506,7 +491,7 @@
 				}
 			},
 			"core/search": {
-				"css": "& .wp-block-search__input{border-radius:3.125rem;padding-left:1.5625rem;padding-right:1.5625rem;border-color:var(--wp--preset--color--accent-6);}",
+				"css": "& .wp-block-search__input{border-radius:3.125rem;padding-left:1.5625rem;padding-right:1.5625rem;border-color:var(--wp--preset--color--solar-sand);}",
 				"typography": {
 					"fontSize": "var:preset|font-size|medium",
 					"lineHeight": "1.6"
@@ -536,7 +521,7 @@
 					"width": "0 0 1px 0"
 				},
 				"color": {
-					"text": "var:preset|color|accent-6"
+					"text": "var:preset|color|solar-sand"
 				},
 				"variations": {
 					"wide": {
@@ -596,19 +581,19 @@
 		"elements": {
 			"button": {
 				"color": {
-					"background": "var:preset|color|contrast",
-					"text": "var:preset|color|base"
+					"background": "var:preset|color|deep-void",
+					"text": "var:preset|color|cosmic-canvas"
 				},
 				":focus": {
 					"outline": {
-						"color": "var:preset|color|accent-4",
+						"color": "var:preset|color|moon-gravel",
 						"offset": "2px"
 					}
 				},
 				":hover": {
 					"color": {
-						"background": "color-mix(in srgb, var(--wp--preset--color--contrast) 85%, transparent)",
-						"text": "var:preset|color|base"
+						"background": "color-mix(in srgb, var(--wp--preset--color--deep-void) 85%, transparent)",
+						"text": "var:preset|color|cosmic-canvas"
 					},
 					"border": {
 						"color": "transparent"
@@ -668,6 +653,7 @@
 			},
 			"heading": {
 				"typography": {
+					"fontFamily": "var:preset|font-family|lora",
 					"fontWeight": "400",
 					"lineHeight": "1.125",
 					"letterSpacing": "-0.1px"
@@ -728,6 +714,11 @@
 			"name": "page-no-title",
 			"postTypes": ["page"],
 			"title": "Page No Title"
+		},
+		{
+			"name": "page-post-cards",
+			"postTypes": ["page"],
+			"title": "Teaching Materials Library"
 		}
 	]
 }

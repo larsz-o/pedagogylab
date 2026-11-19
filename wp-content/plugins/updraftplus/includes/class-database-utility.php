@@ -180,7 +180,7 @@ class UpdraftPlus_Database_Utility {
 			return false === $res ? null : $res;
 		}
 	}
-
+	
 	/**
 	 * Whether the SQL is well-formed and complete in relation to balanced quotes, brackets, backticks and comments. This is *not* a complete SQL parser; its aim is to detect and fail unfinished SQL statements. It does not look at delimiters.
 	 *
@@ -324,15 +324,17 @@ class UpdraftPlus_Database_Utility {
 	public static function get_sql_modes($db_handle = null) {
 
 		if (is_null($db_handle)) {
-			$modes = $GLOBALS['wpdb']->get_var('SELECT @@SESSION.sql_mode');
+			$modes = $GLOBALS['wpdb']->get_row('SELECT @@SESSION.sql_mode', ARRAY_N);
+			if (is_array($modes)) $modes = $modes[0];
 		} elseif (is_a($db_handle, 'WPDB')) {
-			$modes = $db_handle->get_var('SELECT @@SESSION.sql_mode');
+			$modes = $db_handle->get_row('SELECT @@SESSION.sql_mode', ARRAY_N);
+			if (is_array($modes)) $modes = $modes[0];
 		} else {
 			$modes = call_user_func_array(array(__CLASS__, 'get_system_variable'), array('sql_mode', $db_handle));
 		}
 		
 		if (is_scalar($modes) && !is_bool($modes)) {
-			return array_map('strtoupper', explode(',', $modes));
+			return '' === $modes ? array() : array_map('strtoupper', explode(',', $modes));
 		}
 		
 		return false;

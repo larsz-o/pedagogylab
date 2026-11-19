@@ -1,0 +1,214 @@
+0000.000 (0) Opened log file at time: Thu, 19 Nov 2026 20:07:14 +0000 on http://pedagogy-lab.local
+0000.001 (0) UpdraftPlus WordPress backup plugin (https://updraftplus.com): 2.26.16.26 WP: 7.1.3 PHP: 8.2.29 (fpm-fcgi, Darwin Larss-Air 23.5.0 Darwin Kernel Version 23.5.0: Wed May  1 20:14:59 PDT 2024; root:xnu-10063.121.3~5/RELEASE_ARM64_T8122 arm64) MySQL: 8.4.0 (max packet size=1073741824) WPLANG: en_US Server: nginx/1.26.1 safe_mode: 0 max_execution_time: 900 memory_limit: 256M (used: 3.9M | 6M) multisite: N openssl: OpenSSL 3.5.1 1 Jul 2025 mcrypt: N LANG:  WP Proxy: disabled ZipArchive::addFile: Y
+0000.001 (0) Free space on disk containing Updraft's temporary directory: 102073 MB
+0000.006 (0) Tasks: Backup files: 1 (schedule: weekly) Backup DB: 1 (schedule: weekly)
+0000.007 (0) Requesting semaphore lock (fd) (apparently not via scheduler)
+0000.011 (0) Set semaphore last lock (fd) time to 2026-11-19 20:07:14
+0000.012 (0) Semaphore lock (fd) complete
+0000.014 (0) Backup run: resumption=0, nonce=033c8dad4af0, file_nonce=033c8dad4af0 begun at=1795118834 (0s ago), job type=backup, label=Automatic backup before update
+0000.015 (0) Scheduling a resumption (1) after 300 seconds (1795119134) in case this run gets aborted
+0000.016 (0) Checking if we have a zip executable available
+0000.016 (0) Testing: /usr/bin/zip
+0000.035 (0) Output: zip warning: binziptest/test.zip not found or empty
+0000.036 (0) Output: adding: binziptest/subdir1/	(in=0) (out=0) (stored 0%)
+0000.037 (0) Output: adding: binziptest/subdir1/subdir2/	(in=0) (out=0) (stored 0%)
+0000.037 (0) Output: adding: binziptest/subdir1/subdir2/test.html	(in=144) (out=114) (deflated 21%)
+0000.037 (0) Output: total bytes=144, compressed=114 -> 21% savings
+0000.046 (0) Output: adding: binziptest/subdir1/subdir2/test2.html	(in=151) (out=118) (deflated 22%)
+0000.047 (0) Output: total bytes=295, compressed=232 -> 21% savings
+0000.050 (0) Creation of backups of directories: beginning
+0000.051 (0) No backup of plugins: excluded by user's options
+0000.051 (0) No backup of themes: excluded by user's options
+0000.051 (0) No backup of uploads: excluded by user's options
+0000.052 (0) No backup of mu-plugins: excluded by user's options
+0000.053 (0) Beginning creation of dump of wpcore (split every: 400 MB)
+0000.176 (0) Total entities for the zip file: 411 directories, 3337 files (0 skipped as non-modified), 90.8 MB
+0000.180 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 100 files added (on-disk size: 0 KB)
+0000.183 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 200 files added (on-disk size: 0 KB)
+0000.185 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 300 files added (on-disk size: 0 KB)
+0000.188 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 400 files added (on-disk size: 0 KB)
+0000.191 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 500 files added (on-disk size: 0 KB)
+0000.194 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 600 files added (on-disk size: 0 KB)
+0000.197 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 700 files added (on-disk size: 0 KB)
+0000.199 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 800 files added (on-disk size: 0 KB)
+0000.202 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 900 files added (on-disk size: 0 KB)
+0000.205 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1000 files added (on-disk size: 0 KB)
+0000.205 (0) Adding batch to zip file (UpdraftPlus_ZipArchive): over 1000 files added on this batch (10.2 MB, 3337 files batched, 1001 (1001) added so far); re-opening (prior size: 0 KB)
+0000.892 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1100 files added (on-disk size: 3013.5 KB)
+0000.895 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1200 files added (on-disk size: 3013.5 KB)
+0000.898 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1300 files added (on-disk size: 3013.5 KB)
+0000.901 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1400 files added (on-disk size: 3013.5 KB)
+0000.904 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1500 files added (on-disk size: 3013.5 KB)
+0000.907 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1600 files added (on-disk size: 3013.5 KB)
+0000.910 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1700 files added (on-disk size: 3013.5 KB)
+0000.913 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1800 files added (on-disk size: 3013.5 KB)
+0000.916 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 1900 files added (on-disk size: 3013.5 KB)
+0000.918 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2000 files added (on-disk size: 3013.5 KB)
+0000.918 (0) Adding batch to zip file (UpdraftPlus_ZipArchive): over 1000 files added on this batch (10.7 MB, 3337 files batched, 1001 (2002) added so far); re-opening (prior size: 3013.5 KB)
+0001.639 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2100 files added (on-disk size: 5449.4 KB)
+0001.642 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2200 files added (on-disk size: 5449.4 KB)
+0001.645 (0) Adding batch to zip file (UpdraftPlus_ZipArchive): over 25 MB added on this batch (25.3 MB, 3337 files batched, 292 (2294) added so far); re-opening (prior size: 5449.4 KB)
+0003.634 (0) A useful amount of data was added after this amount of zip processing: 3 s (normalised: 2.9 s, rate: 8756.1 KB/s)
+0003.636 (0) Performance is good - will increase the amount of data we attempt to batch (time=2.9614119529724, normalised_time=2.9236650839238, max_time=3.6350300312042, data points known=1, old_max_bytes=26214400, new_max_bytes=53797680)
+0003.639 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2300 files added (on-disk size: 11319.6 KB)
+0003.642 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2400 files added (on-disk size: 11319.6 KB)
+0003.645 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2500 files added (on-disk size: 11319.6 KB)
+0003.648 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2600 files added (on-disk size: 11319.6 KB)
+0003.651 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2700 files added (on-disk size: 11319.6 KB)
+0003.654 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2800 files added (on-disk size: 11319.6 KB)
+0003.657 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 2900 files added (on-disk size: 11319.6 KB)
+0003.661 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 3000 files added (on-disk size: 11319.6 KB)
+0003.665 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 3100 files added (on-disk size: 11319.6 KB)
+0003.668 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 3200 files added (on-disk size: 11319.6 KB)
+0003.671 (0) Adding batch to zip file (UpdraftPlus_ZipArchive): over 1000 files added on this batch (44.1 MB, 3337 files batched, 1001 (3295) added so far); re-opening (prior size: 11319.6 KB)
+0008.351 (0) Zip: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.tmp: 3300 files added (on-disk size: 22972.7 KB)
+0008.743 (0) Creating zip file manifest (backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.list-temp.tmp)
+0008.753 (0) Successfully created zip file manifest (size: 185378)
+0009.013 (0) Created wpcore zip (0) - 23110.8 KB in 9 s (2579.5 KB/s) (sha1: 92e7cbcd948444b1f2087e8ebcb6158b78fd4eae, sha256: 735f786637b85f711666c4d73c11d1192bf9a8c64cad792ec6e3a0a88627c3f2)
+0009.016 (0) Cloud backup selection (1/1): none with instance (1/1) (last)
+0009.017 (0) No remote despatch: user chose no remote backup service
+0009.017 (0) Recording as successfully uploaded: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip
+0009.018 (0) Deleting zip manifest (backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip.list.tmp)
+0009.019 (0) Retain: beginning examination of existing backup sets; user setting: retain_files=2, retain_db=2
+0009.020 (0) Number of backup sets in history: 6; groups (db): 1
+0009.021 (0) Examining (for databases) backup set with group_id=0, nonce=771887c66c23, datestamp=1795118619 (Nov 19 2026 20:03:39)
+0009.021 (0) Examining (for databases) backup set with group_id=0, nonce=07e9dd319749, datestamp=1795118040 (Nov 19 2026 19:54:00)
+0009.021 (0) Examining (for databases) backup set with group_id=0, nonce=6d08bc77281d, datestamp=1795026863 (Nov 18 2026 18:34:23)
+0009.021 (0) This backup set (1795026863) was an automatic backup, and we have not yet reached any retain limits, so it will not be counted or pruned. Skipping.
+0009.021 (0) Examining (for databases) backup set with group_id=0, nonce=2faa5e3e7f6c, datestamp=1795018860 (Nov 18 2026 16:21:00)
+0009.021 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.022 (0) Examining (for databases) backup set with group_id=0, nonce=412ecb344f3c, datestamp=1795001040 (Nov 18 2026 11:24:00)
+0009.022 (0) Examining (for databases) backup set with group_id=0, nonce=1a694ae15d59, datestamp=1793149211 (Oct 28 2026 01:00:11)
+0009.022 (0) Number of backup sets in history: 6; groups (files): 1
+0009.022 (0) Examining (for files) backup set with nonce=771887c66c23, datestamp=1795118619 (Nov 19 2026 20:03:39)
+0009.022 (0) plugins: 1795118619: was sent to remote site; will remove from local record (only)
+0009.023 (0) This backup set is now empty; will remove from history
+0009.023 (0) Deleting log file (log.771887c66c23.txt)
+0009.024 (0) Examining (for files) backup set with nonce=07e9dd319749, datestamp=1795118040 (Nov 19 2026 19:54:00)
+0009.024 (0) plugins: 1795118040: was sent to remote site; will remove from local record (only)
+0009.025 (0) themes: 1795118040: was sent to remote site; will remove from local record (only)
+0009.025 (0) uploads: 1795118040: was sent to remote site; will remove from local record (only)
+0009.025 (0) mu-plugins: 1795118040: was sent to remote site; will remove from local record (only)
+0009.026 (0) others: 1795118040: was sent to remote site; will remove from local record (only)
+0009.026 (0) This backup set is now empty; will remove from history
+0009.027 (0) Deleting log file (log.07e9dd319749.txt)
+0009.028 (0) Examining (for files) backup set with nonce=6d08bc77281d, datestamp=1795026863 (Nov 18 2026 18:34:23)
+0009.028 (0) This backup set (1795026863) was an automatic backup, and we have not yet reached any retain limits, so it will not be counted or pruned. Skipping.
+0009.028 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.028 (0) Examining (for files) backup set with nonce=2faa5e3e7f6c, datestamp=1795018860 (Nov 18 2026 16:21:00)
+0009.028 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.028 (0) Examining (for files) backup set with nonce=412ecb344f3c, datestamp=1795001040 (Nov 18 2026 11:24:00)
+0009.028 (0) This backup set remains non-empty (f=1/d=0); will retain in history
+0009.029 (0) Examining (for files) backup set with nonce=1a694ae15d59, datestamp=1793149211 (Oct 28 2026 01:00:11)
+0009.029 (0) This backup set remains non-empty (f=1/d=0); will retain in history
+0009.029 (0) Retain: saving new backup history (sets now: 4) and finishing retain operation
+0009.031 (0) No backup of others: excluded by user's options
+0009.031 (0) No backup of more: excluded by user's options
+0009.033 (0) Saving backup status to database (elements: 2)
+0009.034 (0) Beginning creation of database dump (WordPress DB)
+0009.036 (0) SQL compatibility mode is now: NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+0009.050 (0) Table wp_options: Total expected rows (via COUNT): 281
+0009.050 (0) Table is relatively small; fetch_rows will thus be: 500 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0009.150 (0) Table wp_options: Rows added in this batch (next record: 2346): 277 (uncompressed bytes in this segment=5190185) in 0.11 seconds
+0009.153 (0) Table wp_options: finishing file(s) (2, 664 KB)
+0009.156 (0) Table wp_users: Total expected rows (via COUNT): 2
+0009.156 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0009.157 (0) Table wp_users: Rows added in this batch (next record: 2): 2 (uncompressed bytes in this segment=1817) in 0.00 seconds
+0009.158 (0) Table wp_users: finishing file(s) (2, 0.8 KB)
+0009.161 (0) Table wp_usermeta: Total expected rows (via COUNT): 41
+0009.161 (0) Table is relatively small; fetch_rows will thus be: 50 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0009.162 (0) Table wp_usermeta: Rows added in this batch (next record: 41): 41 (uncompressed bytes in this segment=4348) in 0.00 seconds
+0009.165 (0) Table wp_usermeta: finishing file(s) (2, 1.8 KB)
+0009.176 (0) Table wp_commentmeta: Total expected rows (via COUNT): 0
+0009.177 (0) Table wp_commentmeta: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=721) in 0.01 seconds
+0009.180 (0) Table wp_commentmeta: finishing file(s) (2, 0.4 KB)
+0009.184 (0) Table wp_comments: Total expected rows (via COUNT): 0
+0009.186 (0) Table wp_comments: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=1878) in 0.00 seconds
+0009.187 (0) Table wp_comments: finishing file(s) (2, 0.5 KB)
+0009.192 (0) Table wp_links: Total expected rows (via COUNT): 0
+0009.192 (0) Table wp_links: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=1496) in 0.00 seconds
+0009.194 (0) Table wp_links: finishing file(s) (2, 0.5 KB)
+0009.197 (0) Table wp_postmeta: Total expected rows (via COUNT): 363
+0009.197 (0) Table is relatively small; fetch_rows will thus be: 500 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0009.201 (0) Table wp_postmeta: Rows added in this batch (next record: 1817): 363 (uncompressed bytes in this segment=114396) in 0.01 seconds
+0009.203 (0) Table wp_postmeta: finishing file(s) (2, 15.3 KB)
+0009.261 (0) Table wp_posts: Total expected rows (via COUNT): 1189
+0009.380 (0) Table wp_posts: Rows added in this batch (next record: 1451): 1189 (uncompressed bytes in this segment=8510156) in 0.18 seconds
+0009.383 (0) Table wp_posts: finishing file(s) (2, 395.9 KB)
+0009.386 (0) Table wp_term_relationships: Total expected rows (approximate): 200
+0009.387 (0) Table wp_term_relationships: Rows added in this batch (next record: 100000): 200 (uncompressed bytes in this segment=3826) in 0.00 seconds
+0009.391 (0) Table wp_term_relationships: finishing file(s) (2, 0.9 KB)
+0009.395 (0) Table wp_term_taxonomy: Total expected rows (via COUNT): 16
+0009.395 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0009.396 (0) Table wp_term_taxonomy: Rows added in this batch (next record: 16): 16 (uncompressed bytes in this segment=1463) in 0.00 seconds
+0009.398 (0) Table wp_term_taxonomy: finishing file(s) (2, 0.6 KB)
+0009.402 (0) Table wp_termmeta: Total expected rows (via COUNT): 0
+0009.403 (0) Table wp_termmeta: Rows added in this batch (next record: -1): 0 (uncompressed bytes in this segment=694) in 0.00 seconds
+0009.404 (0) Table wp_termmeta: finishing file(s) (2, 0.4 KB)
+0009.407 (0) Table wp_terms: Total expected rows (via COUNT): 16
+0009.407 (0) Table is relatively small; fetch_rows will thus be: 20 (allow_further_reductions=1, is_first_fetch=1, known_bigger_than_table=1)
+0009.408 (0) Table wp_terms: Rows added in this batch (next record: 16): 16 (uncompressed bytes in this segment=1410) in 0.00 seconds
+0009.409 (0) Table wp_terms: finishing file(s) (2, 0.7 KB)
+0009.410 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_options.table.tmpr2347.gz (1/12/fopen): adding to final database dump
+0009.418 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_options.table.gz (2/12/fopen): adding to final database dump
+0009.418 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_users.table.tmpr3.gz (3/12/fopen): adding to final database dump
+0009.419 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_users.table.gz (4/12/fopen): adding to final database dump
+0009.419 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_usermeta.table.tmpr42.gz (5/12/fopen): adding to final database dump
+0009.419 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_usermeta.table.gz (6/12/fopen): adding to final database dump
+0009.420 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_commentmeta.table.tmpr0.gz (7/12/fopen): adding to final database dump
+0009.420 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_commentmeta.table.gz (8/12/fopen): adding to final database dump
+0009.420 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_comments.table.tmpr0.gz (9/12/fopen): adding to final database dump
+0009.420 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_comments.table.gz (10/12/fopen): adding to final database dump
+0009.421 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_links.table.tmpr0.gz (11/12/fopen): adding to final database dump
+0009.421 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_links.table.gz (12/12/fopen): adding to final database dump
+0009.421 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_postmeta.table.tmpr1818.gz (13/12/fopen): adding to final database dump
+0009.422 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_postmeta.table.gz (14/12/fopen): adding to final database dump
+0009.422 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_posts.table.tmpr1452.gz (15/12/fopen): adding to final database dump
+0009.426 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_posts.table.gz (16/12/fopen): adding to final database dump
+0009.427 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_term_relationships.table.tmpr100001.gz (17/12/fopen): adding to final database dump
+0009.427 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_term_relationships.table.gz (18/12/fopen): adding to final database dump
+0009.428 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_term_taxonomy.table.tmpr17.gz (19/12/fopen): adding to final database dump
+0009.428 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_term_taxonomy.table.gz (20/12/fopen): adding to final database dump
+0009.428 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_termmeta.table.tmpr0.gz (21/12/fopen): adding to final database dump
+0009.429 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_termmeta.table.gz (22/12/fopen): adding to final database dump
+0009.429 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_terms.table.tmpr17.gz (23/12/fopen): adding to final database dump
+0009.429 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db-table-wp_terms.table.gz (24/12/fopen): adding to final database dump
+0009.434 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db.gz: finished writing out complete database file (1082 KB)
+0009.450 (0) Total database tables backed up: 12 (backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db.gz, size: 1108067, sha1: 4e849316dd701ed8c7aa619e44f17d06d58b7528, sha256: 60b7141cd171d66e4e8313e3c3bd772fb29332b7e31f6ab53214d269df472216)
+0009.453 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-wpcore.zip: wpcore: This file has already been successfully processed
+0009.454 (0) backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db.gz: db: This file has not yet been successfully uploaded: will queue
+0009.454 (0) Saving backup history. Total backup size: 23.6 MB
+0009.455 (0) Requesting upload of the files that have not yet been successfully uploaded (1)
+0009.456 (0) Cloud backup selection (1/1): none with instance (1/1) (last)
+0009.456 (0) No remote despatch: user chose no remote backup service
+0009.456 (0) Recording as successfully uploaded: backup_2026-11-19-2007_The_Pedagogy_Lab_033c8dad4af0-db.gz
+0009.457 (0) Retain: beginning examination of existing backup sets; user setting: retain_files=2, retain_db=2
+0009.457 (0) Number of backup sets in history: 5; groups (db): 1
+0009.458 (0) Examining (for databases) backup set with group_id=0, nonce=033c8dad4af0, datestamp=1795118834 (Nov 19 2026 20:07:14)
+0009.458 (0) This backup set is the backup set just made, so will not be deleted.
+0009.458 (0) Examining (for databases) backup set with group_id=0, nonce=6d08bc77281d, datestamp=1795026863 (Nov 18 2026 18:34:23)
+0009.458 (0) This backup set (1795026863) was an automatic backup, and we have not yet reached any retain limits, so it will not be counted or pruned. Skipping.
+0009.458 (0) Examining (for databases) backup set with group_id=0, nonce=2faa5e3e7f6c, datestamp=1795018860 (Nov 18 2026 16:21:00)
+0009.458 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.458 (0) Examining (for databases) backup set with group_id=0, nonce=412ecb344f3c, datestamp=1795001040 (Nov 18 2026 11:24:00)
+0009.458 (0) Examining (for databases) backup set with group_id=0, nonce=1a694ae15d59, datestamp=1793149211 (Oct 28 2026 01:00:11)
+0009.458 (0) Number of backup sets in history: 5; groups (files): 1
+0009.458 (0) Examining (for files) backup set with nonce=033c8dad4af0, datestamp=1795118834 (Nov 19 2026 20:07:14)
+0009.458 (0) This backup set is the backup set just made, so will not be deleted.
+0009.459 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.459 (0) Examining (for files) backup set with nonce=6d08bc77281d, datestamp=1795026863 (Nov 18 2026 18:34:23)
+0009.459 (0) This backup set (1795026863) was an automatic backup, and we have not yet reached any retain limits, so it will not be counted or pruned. Skipping.
+0009.459 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.459 (0) Examining (for files) backup set with nonce=2faa5e3e7f6c, datestamp=1795018860 (Nov 18 2026 16:21:00)
+0009.459 (0) This backup set remains non-empty (f=1/d=1); will retain in history
+0009.459 (0) Examining (for files) backup set with nonce=412ecb344f3c, datestamp=1795001040 (Nov 18 2026 11:24:00)
+0009.459 (0) This backup set remains non-empty (f=1/d=0); will retain in history
+0009.459 (0) Examining (for files) backup set with nonce=1a694ae15d59, datestamp=1793149211 (Oct 28 2026 01:00:11)
+0009.459 (0) This backup set remains non-empty (f=1/d=0); will retain in history
+0009.459 (0) Retain: saving new backup history (sets now: 5) and finishing retain operation
+0009.460 (0) Resume backup (033c8dad4af0, 0): finish run
+0009.461 (0) Decremented the semaphore (fd) by 1
+0009.461 (0) Semaphore (fd) unlocked
+0009.461 (0) There were no errors in the uploads, so the 'resume' event (1) is being unscheduled
+0009.463 (0) No email will/can be sent - the user has not configured an email address.
+0009.463 (0) The backup succeeded and is now complete

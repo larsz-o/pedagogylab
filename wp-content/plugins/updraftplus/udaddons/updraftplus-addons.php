@@ -63,6 +63,62 @@ class UpdraftPlusAddons2 {
 	private $options;
 
 	/**
+	 * Stores authentication-related information, including user credentials and other login-related details.
+	 *
+	 * @var array
+	 */
+	private $authentication_data = array();
+
+	/**
+	 * Indicate whether the account connected to the server has all the addons
+	 *
+	 * @var bool
+	 */
+	public $have_all_addons = false;
+
+	/**
+	 * Store the addons that are already assigned
+	 *
+	 * @var array
+	 */
+	public $assigned_addons = array();
+
+	/**
+	 * Store errors encountered during connections made to the teamupdraft server
+	 *
+	 * @var array
+	 */
+	public $connection_errors = array();
+
+	/**
+	 * Store addons that are available but have not yet been claimed
+	 *
+	 * @var array
+	 */
+	public $unclaimed_available = array();
+
+	/**
+	 * Indicate whether the plugin is currently connected to teamupdraft.com
+	 *
+	 * @var bool
+	 */
+	public $connected = false;
+
+	/**
+	 * Store the list of expired entitlements.
+	 *
+	 * @var array
+	 */
+	public $expired_entitlements = array();
+
+	/**
+	 * Store the localized connection status data used by the admin scripts.
+	 *
+	 * @var array
+	 */
+	private $udaddonsl10n = array();
+
+	/**
 	 * Constructor
 	 *
 	 * @param String $slug - the plugin's slug
@@ -88,6 +144,7 @@ class UpdraftPlusAddons2 {
 
 		add_action('wp_ajax_udaddons_claimaddon', array($this, 'ajax_udaddons_claimaddon'));
 		add_action('wp_ajax_udmupdater_ajax', array($this, 'ajax_login_and_claim_addons'));
+		add_action('admin_init', array($this, 'connection_init'));
 
 		if (class_exists('UpdraftPlusAddons')) return;
 
@@ -95,6 +152,10 @@ class UpdraftPlusAddons2 {
 
 		// Prevent updates from wordpress.org showing in all circumstances. Run with lower than default priority, to allow later processes to add something.
 		add_filter('site_transient_update_plugins', array($this, 'site_transient_update_plugins'), 9);
+
+		add_action('updraftplus_admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
+		add_action('admin_print_footer_scripts', array($this, 'print_connection_status_template'));
+		add_action('admin_print_footer_scripts', array($this, 'print_connection_status_handlebars_script'));
 
 		// Over-ride update mechanism for the plugin
 		if (is_readable(UPDRAFTPLUS_DIR.'/vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php')) {
@@ -124,6 +185,196 @@ class UpdraftPlusAddons2 {
 
 			$this->move_updraftplus_update_cron();
 		}
+
+		$this->maybe_clear_password();
+	}
+
+	/**
+	 * Prepare the connection status template data.
+	 *
+	 * Collect the current connection status, account information, and add-on entitlement details,
+	 * and prepares the corresponding translatable text strings for use in the connection status template.
+	 *
+	 * Determine whether there are unclaimed purchases, assigned add-ons that have not been installed, or expired entitlements.
+	 *
+	 * @return array The connection status template data.
+	 */
+	public function get_connection_status_template_data() {
+		$unclaimed_addon_text = $expired_but_unclaimed_available = false;
+		if (!isset($this->assigned_addons['all'])) {
+			foreach ($this->unclaimed_available as $key => $unclaimed_info) {
+				if (isset($this->assigned_addons[$key])) continue;
+				if (!empty($this->available_addons[$key]['installed']) && !empty($this->available_addons[$key]['installedversion'])) continue;
+				$unclaimed_addon_text = true;
+				if (!isset($this->expired_entitlements[$key])) continue;
+				$expired_but_unclaimed_available = true; // array_intersect_key($this->expired_entitlements, $this->unclaimed_available);
+				break;
+			}
+		}
+		$all_addons = false;
+		$assigned_not_installed_addon_text = false;
+		$available_addons = (array) $this->available_addons;
+		foreach ($available_addons as $key => $addon) {
+			if ('all' == $key && isset($this->assigned_addons[$key])) {
+				$all_addons = true;
+				continue;
+			}
+			if (!empty($addon['installed']) && !empty($addon['installedversion'])) continue;
+			if ($all_addons || isset($this->assigned_addons[$key])) {
+				$assigned_not_installed_addon_text = true;
+				break;
+			}
+		}
+		$trans = false;
+		$options = $this->get_option(UDADDONS2_SLUG.'_options');
+		if (isset($options['email']) && '' != $options['email']) {
+			$ehash = substr(md5($options['email']), 0, 23);
+			$trans = get_site_transient('udaddons_connect_'.$ehash);
+		}
+		$data = array(
+			'connected' => $this->connected,
+			'mothership_url' => (false === strpos($this->url, '//updraftplus.com')) ? __(sprintf('(Updates URL: %s)', esc_url($this->url)), 'updraftplus') : '',
+			'header_text' => $this->connected ? wp_kses_post(sprintf(__('You are presently %1$sconnected%2$s to a TeamUpdraft account.', 'updraftplus'), '<strong class="success">', '</strong>')) : wp_kses_post(sprintf(__('You are presently %1$snot connected%2$s to a TeamUpdraft account.', 'updraftplus'), '<strong style="color: red;">', '</strong>')),
+			'email_must_stay_text' => __('Make sure your email address remains in the connection form so you can receive future updates.', 'updraftplus'),
+			'unclaimed_purchased_text' => 0 == count($this->unclaimed_available) && 0 == count($this->assigned_addons) ? __('Have you made a new purchase that you haven\'t claimed yet?', 'updraftplus') : '',
+			'current_url' => esc_url(UpdraftPlus::get_current_clean_url()),
+			'unclaimed_addon_text' => $unclaimed_addon_text ? __('An existing purchase is associated with your account and may be eligible for recovery', 'updraftplus').' '.__('Please follow this link to claim your purchase for use on this website.', 'updraftplus') : '',
+			'assigned_not_installed_addon_text' => $assigned_not_installed_addon_text ? __('You have an add-on claimed and assigned to this website, but it hasn\'t been installed yet.', 'updraftplus') : '',
+			'expired_entitlement_text' => !isset($this->assigned_addons['all']) && count($this->expired_entitlements) > 0 && !$expired_but_unclaimed_available ? __('You have an expired entitlement that is affecting certain features.', 'updraftplus') : '',
+			'loggedin_reconnect_text' => false === $trans || (0 == count($this->unclaimed_available) && 0 == count($this->assigned_addons)) ? __('Please follow this link to re-enter your password in the login form and click the "Connect" button to refresh your connection.', 'updraftplus') : '',
+			'not_loggedin_text' => __('Please follow this link and enter your email address and password in the login form to connect.', 'updraftplus'),
+		);
+		return $data;
+	}
+
+	/**
+	 * Enqueue and localizes UpdraftPlus add-ons connection status data for use in the admin scripts.
+	 *
+	 * Merge the connection status template data with the existing localization data and makes it available to JavaScript through the `updraftplus_udaddons_l10n` object.
+	 *
+	 * @return void
+	 */
+	public function admin_enqueue_scripts() {
+		$this->udaddonsl10n = wp_parse_args($this->get_connection_status_template_data(), $this->udaddonsl10n);
+		wp_localize_script('updraft-admin-common', 'updraftplus_udaddons_l10n', $this->udaddonsl10n);
+	}
+
+	/**
+	 * Print the Handlebars.js script used to render the add-ons connection status
+	 *
+	 * @return void
+	 */
+	public function print_connection_status_handlebars_script() {
+		global $pagenow, $plugin_page;
+		if (UpdraftPlus_Options::admin_page() !== $pagenow || 'updraftplus' !== $plugin_page || !UpdraftPlus_Options::user_can_manage()) return;
+		?>
+		<script type="text/javascript">
+			jQuery(function($) {
+				if ($('#udpraftplus-addons-connection-status-markup').length) {
+					var template = Handlebars.compile($('#udpraftplus-addons-connection-status-markup').html());
+					if (updraftplus_udaddons_l10n) $('.updraftplus-udaddons-connection-status-wrapper').html(template(updraftplus_udaddons_l10n));
+				}
+			});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Print the connection status template for the UpdraftPlus administrative page.
+	 *
+	 * Output a Handlebars template containing the connection status markup.
+	 * The template displays different notices depending on whether the user is connected to their UpdraftPlus account.
+	 *
+	 * @return void
+	 */
+	public function print_connection_status_template() {
+		global $pagenow, $plugin_page;
+		if (UpdraftPlus_Options::admin_page() !== $pagenow || 'updraftplus' !== $plugin_page || !UpdraftPlus_Options::user_can_manage()) return;
+		?>
+		<script id="udpraftplus-addons-connection-status-markup" type="text/template">		
+			{{#if connected}}
+
+			<div class="udp-notice below-h2 updated notice">
+
+				<h3>{{{header_text}}}</h3>
+
+				{{email_must_stay_text}}
+
+				<p>
+					<a href="{{{current_url}}}" class="udp-connect-link">
+						{{expired_entitlement_text}} {{unclaimed_purchased_text}} {{loggedin_reconnect_text}}
+					</a>
+				</p>
+
+				{{#if unclaimed_addon_text}}
+					<p>
+						<a href="{{{current_url}}}" class="udp-unclaimed-addon-link">
+							{{unclaimed_addon_text}}
+						</a>
+					</p>
+				{{/if}}
+
+				{{#if assigned_not_installed_addon_text}}
+					<p>
+						<a href="{{{current_url}}}" class="udp-assigned-addon-link">
+							{{assigned_not_installed_addon_text}}
+						</a>
+					</p>
+				{{/if}}
+
+				<strong>{{mothership_url}}</strong>
+
+			</div>
+
+			{{else}}
+
+			<div class="udp-notice below-h2 error">
+
+				<h3>
+					{{{header_text}}}
+				</h3>
+
+				<p>
+					<a href="{{{current_url}}}" class="udp-connect-link">
+						{{not_loggedin_text}}
+					</a>
+				</p>
+
+			</div>
+
+			{{/if}}
+		</script>
+		<?php
+	}
+
+	/**
+	 * Clears any previously stored password
+	 *
+	 * A leftover password may remain in the database from a previous version, session, or due to timeout. To prevent unintended reuse, the saved password is
+	 * always removed before any subsequent actions (e.g., AJAX, WP-CLI, or WP-Cron) that may require authentication.
+	 *
+	 * The password provided for those current operations are retained only in the class variable ($authentication_data) and is not persisted to the database.
+	 * The updated options are saved only if any changes have been made.
+	 *
+	 * @return void
+	 */
+	private function maybe_clear_password() {
+		$options = $init_options = $this->get_option(UDADDONS2_SLUG.'_options');
+		if (!is_array($options)) $options = $init_options = array();
+		if (isset($options['password'])) unset($options['password']);
+		if (!isset($options['email'])) $options['email'] = '';
+		if ($options != $init_options) $this->update_option(UDADDONS2_SLUG.'_options', $options);
+	}
+
+	/**
+	 * Assigns and updates authentication-related information, including  user credentials, access tokens, session data, and other login-related details.
+	 *
+	 * @param Array $data - An array containing authentication-related information.
+	 *
+	 * @returns {void}
+	 */
+	public function set_authentication_data($data) {
+		$this->authentication_data = $data;
 	}
 
 	/**
@@ -361,9 +612,9 @@ class UpdraftPlusAddons2 {
 				if (preg_match('/(^|,)soonpartial_(\d+)_(\d+)($|,)/', $oval->update->extraProperties[$updateskey], $matches)) {
 					/* translators: 1: Number of add-ons whose updates are expiring soon, 2: Total number of add-ons on this site */
 					$this->admin_notices['updatesexpiringsoon'] = sprintf(__('Your paid access to UpdraftPlus updates for %1$s of the %2$s add-ons on this site will soon expire.', 'updraftplus'), $matches[2], $matches[3]);
-					$this->admin_notices['updatesexpiringsoon'] .= ' <a href="https://updraftplus.com/renewing-updraftplus-purchase/">'.__('To retain your access, and maintain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>'.$dismiss;
+					$this->admin_notices['updatesexpiringsoon'] .= ' <a href="https://teamupdraft.com/documentation/account-management/orders-and-subscriptions/why-should-i-renew-my-updraftplus-wp-optimize-or-aios-licence-and-how-do-i-do-that/">'.__('To retain your access, and maintain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>'.$dismiss;
 				} elseif (preg_match('/(^|,)soon($|,)/', $oval->update->extraProperties[$updateskey])) {
-					$message = __('Your paid access to UpdraftPlus updates for this site will soon expire.', 'updraftplus').' <a href="https://updraftplus.com/renewing-updraftplus-purchase/">'.__('To retain your access, and maintain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>';
+					$message = __('Your paid access to UpdraftPlus updates for this site will soon expire.', 'updraftplus').' <a href="https://teamupdraft.com/documentation/account-management/orders-and-subscriptions/why-should-i-renew-my-updraftplus-wp-optimize-or-aios-licence-and-how-do-i-do-that/">'.__('To retain your access, and maintain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>';
 					if ($updraftplus->have_addons > 14 && !empty($meta_info['indirect'])) {
 						$message .= ' <br>'.sprintf(
 							/* translators: %s: Link text redirecting user to Addons tab. */
@@ -376,9 +627,9 @@ class UpdraftPlusAddons2 {
 			}
 		} elseif (!empty($do_expiry_check) && is_object($oval) && !empty($oval->update) && is_object($oval->update) && !empty($oval->update->extraProperties[$supportkey])) {
 			if ('expired' == $oval->update->extraProperties[$supportkey]) {
-				$this->admin_notices['supportexpired'] = __('Your paid access to UpdraftPlus support has expired.', 'updraftplus').' <a href="https://updraftplus.com/renewing-updraftplus-purchase/">'.__('To regain your access, please renew.', 'updraftplus').'</a>'.$dismiss;
+				$this->admin_notices['supportexpired'] = __('Your paid access to UpdraftPlus support has expired.', 'updraftplus').' <a href="https://teamupdraft.com/documentation/account-management/orders-and-subscriptions/why-should-i-renew-my-updraftplus-wp-optimize-or-aios-licence-and-how-do-i-do-that/">'.__('To regain your access, please renew.', 'updraftplus').'</a>'.$dismiss;
 			} elseif ('soon' == $oval->update->extraProperties[$supportkey]) {
-				$this->admin_notices['supportsoonexpiring'] = __('Your paid access to UpdraftPlus support will soon expire.', 'updraftplus').' <a href="https://updraftplus.com/renewing-updraftplus-purchase/">'.__('To maintain your access to support, please renew.', 'updraftplus').'</a>'.$dismiss;
+				$this->admin_notices['supportsoonexpiring'] = __('Your paid access to UpdraftPlus support will soon expire.', 'updraftplus').' <a href="https://teamupdraft.com/documentation/account-management/orders-and-subscriptions/why-should-i-renew-my-updraftplus-wp-optimize-or-aios-licence-and-how-do-i-do-that/">'.__('To maintain your access to support, please renew.', 'updraftplus').'</a>'.$dismiss;
 			}
 		}
 		add_action('all_admin_notices', array($this, 'admin_notices'));
@@ -453,13 +704,12 @@ class UpdraftPlusAddons2 {
 	 * @return Boolean - true if the option was successfully set; otherwise false
 	 */
 	public function update_option($option, $val) {
-		delete_site_option($option);
 		return update_site_option($option, $val);
 	}
 
 	public function deinstall_udaddons() {
 		$del = '<a href="' . wp_nonce_url('plugins.php?action=delete-selected&amp;checked[]=updraftplus-addons/updraftplus-addons.php&amp;plugin_status=all&amp;paged=1&amp;s=', 'bulk-plugins') . '" title="' . esc_attr__('Delete Plugin') . '" class="delete">' . 'delete the UpdraftPlus Addons Manager plugin' . '</a>'; // phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- 'Delete Plugin' translation string already present in plugins.php
-		$this->show_admin_warning('You can '.$del.' - it is obsolete (all of its functions, including your add-ons, are now included in the main UpdraftPlus plugin obtained from updraftplus.com).');
+		$this->show_admin_warning('You can '.$del.' - it is obsolete (all of its functions, including your add-ons, are now included in the main UpdraftPlus plugin obtained from teamupdraft.com).');
 	}
 
 	public function show_admin_warning($message, $class = "updated") {
@@ -526,7 +776,7 @@ class UpdraftPlusAddons2 {
 	 */
 	private function claim_addon($key) {
 	
-		$options = $this->get_option(UDADDONS2_SLUG.'_options');
+		$options = apply_filters('updraftplus_udaddons2_authentication_data', $this->authentication_data);
 
 		$post_array = array(
 			'e' => $options['email'],
@@ -545,11 +795,7 @@ class UpdraftPlusAddons2 {
 			)
 		);
 
-		if (!is_wp_error($result) && isset($result['body']) && null !== ($response = json_decode($result['body'])) && is_object($response) && !empty($response->code) && 'OK' === $response->code) {
-			// Remove the password from the stored settings, for security. We have confirmed that we can authenticate via token (SID) - which is valid for approx. a week (the user can re-enter the password if he needs to)
-			unset($options['password']);
-			$this->update_option(UDADDONS2_SLUG.'_options', $options);
-		} else {
+		if (is_wp_error($result) || !isset($result['body']) || null === ($response = json_decode($result['body'])) || !is_object($response) || empty($response->code) || 'OK' !== $response->code) {
 
 			// Try again with password (old-style protocol)
 			// The 'password' encoded here is the updraftplus.com password. See here: https://updraftplus.com/faqs/tell-me-about-my-updraftplus-com-account/
@@ -594,8 +840,11 @@ class UpdraftPlusAddons2 {
 			'password' => UpdraftPlus_Manipulation_Functions::fetch_superglobal('post', 'password', '', true),
 		);
 
-		$this->update_option(UDADDONS2_SLUG . '_options', $credentials);
-		$response = $this->claim_addon('all');
+		$this->set_authentication_data($credentials);
+		$this->connected = $this->connection_status();
+
+		$response = array();
+		if ($this->connected) $response = $this->claim_addon('all');
 
 		wp_send_json($response);
 	}
@@ -605,11 +854,25 @@ class UpdraftPlusAddons2 {
 	 */
 	public function ajax_udaddons_claimaddon() {
 
-		$nonce = empty($_REQUEST['nonce']) ? '' : $_REQUEST['nonce'];
-		if (!wp_verify_nonce($nonce, 'udmanager-nonce') || empty($_POST['key'])) die('Security check');
+		list($nonce, $key) = array_values(UpdraftPlus_Manipulation_Functions::fetch_superglobal_array(
+			array('request', 'nonce', ''),
+			array('post', 'key')
+		));
 
-		$key = $_POST['key'];
-		
+		if (!wp_verify_nonce($nonce, 'udmanager-nonce') || !$key || !UpdraftPlus_Options::user_can_manage()) die('Security check');
+
+		$options = $this->get_option(UDADDONS2_SLUG.'_options');
+		if (!is_array($options)) $options = array();
+		$options['try_siteid'] = $this->maybe_try_siteid_connection();
+		$this->set_authentication_data($options);
+		$this->connection_status();
+		if (!$this->connected || empty($this->authentication_data['email'])) {
+			echo json_encode(array('code' => 'BADAUTH'));
+			die();
+		}
+		// At this point, we expect the connection to teamupdraft.com to already be established, since the user must connect first before the "Activate/claim it on this site" link appears.
+		// we can also force the request to exit if the specified addons has already been claimed, of course by first calling $this->get_available_addons() followed by $this->process_user_addons(); and then check $this->unclaimed_available/assigned_addons
+
 		$result = $this->claim_addon($key);
  
 		if (is_wp_error($result)) {
@@ -989,31 +1252,93 @@ class UpdraftPlusAddons2 {
 	}
 
 	/**
+	 * Initializes the UpdraftPlus connection on the plugin administration page.
+	 *
+	 * @return void
+	 */
+	public function connection_init() {
+		global $pagenow, $plugin_page;
+		if (UpdraftPlus_Options::admin_page() !== $pagenow || 'updraftplus' !== $plugin_page || !empty($this->authentication_data['email']) || !UpdraftPlus_Options::user_can_manage()) return;
+		// At this point, $authentication_data is expected to be empty, since this method should be executed during a standard admin_init requests
+		// (i.e., accessing the UpdraftPlus administration page), not via AJAX, REST API, WP-Cron, WP-CLI, or XML-RPC. admin_init gets fired first before wp_ajax_*
+		$options = $this->get_option(UDADDONS2_SLUG.'_options');
+		if (!is_array($options)) $options = array();
+		$options['try_siteid'] = $this->maybe_try_siteid_connection();
+		$this->set_authentication_data($options);
+		if (!empty($options['email'])) $this->connection_status();
+		$this->initialise_addons_state();
+		$this->validate_connection_status();
+	}
+
+	/**
+	 * Initialise the add-on state.
+	 *
+	 * Retrieve the available add-ons and processes the user's add-on assignments to prepare the add-on data for subsequent operations.
+	 *
+	 * @return void
+	 */
+	public function initialise_addons_state() {
+		$this->get_available_addons();
+		$this->process_user_addons();
+	}
+
+	/**
+	 * Perform additional checks to determine whether the user should be considered connected
+	 * to the updates server, even if their connection status has expired or is missing.
+	 * Users with an unlimited licence or at least 15 add-ons purchased/installed may still
+	 * receive updates without explicitly claiming their add-ons. If the plugin's update
+	 * checker reports a cached update with a version number in the range x.y.z.15–26, this
+	 * indicates that the update is intended for eligible users rather than the standard
+	 * premium base version (x.y.z.0).
+	 *
+	 * As long as these users have successfully connected to the updates server at least
+	 * once and their email address remains in the login form, they can continue receiving
+	 * updates without needing to claim individual add-ons.
+	 *
+	 * If these conditions are met, the connection status is restored by setting $this->connected to true.
+	 */
+	public function validate_connection_status() {
+		if (!$this->connected) {
+			// it may be not connected because 2 hours have elapsed since udaddons_connect_{email} was last set but we can check if the latest update is still being offered /^\d+\.\d+\.\d+\.(1[5-9]|2[0-6])$/
+			$update_available = $this->plug_updatechecker && null !== ($update = $this->plug_updatechecker->getUpdateState()) && null !== ($update = $update->getUpdate()) && isset($update->version) && preg_match('/^2\.\d+\.\d+\.(?:[1-9]|1[0-9]|2[0-6])$/', $update->version);
+			// for users without an unlimited licence, as long as they have unclaimed or assigned add-ons, they are considered connected even the premium base version is being offered.
+			$user_has_entitlement = count($this->assigned_addons) > 0 || count($this->unclaimed_available) > 0;
+			$options = $this->get_option(UDADDONS2_SLUG.'_options');
+			$this->connected = ($update_available || $user_has_entitlement) && (is_array($options) && !empty($options['email']));
+		}
+	}
+
+	/**
 	 * This function will get the connection status
 	 *
 	 * @return boolean|WP_Error - returns true if successful
 	 */
 	public function connection_status() {
 
-		$options = $this->get_option(UDADDONS2_SLUG.'_options');
-
-		$try_siteid = false;
-
-		$oval = is_object($this->plug_updatechecker) ? get_site_option($this->plug_updatechecker->optionName, null) : null;
-		// Detect the case where the password has been removed
-		if (is_object($oval) && !empty($oval->lastCheck) && time()-$oval->lastCheck < 86400*8) {
-			$try_siteid = $this->siteid();
-		}
+		$options = $tmp_options = apply_filters('updraftplus_udaddons2_authentication_data', $this->authentication_data);
 
 		// Username and password set up?
-		if (empty($options['email']) || (empty($options['password']) && false == $try_siteid)) return new WP_Error('blank_details', __('You need to supply both an email address and a password', 'updraftplus'));
+		// if (empty($options['email']) || (empty($options['password']) && false == $try_siteid)) {
+		if (empty($options['email']) || (empty($options['password']) && empty($options['try_siteid']))) {
+			$this->connection_errors = array(esc_html__('You need to supply both an email address and a password', 'updraftplus'));
+			$this->connected = false;
+			$stored_opts = $this->get_option(UDADDONS2_SLUG.'_options');
+			if (!is_array($stored_opts)) $stored_opts = array();
+			if (empty($options['email'])) $tmp_options['email'] = $stored_opts['email'] = '';
+			$tmp_options = array_intersect_key($stored_opts, array('email' => $tmp_options['email']));
+			$this->update_option(UDADDONS2_SLUG.'_options', $tmp_options);
+			return $this->connected;
+		}
+
+		$tmp_options = array_intersect_key($tmp_options, array('email' => ''));
+		$this->update_option(UDADDONS2_SLUG.'_options', $tmp_options);
 
 		// Hash will change if the account changes (password change is handled by the options filter)
 		$ehash = substr(md5($options['email']), 0, 23);
 		$trans = get_site_transient('udaddons_connect_'.$ehash);
 
 		// In debug mode, we don't cache
-		if (true !== $this->debug && empty($_GET['udm_refresh']) && is_array($trans)) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- False positive: nonce verification not necessary.
+		if (true !== $this->debug && empty($_GET['udm_refresh']) && is_array($trans) && (!isset($options['password']) || '' == $options['password']) && !empty($options['try_siteid'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- False positive: nonce verification not necessary.
 			if (isset($trans['myaddons']) && is_array($trans['myaddons'])) {
 				$this->user_addons = $trans['myaddons'];
 			}
@@ -1023,20 +1348,31 @@ class UpdraftPlusAddons2 {
 			if (isset($trans['support']) && is_array($trans['support'])) {
 				$this->user_support = $trans['support'];
 			}
-			return true;
+			$this->connected = true;
+			return $this->connected;
 		}
 
 		$password = isset($options['password']) ? $options['password'] : '';
 
-		$connect = $this->connect($options['email'], $password);
+		$this->connected = $this->connect($options['email'], $password);
 
-		if (is_wp_error($connect)) return $connect;
-		if (false === $connect) return new WP_Error('failed_connection', __('We failed to successfully connect to UpdraftPlus.Com', 'updraftplus'));
+		if (true !== $this->connected) {
+			if (false === $this->connected) $this->connection_errors[] = __('We failed to successfully connect to teamupdraft.com', 'updraftplus');
+			if (is_wp_error($this->connected)) {
+				foreach ($this->connected->get_error_messages() as $msg) {
+					$this->connection_errors[] = $msg;
+				}
+			} else {
+				if (!empty($options['email']) && !empty($options['password'])) {
+					$this->connection_errors[] = __('An unknown error occurred when trying to connect to teamupdraft.com', 'updraftplus');
+				} else {
+					$this->connection_errors[] = __('teamupdraft.com responded, but we did not understand the response', 'updraftplus');
+				}
+			}
+			$this->connected = false;
+		}
 
-		if (!is_bool($connect)) return new WP_Error('bad_response', __('UpdraftPlus.Com responded, but we did not understand the response', 'updraftplus'));
-
-		return true;
-
+		return $this->connected;
 	}
 
 	/**
@@ -1089,7 +1425,7 @@ class UpdraftPlusAddons2 {
 				if (false !== $ip_addr && false !== filter_var($ip_addr, FILTER_VALIDATE_IP)) {
 					$message .= '  IP: '.htmlspecialchars($ip_addr);
 					
-					$message .= '<br>'.__('This most likely means that you share a webserver with a hacked website that has been used in previous attacks.', 'updraftplus').'<br> <a href="https://updraftplus.com/unblock-ip-address/" target="_blank">'.__('To remove any block, please go here.', 'updraftplus').'</a> '.__('Your IP address:', 'updraftplus').' '.htmlspecialchars($ip_addr);
+					$message .= '<br>'.__('This most likely means that you share a webserver with a hacked website that has been used in previous attacks.', 'updraftplus').'<br> <a href="https://teamupdraft.com/documentation/updraftplus/topics/general/troubleshooting/updraftplus-ip-unblock-how-to-regain-access-if-your-ip-is-blocked/" target="_blank">'.__('To remove any block, please go here.', 'updraftplus').'</a> '.__('Your IP address:', 'updraftplus').' '.htmlspecialchars($ip_addr);
 					
 				}
 			}
@@ -1104,17 +1440,17 @@ class UpdraftPlusAddons2 {
 			if (preg_match('/has banned your IP address \(([\.:0-9a-f]+)\)/', $response, $matches)) {
 				return new WP_Error(
 					'banned_ip',
-					__("UpdraftPlus.com has responded with 'Access Denied'.", 'updraftplus').'<br>'.
+					__("teamupdraft.com has responded with 'Access Denied'.", 'updraftplus').'<br>'.
 					/* translators: %s: IP Address. */
 					sprintf(__("It appears that your web server's IP Address (%s) is blocked.", 'updraftplus'), $matches[1]).' '.
 					__('This most likely means that you share a webserver with a hacked website that has been used in previous attacks.', 'updraftplus').'<br> <a href="https://updraftplus.com/unblock-ip-address/" target="_blank">'.__('To remove any block, please go here.', 'updraftplus').'</a> '
 				);
 			} else {
 				if (null === $ser_resp) {
-					return new WP_Error('unknown_response', __('No response data was received.', 'updraftplus').' '.__('This usually indicates a network connectivity issue (e.g. an outgoing firewall or overloaded network) between this site and UpdraftPlus.com.', 'updraftplus'));
+					return new WP_Error('unknown_response', __('No response data was received.', 'updraftplus').' '.__('This usually indicates a network connectivity issue (e.g. an outgoing firewall or overloaded network) between this site and teamupdraft.com', 'updraftplus'));
 				} else {
 					/* translators: 1: Non-translated "UpdraftPlus.Com" text, 2: Server response. */
-					return new WP_Error('unknown_response', sprintf(__('%1$s returned a response which we could not understand (data: %2$s)', 'updraftplus'), 'UpdraftPlus.Com', $ser_resp));
+					return new WP_Error('unknown_response', sprintf(__('%1$s returned a response which we could not understand (data: %2$s)', 'updraftplus'), 'teamupdraft.com', $ser_resp));
 				}
 			}
 		}
@@ -1140,8 +1476,11 @@ class UpdraftPlusAddons2 {
 				break;
 
 			case 'authfailed':
-				$ehash = substr(md5($email), 0, 23);
-				delete_site_transient('udaddons_connect_'.$ehash);
+				if ('' != $password) {
+					$ehash = substr(md5($email), 0, 23);
+					delete_site_transient('udaddons_connect_'.$ehash);
+					$this->update_option(UDADDONS2_SLUG.'_options', array('email' => ''));
+				}
 				if (!empty($response['authproblem'])) {
 					if ('invalidpassword' == $response['authproblem']) {
 						$authfail_error = new WP_Error('authfailed', __("Your email is valid, but your password wasn't recognised.", 'updraftplus').'<br>');
@@ -1150,18 +1489,110 @@ class UpdraftPlusAddons2 {
 						$authfail_error->add('authfailed', sprintf(__('Try again, or %s before connecting again.', 'updraftplus'), '<a href="'.$updraftplus->get_url('lost-password').'">'.__('reset your password', 'updraftplus').'</a>'));
 						return $authfail_error;
 					} elseif ('invaliduser' == $response['authproblem']) {
-						return new WP_Error('authfailed', __('You entered an email address that was not recognised by UpdraftPlus.Com', 'updraftplus'));
+						return new WP_Error('authfailed', __('You entered an email address that was not recognised by teamupdraft.com', 'updraftplus'));
+					} elseif ('too_many_attempts' == $response['authproblem']) {
+						$message = isset($response['message']) ? $response['message'] : __('Too many failed attempted; wait, and then retry.', 'updraftplus');
+						return new WP_Error('authfailed', $message);
 					}
 				}
-				return new WP_Error('authfailed', __('Your email address and password were not recognised by UpdraftPlus.Com', 'updraftplus'));
+				return new WP_Error('authfailed', __('Your email address and password were not recognised by teamupdraft.com', 'updraftplus'));
 				break;
 
 			default:
-				return new WP_Error('unknown_response', __('UpdraftPlus.Com returned a response, but we could not understand it', 'updraftplus'));
+				return new WP_Error('unknown_response', __('teamupdraft.com returned a response, but we could not understand it', 'updraftplus'));
 				break;
 		}
 
 		return true;
 
+	}
+
+	/**
+	 * This may produce a URL that does not actually reference the same location; its purpose is to use in comparisons of two URLs that *both* go through this function, only
+	 *
+	 * @param  string $url
+	 * @return string
+	 */
+	private function normalise_url($url) {
+		if (preg_match('/^(\S+) - /', ltrim($url), $matches)) $url = $matches[1];
+		$parsed_descrip_url = parse_url($url);
+		if (is_array($parsed_descrip_url) && isset($parsed_descrip_url['host'])) {
+			if (preg_match('/^www\./i', $parsed_descrip_url['host'], $matches)) $parsed_descrip_url['host'] = substr($parsed_descrip_url['host'], 4);
+			$normalised_descrip_url = 'http://'.strtolower($parsed_descrip_url['host']);
+			if (!empty($parsed_descrip_url['port'])) $normalised_descrip_url .= ':'.$parsed_descrip_url['port'];
+			if (!empty($parsed_descrip_url['path'])) $normalised_descrip_url .= untrailingslashit($parsed_descrip_url['path']);
+		} else {
+			$normalised_descrip_url = untrailingslashit($url);
+		}
+		return $normalised_descrip_url;
+	}
+
+	/**
+	 * Processes the user's available add-ons and identifies their assignment status.
+	 *
+	 * Iterates through the user's add-ons and categorises them into:
+	 * - Available add-ons that are unclaimed or have unlimited site assignments.
+	 * - Add-ons currently assigned to the current site.
+	 * - Reclaimable add-ons assigned to a site with a matching URL.
+	 *
+	 * Also normalises legacy add-on keys ('more-files' to 'morefiles') and updates the relevant class properties, including
+	 * $this->unclaimed_available, $this->assigned_addons and $this->have_all_addons.
+	 *
+	 * Only processes add-ons when the user is connected and the add-on data is available as an array.
+	 *
+	 * @return void
+	 */
+	private function process_user_addons() {
+		$sid = $this->siteid();
+		$home_url = home_url();
+		// Enumerate possible unclaimed/re-claimable purchases, and what should be active on this site
+		if ($this->connected && isset($this->user_addons) && is_array($this->user_addons)) {
+			foreach ($this->user_addons as $akey => $addon) {
+				// Keys: site, sitedescription, key, status
+				$key = ('more-files' == $addon['key']) ? 'morefiles' : $addon['key'];
+				if (isset($addon['status']) && 'active' == $addon['status'] && isset($addon['site']) && ('unclaimed' == $addon['site'] || 'unlimited' == $addon['site'])) {
+					if ((int) $addon['expires'] > time()) {
+						$this->unclaimed_available[$key] = array('eid' => $akey, 'status' => 'available');
+					} else {
+						$this->expired_entitlements[$key] = array('eid' => $akey, 'status' => 'expired');
+					}
+				} elseif (isset($addon['status']) && 'active' == $addon['status'] && isset($addon['site']) && $addon['site'] == $sid) {
+					if ((int) $addon['expires'] > time()) {
+						$this->assigned_addons[$key] = $akey;
+						if ('all' == $key) $this->have_all_addons = true;
+					} else {
+						$this->expired_entitlements[$key] = array('eid' => $akey, 'status' => 'expired');
+					}
+				} elseif (isset($addon['sitedescription']) && ($this->normalise_url($home_url) === $this->normalise_url($addon['sitedescription']) || 0 === strpos($addon['sitedescription'], $home_url.' - '))) {
+					// Is assigned to a site with the same URL as this one - allow a reclaim
+					if ((int) $addon['expires'] > time()) {
+						$this->unclaimed_available[$key] = array('eid' => $akey, 'status' => 'reclaimable');
+					} else {
+						$this->expired_entitlements[$key] = array('eid' => $akey, 'status' => 'expired');
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Attempts to establish a Site ID connection if a recent update check exists.
+	 *
+	 * Checks the update checker's stored site option to determine whether an update
+	 * check has occurred within the last eight days. If a recent check is found,
+	 * attempts to retrieve or establish the Site ID connection.
+	 *
+	 * This is intended to detect situations where the password has been removed
+	 * while the update checker still contains recent check information.
+	 *
+	 * @return bool|string False if no recent update check is found, otherwise the result of siteid().
+	 */
+	private function maybe_try_siteid_connection() {
+		$try_siteid = true;
+		$oval = is_object($this->plug_updatechecker) ? get_site_option($this->plug_updatechecker->optionName, null) : null;
+		if (is_object($oval) && !empty($oval->lastCheck) && time()-$oval->lastCheck < 86400*8) {
+			$try_siteid = $this->siteid();
+		}
+		return $try_siteid;
 	}
 }

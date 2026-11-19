@@ -13,6 +13,11 @@ add_action( 'wp_enqueue_scripts', 'twentytwentyfive_child_parent_theme_enqueue_s
  * Enqueue scripts and styles.
  */
 function twentytwentyfive_child_parent_theme_enqueue_styles() {
+	$parent_style_path = get_template_directory() . '/style.css';
+	$child_style_path = get_stylesheet_directory() . '/style.css';
+	$parent_style_version = file_exists( $parent_style_path ) ? (string) filemtime( $parent_style_path ) : wp_get_theme( get_template() )->get( 'Version' );
+	$child_style_version = file_exists( $child_style_path ) ? (string) filemtime( $child_style_path ) : wp_get_theme()->get( 'Version' );
+
 	wp_enqueue_style(
 		'twentytwentyfive-child-fonts',
 		'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;800&family=Lora:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;800&family=Noto+Serif:wght@400;500;700;800&family=Noto+Sans+Symbols+2&display=swap',
@@ -20,14 +25,68 @@ function twentytwentyfive_child_parent_theme_enqueue_styles() {
 		null
 	);
 
-	wp_enqueue_style( 'twentytwentyfive-style', get_template_directory_uri() . '/style.css', array(), '0.1.0' );
+	wp_enqueue_style( 'twentytwentyfive-style', get_template_directory_uri() . '/style.css', array(), $parent_style_version );
 	wp_enqueue_style(
 		'twentytwentyfive-child-style',
 		get_stylesheet_directory_uri() . '/style.css',
 		array( 'twentytwentyfive-style', 'twentytwentyfive-child-fonts' ),
-		'0.1.0'
+		$child_style_version
 	);
 }
+
+/**
+ * Add resource hints for remote font endpoints to reduce connection setup time.
+ *
+ * @param array  $urls          URLs to print for resource hints.
+ * @param string $relation_type The relation type the URLs are printed for.
+ * @return array
+ */
+function twentytwentyfive_child_resource_hints( $urls, $relation_type ) {
+	if ( 'preconnect' !== $relation_type ) {
+		return $urls;
+	}
+
+	$urls[] = 'https://fonts.googleapis.com';
+	$urls[] = array(
+		'href'        => 'https://fonts.gstatic.com',
+		'crossorigin' => 'anonymous',
+	);
+
+	return $urls;
+}
+add_filter( 'wp_resource_hints', 'twentytwentyfive_child_resource_hints', 10, 2 );
+
+/**
+ * Preload homepage hero image because it is used as a CSS background and can
+ * otherwise be discovered late in the critical rendering path.
+ *
+ * @return void
+ */
+function twentytwentyfive_child_preload_home_hero_image() {
+	if ( is_admin() || ! is_front_page() ) {
+		return;
+	}
+
+	$hero_image_url = get_stylesheet_directory_uri() . '/assets/images/desktophero.webp';
+	echo '<link rel="preload" as="image" fetchpriority="high" href="' . esc_url( $hero_image_url ) . '">';
+}
+add_action( 'wp_head', 'twentytwentyfive_child_preload_home_hero_image', 1 );
+
+/**
+ * Load child theme styles in the block editor so editor colors match frontend styles.
+ */
+function twentytwentyfive_child_enqueue_editor_styles() {
+	$child_style_path = get_stylesheet_directory() . '/style.css';
+	$child_style_version = file_exists( $child_style_path ) ? (string) filemtime( $child_style_path ) : wp_get_theme()->get( 'Version' );
+
+	wp_enqueue_style(
+		'twentytwentyfive-child-editor-style',
+		get_stylesheet_directory_uri() . '/style.css',
+		array(),
+		$child_style_version
+	);
+}
+add_action( 'enqueue_block_editor_assets', 'twentytwentyfive_child_enqueue_editor_styles' );
 
 /**
  * Remove stray XML declaration text injected by DOMDocument during block rendering.
